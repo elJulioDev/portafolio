@@ -33,9 +33,11 @@ O abrir `index.html` directamente en el navegador.
 
 ```
 ├── index.html   # Página única
-├── style.css    # Estilos y sistema de diseño (:root)
-├── script.js    # Interacciones (carrusel, lightbox, formulario, menú)
-├── img/         # Imágenes (foto y capturas de proyectos)
+├── static/
+│   ├── css/style.css          # Estilos y sistema de diseño (:root)
+│   ├── js/script.js           # Interacciones (carrusel, lightbox, formulario, menú)
+│   ├── img/                   # Imágenes (foto y capturas de proyectos)
+│   └── CV_ALEXIS_GONZALEZ_PEREZ.pdf  # CV descargable
 └── AGENTS.md    # Notas de desarrollo y estructura
 ```
 
