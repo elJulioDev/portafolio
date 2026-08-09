@@ -1,0 +1,6 @@
+# Datos personales: CV, certificados, info de contacto
+info/
+
+# Basura del sistema
+.DS_Store
+Thumbs.db

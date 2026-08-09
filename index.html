@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Portafolio profesional de Alexis González — Ingeniero en Informática y Desarrollador Full Stack. Proyectos, tecnologías y contacto." />
+  <meta name="author" content="Alexis González Pérez" />
+  <title>elJulioDev | Desarrollador Full Stack</title>
+
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Iconos de tecnologías (Devicon) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
+
+  <!-- Iconos generales (Font Awesome) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ====== NAVBAR ====== -->
+  <header class="navbar" id="navbar">
+    <nav class="navbar__inner container" aria-label="Navegación principal">
+      <a href="#inicio" class="navbar__brand">elJulioDev<span class="navbar__brand-dot">.</span></a>
+
+      <button class="navbar__toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navbarMenu">
+        <span class="navbar__toggle-bar"></span>
+        <span class="navbar__toggle-bar"></span>
+        <span class="navbar__toggle-bar"></span>
+      </button>
+
+      <ul class="navbar__menu" id="navbarMenu">
+        <li class="navbar__menu-header">
+          <span class="navbar__menu-brand">elJulioDev<span class="navbar__brand-dot">.</span></span>
+          <button class="navbar__menu-close" id="menuClose" type="button" aria-label="Cerrar menú">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </li>
+        <li><a href="#inicio" class="navbar__link">Inicio</a></li>
+        <li><a href="#sobre-mi" class="navbar__link">Sobre mí</a></li>
+        <li><a href="#tecnologias" class="navbar__link">Tecnologías</a></li>
+        <li><a href="#certificados" class="navbar__link">Certificados</a></li>
+        <li><a href="#proyectos" class="navbar__link">Proyectos</a></li>
+        <li><a href="#contacto" class="navbar__link">Contacto</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="navbar__backdrop" id="menuBackdrop" aria-hidden="true"></div>
+
+  <main>
+
+    <!-- ====== HERO ====== -->
+    <section class="hero" id="inicio">
+      <!-- Slider de fondo (reemplaza las imágenes por las tuyas) -->
+      <div class="hero__bg-slider" aria-hidden="true">
+        <div class="hero__bg-slide" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1920&auto=format&fit=crop');"></div>
+        <div class="hero__bg-slide" style="background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1920&auto=format&fit=crop');"></div>
+        <div class="hero__bg-slide" style="background-image: url('https://images.unsplash.com/photo-1560419015-7c427e8ae5ba?q=80&w=1920&auto=format&fit=crop');"></div>
+        <div class="hero__bg-overlay"></div>
+      </div>
+
+      <div class="container hero__inner">
+        <div class="hero__content">
+          <p class="hero__eyebrow">Hola, soy</p>
+          <h1 class="hero__title">Alexis <span class="hero__title-name">González<span class="hero__title-accent">.</span></span></h1>
+          <p class="hero__subtitle">
+            Ingeniero en Informática · Desarrollador Full Stack
+            <a class="hero__alias" href="https://github.com/elJulioDev" target="_blank" rel="noopener">@elJulioDev</a>
+          </p>
+          <p class="hero__text">
+            Construyo soluciones web eficientes y escalables, desde el frontend
+            hasta la base de datos. Aquí encontrarás mis proyectos, las
+            tecnologías que domino y cómo contactarme.
+          </p>
+          <div class="hero__actions">
+            <a href="https://github.com/elJulioDev" target="_blank" rel="noopener" class="btn btn--primary">GitHub</a>
+            <a href="https://www.linkedin.com/in/alexis-gonzález-pérez/" target="_blank" rel="noopener" class="btn btn--solid">LinkedIn</a>
+            <a href="mi%20informacion/CV_ALEXIS_GONZALEZ_PEREZ.pdf" download class="btn btn--solid">Descargar CV</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SOBRE MÍ ====== -->
+    <section class="section" id="sobre-mi">
+      <div class="container">
+        <p class="section__eyebrow">Sobre mí</p>
+        <h2 class="section__title">Un poco sobre quién soy</h2>
+
+        <div class="about">
+          <div class="about__image">
+            <figure class="about__frame">
+              <img src="img/me.jpeg" alt="Alexis González Pérez" />
+            </figure>
+          </div>
+
+          <div class="about__content">
+            <p class="about__text">
+              Soy Ingeniero en Informática egresado de INACAP, apasionado por la
+              resolución de problemas lógicos y el desarrollo de software
+              eficiente. Me especializo en el ecosistema Full Stack, construyendo
+              soluciones desde cero o tomando bases de código heredadas para
+              optimizarlas, expandirlas y llevarlas a producción.
+            </p>
+            <p class="about__text">
+              En el sector público lideré el despliegue técnico y la
+              refactorización backend (PHP/MySQL) de herramientas clave de
+              gestión institucional. También diseño librerías de Deep Learning
+              con Python y NumPy, y exploro el desarrollo de videojuegos con
+              Godot Engine y C#.
+            </p>
+
+            <ul class="about__facts">
+              <li><strong>Nombre:</strong> Alexis González Pérez</li>
+              <li><strong>Alias:</strong> elJulioDev</li>
+              <li><strong>Ubicación:</strong> Coltauco, Región de O'Higgins, Chile</li>
+              <li><strong>Rol:</strong> Desarrollador Full Stack</li>
+              <li><strong>Formación:</strong> Ingeniería en Informática · INACAP</li>
+              <li><strong>Disponibilidad:</strong> Freelance / Full-time</li>
+            </ul>
+
+            <a href="#contacto" class="btn btn--primary">Trabajemos juntos</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== TECNOLOGÍAS ====== -->
+    <section class="section section--alt" id="tecnologias">
+      <div class="container">
+        <p class="section__eyebrow">Tecnologías</p>
+        <h2 class="section__title">Herramientas que domino</h2>
+
+        <div class="tech-cats">
+
+          <details class="tech-cat">
+            <summary class="tech-cat__head">
+              <span class="tech-cat__tag">Frontend</span>
+              <h3 class="tech-cat__title">Interfaces y experiencia de usuario</h3>
+            </summary>
+            <div class="tech-cat__content">
+            <p class="tech-cat__desc">Maquetación y estilado de interfaces responsivas, accesibles y con buen rendimiento visual.</p>
+            <ul class="tech-cat__list">
+              <li class="tech-item">
+                <i class="devicon-html5-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">HTML</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-css3-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">CSS</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-javascript-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">JavaScript</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+            </ul>
+          </div>
+          </details>
+
+          <details class="tech-cat">
+            <summary class="tech-cat__head">
+              <span class="tech-cat__tag">Backend</span>
+              <h3 class="tech-cat__title">Lógica de servidor y APIs</h3>
+            </summary>
+            <div class="tech-cat__content">
+            <p class="tech-cat__desc">Desarrollo y refactorización de sistemas, servicios y APIs, con entornos de desarrollo locales (XAMPP).</p>
+            <ul class="tech-cat__list">
+              <li class="tech-item">
+                <i class="devicon-php-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">PHP</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-python-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">Python</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-django-plain tech-item__icon tech-item__icon--django" aria-hidden="true"></i>
+                <span class="tech-item__name">Django</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+              <li class="tech-item">
+                <svg class="tech-item__icon tech-item__icon--xampp" viewBox="0 0 24 24" fill="#fb7a24" aria-hidden="true"><path d="M16.792,11.923c0.113,0.043,0.226,0.079,0.334,0.128c0.45,0.203,0.715,0.553,0.748,1.044 c0.041,0.634,0.044,1.271,0.002,1.905c-0.049,0.732-0.725,1.292-1.483,1.271c-0.735-0.021-1.369-0.62-1.397-1.341 c-0.017-0.441-0.003-0.884-0.006-1.326c-0.001-0.239-0.003-0.242-0.245-0.243c-1.363-0.001-2.726,0.008-4.089-0.003 c-0.888-0.007-1.421,0.482-1.471,1.46c-0.019,0.38-0.1,0.727-0.357,1.018c-0.397,0.451-0.898,0.601-1.472,0.466 c-0.554-0.131-0.867-0.522-1.035-1.048c-0.117-0.367-0.056-0.737,0.012-1.094c0.341-1.797,1.366-3.006,3.125-3.555 c0.357-0.112,0.731-0.166,1.105-0.166c0.94,0.001,1.881,0.001,2.821-0.001c0.128,0,0.257-0.012,0.385-0.021 c0.702-0.051,1.166-0.511,1.22-1.352c0.004-0.064,0-0.129,0.001-0.193c0.011-0.788,0.605-1.396,1.393-1.425 c0.787-0.029,1.438,0.527,1.493,1.318c0.076,1.083-0.265,2.046-0.913,2.907C16.903,11.751,16.819,11.816,16.792,11.923z M8.249,10.436c-0.258-0.008-0.571,0.018-0.882-0.035c-0.536-0.09-0.876-0.39-1.02-0.916C6.19,8.912,6.25,8.388,6.698,7.96 C7.154,7.526,7.694,7.4,8.285,7.645c0.52,0.216,0.859,0.731,0.89,1.293C9.2,9.382,9.178,9.828,9.182,10.272 c0.001,0.116-0.043,0.167-0.161,0.165C8.781,10.434,8.542,10.436,8.249,10.436z M21.682,0H2.318C1.102,0,0.116,0.986,0.116,2.202 v19.317c0,1.37,1.111,2.481,2.481,2.481h18.807c1.37,0,2.481-1.111,2.481-2.481V2.202C23.884,0.986,22.898,0,21.682,0z M20.125,12.473c0.519,0.804,0.733,1.69,0.677,2.657c-0.108,1.886-1.413,3.474-3.25,3.916c-2.585,0.623-4.566-0.923-5.233-2.794 c-0.109-0.304-0.16-0.622-0.224-0.985c-0.068,0.414-0.115,0.789-0.264,1.134c-0.697,1.617-1.884,2.603-3.665,2.799 c-2.104,0.232-4.048-1.067-4.632-3.084c-0.25-0.863-0.175-1.747-0.068-2.625c0.08-0.653,0.321-1.268,0.632-1.848 c0.057-0.106,0.057-0.184-0.01-0.285c-0.561-0.845-0.779-1.777-0.7-2.784C3.43,8.035,3.56,7.52,3.805,7.038 C4.52,5.626,6.09,4.427,8.193,4.626c1.849,0.175,3.562,1.77,3.83,3.564c0.013,0.09,0.039,0.178,0.068,0.311 c0.044-0.241,0.076-0.439,0.118-0.636c0.344-1.63,1.94-3.335,4.201-3.357c2.292-0.021,3.99,1.776,4.31,3.446 c0.17,0.888,0.089,1.776-0.103,2.663c-0.112,0.517-0.31,1.008-0.524,1.492C20.034,12.245,20.043,12.345,20.125,12.473z"/></svg>
+                <span class="tech-item__name">XAMPP</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+            </ul>
+          </div>
+          </details>
+
+          <details class="tech-cat">
+            <summary class="tech-cat__head">
+              <span class="tech-cat__tag">Datos</span>
+              <h3 class="tech-cat__title">Datos y análisis</h3>
+            </summary>
+            <div class="tech-cat__content">
+            <p class="tech-cat__desc">Modelado relacional, consultas SQL, migraciones y visualización de datos (phpMyAdmin, Power BI).</p>
+            <ul class="tech-cat__list">
+              <li class="tech-item">
+                <i class="devicon-mysql-original colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">MySQL</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-oracle-plain tech-item__icon tech-item__icon--oracle" aria-hidden="true"></i>
+                <span class="tech-item__name">OracleDB</span>
+                <span class="tech-item__level tech-item__level--mid">Intermedio</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-mariadb-original tech-item__icon tech-item__icon--mariadb" aria-hidden="true"></i>
+                <span class="tech-item__name">MariaDB</span>
+                <span class="tech-item__level tech-item__level--mid">Intermedio</span>
+              </li>
+              <li class="tech-item">
+                <svg class="tech-item__icon tech-item__icon--powerbi" viewBox="0 0 630 630" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="pbi-g1" x1="50%" y1="0%" x2="50%" y2="100%">
+                      <stop stop-color="#EBBB14" offset="0%"></stop>
+                      <stop stop-color="#B25400" offset="100%"></stop>
+                    </linearGradient>
+                    <linearGradient id="pbi-g2" x1="50%" y1="0%" x2="50%" y2="100%">
+                      <stop stop-color="#F9E583" offset="0%"></stop>
+                      <stop stop-color="#DE9800" offset="100%"></stop>
+                    </linearGradient>
+                    <linearGradient id="pbi-g3" x1="50%" y1="0%" x2="50%" y2="100%">
+                      <stop stop-color="#F9E68B" offset="0%"></stop>
+                      <stop stop-color="#F3CD32" offset="100%"></stop>
+                    </linearGradient>
+                  </defs>
+                  <g transform="translate(77.5 0)">
+                    <rect x="256" y="0" width="219" height="630" rx="26" fill="url(#pbi-g1)"></rect>
+                    <path d="M346,604 L346,630 L320,630 L153,630 C138.640597,630 127,618.359403 127,604 L127,183 C127,168.640597 138.640597,157 153,157 L320,157 C334.359403,157 346,168.640597 346,183 L346,604 Z" fill="url(#pbi-g2)"></path>
+                    <path d="M219,604 L219,630 L193,630 L26,630 C11.6405965,630 1.75851975e-15,618.359403 0,604 L0,341 C-1.75851975e-15,326.640597 11.6405965,315 26,315 L193,315 C207.359403,315 219,326.640597 219,341 L219,604 Z" fill="url(#pbi-g3)"></path>
+                  </g>
+                </svg>
+                <span class="tech-item__name">Power BI</span>
+                <span class="tech-item__level tech-item__level--mid">Intermedio</span>
+              </li>
+            </ul>
+          </div>
+          </details>
+
+          <details class="tech-cat">
+            <summary class="tech-cat__head">
+              <span class="tech-cat__tag">Videojuegos</span>
+              <h3 class="tech-cat__title">Game dev y prototipos</h3>
+            </summary>
+            <div class="tech-cat__content">
+            <p class="tech-cat__desc">Creación de mecánicas, físicas y prototipos interactivos en motores profesionales.</p>
+            <ul class="tech-cat__list">
+              <li class="tech-item">
+                <i class="devicon-csharp-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">C#</span>
+                <span class="tech-item__level tech-item__level--mid">Intermedio</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-unity-plain tech-item__icon tech-item__icon--unity" aria-hidden="true"></i>
+                <span class="tech-item__name">Unity</span>
+                <span class="tech-item__level tech-item__level--mid">Intermedio</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-godot-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">Godot</span>
+                <span class="tech-item__level tech-item__level--mid">Intermedio</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-python-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">Pygame</span>
+                <span class="tech-item__level tech-item__level--mid">Intermedio</span>
+              </li>
+            </ul>
+          </div>
+          </details>
+
+          <details class="tech-cat">
+            <summary class="tech-cat__head">
+              <span class="tech-cat__tag">IA y datos</span>
+              <h3 class="tech-cat__title">Machine learning</h3>
+            </summary>
+            <div class="tech-cat__content">
+            <p class="tech-cat__desc">Implementación de librerías de Deep Learning con matemáticas y optimización desde los fundamentos.</p>
+            <ul class="tech-cat__list">
+              <li class="tech-item">
+                <i class="devicon-python-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">Python</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-numpy-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">NumPy</span>
+                <span class="tech-item__level tech-item__level--mid">Intermedio</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-googlecolab-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">Google Colab</span>
+                <span class="tech-item__level tech-item__level--mid">Intermedio</span>
+              </li>
+            </ul>
+          </div>
+          </details>
+
+          <details class="tech-cat">
+            <summary class="tech-cat__head">
+              <span class="tech-cat__tag">Despliegue</span>
+              <h3 class="tech-cat__title">Flujo de trabajo y publicación</h3>
+            </summary>
+            <div class="tech-cat__content">
+            <p class="tech-cat__desc">Control de versiones, colaboración en equipo y publicación de proyectos en la nube.</p>
+            <ul class="tech-cat__list">
+              <li class="tech-item">
+                <i class="devicon-git-plain colored tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">Git</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-github-original tech-item__icon" aria-hidden="true"></i>
+                <span class="tech-item__name">GitHub</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-vercel-original tech-item__icon tech-item__icon--vercel" aria-hidden="true"></i>
+                <span class="tech-item__name">Vercel</span>
+                <span class="tech-item__level tech-item__level--high">Avanzado</span>
+              </li>
+              <li class="tech-item">
+                <i class="devicon-supabase-plain tech-item__icon tech-item__icon--supabase" aria-hidden="true"></i>
+                <span class="tech-item__name">Supabase</span>
+                <span class="tech-item__level tech-item__level--mid">Intermedio</span>
+              </li>
+            </ul>
+          </div>
+          </details>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== CERTIFICADOS ====== -->
+    <section class="section" id="certificados">
+      <div class="container">
+        <p class="section__eyebrow">Certificados</p>
+        <h2 class="section__title">Formación y certificaciones</h2>
+
+        <div class="cert-grid">
+          <article class="cert-card">
+            <div class="cert-card__header">
+              <img class="cert-card__badge" src="https://images.credly.com/images/e3541a0c-dd4a-4820-8052-5001006efc85/blob" alt="Badge AWS Academy Graduate — Cloud Foundations" loading="lazy" />
+              <span class="cert-card__year">2024</span>
+            </div>
+            <div class="cert-card__body">
+              <h3 class="cert-card__title">AWS Academy Graduate — Cloud Foundations</h3>
+              <p class="cert-card__issuer">Amazon Web Services</p>
+              <a href="https://www.credly.com/badges/0c12e8e5-a9aa-4e92-bb56-e37a909956ff/linked_in_profile" target="_blank" rel="noopener" class="cert-card__link">Ver insignia</a>
+            </div>
+          </article>
+
+          <article class="cert-card">
+            <div class="cert-card__header">
+              <img class="cert-card__badge" src="https://images.credly.com/images/7f7ea828-a10d-44f8-8baa-58a9c1af7671/blob" alt="Badge AWS Academy Graduate — Cloud Security Foundations" loading="lazy" />
+              <span class="cert-card__year">2026</span>
+            </div>
+            <div class="cert-card__body">
+              <h3 class="cert-card__title">AWS Academy Graduate — Cloud Security Foundations</h3>
+              <p class="cert-card__issuer">Amazon Web Services</p>
+              <a href="https://www.credly.com/badges/46b3fa59-cd96-4dc4-a3d3-876eef6f6edc/linked_in_profile" target="_blank" rel="noopener" class="cert-card__link">Ver insignia</a>
+            </div>
+          </article>
+
+          <article class="cert-card">
+            <div class="cert-card__header">
+              <img class="cert-card__badge" src="https://images.credly.com/images/683b2e3c-0d28-42a2-ab84-7203a209f9d0/blob" alt="Badge AWS Academy Graduate — Machine Learning for NLP" loading="lazy" />
+              <span class="cert-card__year">2026</span>
+            </div>
+            <div class="cert-card__body">
+              <h3 class="cert-card__title">AWS Academy Graduate — Machine Learning for NLP</h3>
+              <p class="cert-card__issuer">Amazon Web Services</p>
+              <a href="https://www.credly.com/badges/eb362ccb-cc96-4284-8096-76de42edcc20/linked_in_profile" target="_blank" rel="noopener" class="cert-card__link">Ver insignia</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== PROYECTOS ====== -->
+    <section class="section" id="proyectos">
+      <div class="container">
+        <p class="section__eyebrow">Proyectos</p>
+        <h2 class="section__title">Trabajos destacados</h2>
+
+        <div class="projects-carousel" id="proyectosCarousel">
+          <div class="carousel__viewport">
+            <div class="carousel__track">
+
+          <article class="project-row">
+            <div class="project-visual">
+              <img src="img/proyecto_sistema-bodega.png" alt="Captura del Sistema Bodega" loading="lazy" />
+            </div>
+            <div class="project-info">
+              <h3 class="project-info__title">Sistema Bodega</h3>
+              <p class="project-info__description">
+                Sistema modular de gestión de bodegas e inventario desarrollado en PHP y MySQL. Permite el control eficiente de stock, catálogo de productos, proveedores, órdenes de compra y movimientos de entrada o salida.
+              </p>
+              <ul class="project-techs">
+            <li><i class="devicon-html5-plain colored project-techs__icon" aria-hidden="true"></i><span>HTML</span></li>
+            <li><i class="devicon-css3-plain colored project-techs__icon" aria-hidden="true"></i><span>CSS</span></li>
+            <li><i class="devicon-javascript-plain colored project-techs__icon" aria-hidden="true"></i><span>JavaScript</span></li>
+            <li><i class="devicon-php-plain colored project-techs__icon" aria-hidden="true"></i><span>PHP</span></li>
+            <li><i class="devicon-mysql-original colored project-techs__icon" aria-hidden="true"></i><span>MySQL</span></li>
+            <li><svg class="project-techs__icon project-techs__icon--xampp" viewBox="0 0 24 24" fill="#fb7a24" aria-hidden="true"><path d="M16.792,11.923c0.113,0.043,0.226,0.079,0.334,0.128c0.45,0.203,0.715,0.553,0.748,1.044 c0.041,0.634,0.044,1.271,0.002,1.905c-0.049,0.732-0.725,1.292-1.483,1.271c-0.735-0.021-1.369-0.62-1.397-1.341 c-0.017-0.441-0.003-0.884-0.006-1.326c-0.001-0.239-0.003-0.242-0.245-0.243c-1.363-0.001-2.726,0.008-4.089-0.003 c-0.888-0.007-1.421,0.482-1.471,1.46c-0.019,0.38-0.1,0.727-0.357,1.018c-0.397,0.451-0.898,0.601-1.472,0.466 c-0.554-0.131-0.867-0.522-1.035-1.048c-0.117-0.367-0.056-0.737,0.012-1.094c0.341-1.797,1.366-3.006,3.125-3.555 c0.357-0.112,0.731-0.166,1.105-0.166c0.94,0.001,1.881,0.001,2.821-0.001c0.128,0,0.257-0.012,0.385-0.021 c0.702-0.051,1.166-0.511,1.22-1.352c0.004-0.064,0-0.129,0.001-0.193c0.011-0.788,0.605-1.396,1.393-1.425 c0.787-0.029,1.438,0.527,1.493,1.318c0.076,1.083-0.265,2.046-0.913,2.907C16.903,11.751,16.819,11.816,16.792,11.923z M8.249,10.436c-0.258-0.008-0.571,0.018-0.882-0.035c-0.536-0.09-0.876-0.39-1.02-0.916C6.19,8.912,6.25,8.388,6.698,7.96 C7.154,7.526,7.694,7.4,8.285,7.645c0.52,0.216,0.859,0.731,0.89,1.293C9.2,9.382,9.178,9.828,9.182,10.272 c0.001,0.116-0.043,0.167-0.161,0.165C8.781,10.434,8.542,10.436,8.249,10.436z M21.682,0H2.318C1.102,0,0.116,0.986,0.116,2.202 v19.317c0,1.37,1.111,2.481,2.481,2.481h18.807c1.37,0,2.481-1.111,2.481-2.481V2.202C23.884,0.986,22.898,0,21.682,0z M20.125,12.473c0.519,0.804,0.733,1.69,0.677,2.657c-0.108,1.886-1.413,3.474-3.25,3.916c-2.585,0.623-4.566-0.923-5.233-2.794 c-0.109-0.304-0.16-0.622-0.224-0.985c-0.068,0.414-0.115,0.789-0.264,1.134c-0.697,1.617-1.884,2.603-3.665,2.799 c-2.104,0.232-4.048-1.067-4.632-3.084c-0.25-0.863-0.175-1.747-0.068-2.625c0.08-0.653,0.321-1.268,0.632-1.848 c0.057-0.106,0.057-0.184-0.01-0.285c-0.561-0.845-0.779-1.777-0.7-2.784C3.43,8.035,3.56,7.52,3.805,7.038 C4.52,5.626,6.09,4.427,8.193,4.626c1.849,0.175,3.562,1.77,3.83,3.564c0.013,0.09,0.039,0.178,0.068,0.311 c0.044-0.241,0.076-0.439,0.118-0.636c0.344-1.63,1.94-3.335,4.201-3.357c2.292-0.021,3.99,1.776,4.31,3.446 c0.17,0.888,0.089,1.776-0.103,2.663c-0.112,0.517-0.31,1.008-0.524,1.492C20.034,12.245,20.043,12.345,20.125,12.473z"/></svg><span>XAMPP</span></li>
+              </ul>
+              <a href="https://github.com/elJulioDev/Sistema-Bodega" target="_blank" rel="noopener" class="project-link">Ver código <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>
+            </div>
+          </article>
+
+            </div>
+          </div>
+
+          <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Proyecto anterior"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+          <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Proyecto siguiente"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        </div>
+
+        <div class="carousel__dots" id="proyectosDots" role="tablist" aria-label="Seleccionar proyecto"></div>
+      </div>
+    </section>
+
+    <!-- ====== CONTACTO ====== -->
+    <section class="section section--alt" id="contacto">
+      <div class="container">
+        <p class="section__eyebrow">Contacto</p>
+        <h2 class="section__title">Hablemos de tu proyecto</h2>
+
+        <div class="contact">
+          <div class="contact__info">
+            <p class="contact__text">
+              Si tienes un proyecto en mente, una oportunidad laboral o solo
+              quieres saludar, no dudes en escribirme.
+            </p>
+
+            <ul class="contact__list">
+              <li>
+                <span class="contact__label">Email</span>
+                <a href="mailto:alexisdevelopgz@gmail.com" class="contact__value">alexisdevelopgz@gmail.com</a>
+              </li>
+              <li>
+                <span class="contact__label">GitHub</span>
+                <a href="https://github.com/elJulioDev" target="_blank" rel="noopener" class="contact__value">github.com/elJulioDev</a>
+              </li>
+              <li>
+                <span class="contact__label">LinkedIn</span>
+                <a href="https://www.linkedin.com/in/alexis-gonzález-pérez/" target="_blank" rel="noopener" class="contact__value">linkedin.com/in/alexis-gonzález-pérez/</a>
+              </li>
+              <li>
+                <span class="contact__label">Ubicación</span>
+                <span class="contact__value"> Coltauco, Región de O'Higgins, Chile</span>
+              </li>
+            </ul>
+          </div>
+
+          <form class="contact__form" id="contactForm" novalidate>
+            <input type="hidden" name="_subject" value="Nuevo mensaje desde tu portafolio" />
+            <div class="contact__field">
+              <label class="contact__label" for="nombre">Nombre</label>
+              <input class="contact__input" type="text" id="nombre" name="nombre" placeholder="Tu nombre" required />
+            </div>
+            <div class="contact__field">
+              <label class="contact__label" for="email">Email</label>
+              <input class="contact__input" type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com" required />
+            </div>
+            <div class="contact__field">
+              <label class="contact__label" for="mensaje">Mensaje</label>
+              <textarea class="contact__input contact__input--textarea" id="mensaje" name="mensaje" placeholder="Cuéntame sobre tu proyecto..." rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn--primary btn--block"><i class="fas fa-paper-plane" aria-hidden="true"></i> Enviar mensaje</button>
+            <p class="contact__form-status" id="formStatus" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__brand">elJulioDev<span class="footer__dot">.</span></p>
+      <p class="footer__copy">&copy; <span id="year"></span> Alexis González Pérez. Todos los derechos reservados.</p>
+      <div class="footer__social">
+        <a href="https://github.com/elJulioDev" target="_blank" rel="noopener" aria-label="GitHub">GitHub</a>
+        <a href="https://www.linkedin.com/in/alexis-gonzález-pérez/" target="_blank" rel="noopener" aria-label="LinkedIn">LinkedIn</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lightbox para visualizar imágenes de proyectos (debe ir ANTES del script) -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Imagen ampliada">
+    <figure class="lightbox__panel">
+      <img id="lightboxImg" src="" alt="" />
+      <button class="lightbox__close" id="lightboxClose" type="button" aria-label="Cerrar imagen">×</button>
+    </figure>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
