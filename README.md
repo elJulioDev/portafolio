@@ -1,6 +1,12 @@
 # Portafolio — Alexis González Pérez
 
-Portafolio personal en línea (página única, estática) publicado en **GitHub Pages**, con presentación de proyectos, habilidades, certificaciones y contacto.
+🔗 **[Ver sitio en vivo](https://eljuliodev.github.io/portafolio/)**
+
+Portafolio personal en línea, página única y estática, pensado como carta de presentación profesional: quién soy, qué tecnologías domino, qué he construido y cómo contactarme. Publicado en **GitHub Pages**.
+
+## Enfoque
+
+Sitio orientado a mostrar experiencia real de desarrollo Full Stack, con foco en proyectos propios (como Sistema-Bodega), stack técnico organizado por categorías y certificaciones verificables (AWS). Diseño oscuro con acento volt, tipografía Bebas Neue + Inter + Space Mono, sin frameworks ni build system: HTML, CSS y JS puros.
 
 ## Contenido
 
@@ -44,3 +50,9 @@ O abrir `index.html` directamente en el navegador.
 ## Despliegue
 
 Publicado en GitHub Pages desde la rama `main`.
+
+## Contacto
+
+- GitHub: [github.com/elJulioDev](https://github.com/elJulioDev)
+- LinkedIn: [linkedin.com/in/alexis-gonzález-pérez](https://linkedin.com/in/alexis-gonzález-pérez/)
+- Email: alexisdevelopgz@gmail.com
