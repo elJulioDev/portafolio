@@ -252,6 +252,34 @@
     update();
   }
 
+  /* ---------- Leer más en descripciones (mobile) ---------- */
+  const descBlocks = d.querySelectorAll(".project-description");
+
+  function refreshDescToggles() {
+    descBlocks.forEach((block) => {
+      const p = block.querySelector(".project-info__description");
+      const btn = block.querySelector(".project-desc-toggle");
+      if (!p || !btn) return;
+      if (block.classList.contains("is-expanded")) return;
+      const overflowing = p.scrollHeight > p.clientHeight + 1;
+      btn.classList.toggle("is-visible", overflowing);
+    });
+  }
+
+  descBlocks.forEach((block) => {
+    const btn = block.querySelector(".project-desc-toggle");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      const expanded = block.classList.toggle("is-expanded");
+      btn.textContent = expanded ? "Leer menos" : "Leer más...";
+      btn.setAttribute("aria-expanded", String(expanded));
+    });
+  });
+
+  refreshDescToggles();
+  window.addEventListener("resize", refreshDescToggles);
+  window.addEventListener("load", refreshDescToggles);
+
   /* ---------- Galería de imágenes en proyectos ---------- */
   const IMG_DIR = "static/img/";
 
