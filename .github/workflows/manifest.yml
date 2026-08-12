@@ -1,0 +1,25 @@
+name: Actualizar manifest de imágenes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "static/img/**"
+      - "gen_manifest.py"
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generar manifest.json
+        run: python3 gen_manifest.py
+
+      - name: Commit manifest si cambió
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add static/img/manifest.json
+          git diff --cached --quiet || git commit -m "chore: actualizar manifest de imágenes"
+          git push

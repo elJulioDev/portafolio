@@ -255,36 +255,20 @@
   /* ---------- Galería de imágenes en proyectos ---------- */
   const IMG_DIR = "static/img/";
 
-  function probeImage(src) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(src);
-      img.onerror = () => resolve(null);
-      img.src = src;
-    });
+  let manifestPromise = null;
+
+  function loadManifest() {
+    if (!manifestPromise) {
+      manifestPromise = fetch(IMG_DIR + "manifest.json")
+        .then((r) => (r.ok ? r.json() : {}))
+        .catch(() => ({}));
+    }
+    return manifestPromise;
   }
 
-  const IMG_EXTENSIONS = ["png", "webp", "jpg", "jpeg"];
-
   async function discoverImages(baseName) {
-    const found = [];
-    for (const ext of IMG_EXTENSIONS) {
-      const src = IMG_DIR + baseName + "." + ext;
-      const ok = await probeImage(src);
-      if (ok) { found.push(src); break; }
-    }
-    if (!found.length) return found;
-    let n = 2;
-    while (n < 50) {
-      let matched = false;
-      for (const ext of IMG_EXTENSIONS) {
-        const next = await probeImage(IMG_DIR + baseName + "_" + n + "." + ext);
-        if (next) { found.push(next); matched = true; break; }
-      }
-      if (!matched) break;
-      n++;
-    }
-    return found;
+    const manifest = await loadManifest();
+    return manifest[baseName] || [];
   }
 
   function renderGallery(vis, images, altText) {

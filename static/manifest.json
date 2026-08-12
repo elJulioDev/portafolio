@@ -1,0 +1,19 @@
+{
+  "proyecto_nn": [
+    "static/img/proyecto_nn.webp"
+  ],
+  "proyecto_bodega": [
+    "static/img/proyecto_bodega.png",
+    "static/img/proyecto_bodega_2.png",
+    "static/img/proyecto_bodega_3.png",
+    "static/img/proyecto_bodega_4.png",
+    "static/img/proyecto_bodega_5.png",
+    "static/img/proyecto_bodega_6.png"
+  ],
+  "proyecto_marcaciones": [
+    "static/img/proyecto_marcaciones.png"
+  ],
+  "me": [
+    "static/img/me.jpeg"
+  ]
+}
