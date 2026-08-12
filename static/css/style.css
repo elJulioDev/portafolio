@@ -1614,25 +1614,11 @@ a.contact__value:hover {
   }
 
   .project-visual {
-    aspect-ratio: auto;
-    height: auto;
-  }
-
-  .project-visual img {
-    height: auto;
     aspect-ratio: 4 / 3;
-    object-fit: cover;
   }
 
   .project-gallery {
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    gap: 6px;
-  }
-
-  .project-gallery__item {
-    aspect-ratio: 4 / 3;
+    gap: 3px;
   }
 
   .project-info__description {
@@ -1693,17 +1679,8 @@ a.contact__value:hover {
   .lightbox__arrow--prev { left: 8px; }
   .lightbox__arrow--next { right: 8px; }
 
-  .project-gallery--3 {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-  }
-
-  .project-gallery--3 .project-gallery__item:first-child {
-    grid-row: auto;
-  }
-
   .project-gallery__more {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
 }
 
