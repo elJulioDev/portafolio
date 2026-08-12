@@ -369,7 +369,10 @@
 
   /* ---------- Lightbox: carrusel de imágenes ---------- */
   const lightbox = d.getElementById("lightbox");
+  const lightboxViewport = d.getElementById("lightboxViewport");
   const lightboxImg = d.getElementById("lightboxImg");
+  const lightboxImgPrev = d.getElementById("lightboxImgPrev");
+  const lightboxImgNext = d.getElementById("lightboxImgNext");
   const lightboxClose = d.getElementById("lightboxClose");
   const lightboxPrev = d.getElementById("lightboxPrev");
   const lightboxNext = d.getElementById("lightboxNext");
@@ -413,9 +416,14 @@
 
   function updateLightbox() {
     if (!lightboxImg) return;
-    lightboxImg.style.transform = "translateX(0)";
+    if (lightboxViewport) {
+      lightboxViewport.style.transition = "none";
+      lightboxViewport.style.transform = "translateX(0)";
+    }
     lightboxImg.src = lbImages[lbIndex];
     lightboxImg.alt = "Imagen " + (lbIndex + 1) + " de " + lbImages.length;
+    if (lightboxImgPrev) lightboxImgPrev.src = lbIndex > 0 ? lbImages[lbIndex - 1] : "";
+    if (lightboxImgNext) lightboxImgNext.src = lbIndex < lbImages.length - 1 ? lbImages[lbIndex + 1] : "";
     const multi = lbImages.length > 1;
     if (lightboxPrev) lightboxPrev.style.display = multi ? "" : "none";
     if (lightboxNext) lightboxNext.style.display = multi ? "" : "none";
@@ -459,43 +467,45 @@
       if (e.key === "ArrowRight") lbNext();
     });
 
-    /* Swipe táctil con animación de arrastre para el Lightbox */
+    /* Swipe táctil: arrastra el viewport completo, revela la imagen vecina */
     let lbTouchStartX = 0;
     let lbTouchDeltaX = 0;
     let lbIsDragging = false;
 
     lightbox.addEventListener("touchstart", (e) => {
-      if (e.touches.length !== 1) return;
+      if (e.touches.length !== 1 || !lightboxViewport) return;
       lbTouchStartX = e.touches[0].clientX;
       lbTouchDeltaX = 0;
       lbIsDragging = true;
-      // Desactiva la transición CSS para que siga al dedo instantáneamente
-      if (lightboxImg) lightboxImg.style.transition = "none";
+      lightboxViewport.style.transition = "none";
     }, { passive: true });
 
     lightbox.addEventListener("touchmove", (e) => {
-      if (!lbIsDragging || e.touches.length !== 1 || !lightboxImg) return;
-      lbTouchDeltaX = e.touches[0].clientX - lbTouchStartX;
-      // Mueve la imagen visualmente con el dedo
-      lightboxImg.style.transform = `translateX(${lbTouchDeltaX}px)`;
+      if (!lbIsDragging || e.touches.length !== 1 || !lightboxViewport) return;
+      let delta = e.touches[0].clientX - lbTouchStartX;
+      // Resistencia en los extremos, no hay vecino que revelar
+      const atStart = lbIndex === 0 && delta > 0;
+      const atEnd = lbIndex === lbImages.length - 1 && delta < 0;
+      if (atStart || atEnd) delta *= 0.3;
+      lbTouchDeltaX = delta;
+      lightboxViewport.style.transform = `translateX(${delta}px)`;
     }, { passive: true });
 
     lightbox.addEventListener("touchend", () => {
-      if (!lbIsDragging) return;
+      if (!lbIsDragging || !lightboxViewport) return;
       lbIsDragging = false;
-      if (!lightboxImg) return;
-  
-      // Restaura la transición suave
-      lightboxImg.style.transition = "transform 0.3s ease";
+      lightboxViewport.style.transition = "transform 0.3s ease";
 
-      const threshold = 60; // Píxeles de arrastre necesarios para cambiar
+      const threshold = 60;
+      const width = lightboxViewport.clientWidth;
       if (lbTouchDeltaX < -threshold && lbIndex < lbImages.length - 1) {
-        lbNext();
+        lightboxViewport.style.transform = `translateX(${-width}px)`;
+        setTimeout(() => { lbIndex++; updateLightbox(); }, 300);
       } else if (lbTouchDeltaX > threshold && lbIndex > 0) {
-        lbPrev();
+        lightboxViewport.style.transform = `translateX(${width}px)`;
+        setTimeout(() => { lbIndex--; updateLightbox(); }, 300);
       } else {
-        // Si no se arrastró lo suficiente, la imagen vuelve a su centro
-        lightboxImg.style.transform = "translateX(0)";
+        lightboxViewport.style.transform = "translateX(0)";
       }
     });
   }
