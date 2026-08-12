@@ -575,9 +575,11 @@
   <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Imagen ampliada">
     <figure class="lightbox__panel">
       <div class="lightbox__viewport" id="lightboxViewport">
-        <div class="lightbox__slide lightbox__slide--prev"><img id="lightboxImgPrev" alt="" /></div>
-        <div class="lightbox__slide lightbox__slide--current"><img id="lightboxImg" src="" alt="" /></div>
-        <div class="lightbox__slide lightbox__slide--next"><img id="lightboxImgNext" alt="" /></div>
+        <div class="lightbox__track" id="lightboxTrack">
+          <div class="lightbox__slide lightbox__slide--prev"><img id="lightboxImgPrev" alt="" /></div>
+          <div class="lightbox__slide lightbox__slide--current"><img id="lightboxImg" src="" alt="" /></div>
+          <div class="lightbox__slide lightbox__slide--next"><img id="lightboxImgNext" alt="" /></div>
+        </div>
       </div>
       <span class="lightbox__counter" id="lightboxCounter"></span>
       <button class="lightbox__close" id="lightboxClose" type="button" aria-label="Cerrar imagen">×</button>

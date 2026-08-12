@@ -370,6 +370,7 @@
   /* ---------- Lightbox: carrusel de imágenes ---------- */
   const lightbox = d.getElementById("lightbox");
   const lightboxViewport = d.getElementById("lightboxViewport");
+  const lightboxTrack = d.getElementById("lightboxTrack");
   const lightboxImg = d.getElementById("lightboxImg");
   const lightboxImgPrev = d.getElementById("lightboxImgPrev");
   const lightboxImgNext = d.getElementById("lightboxImgNext");
@@ -416,9 +417,9 @@
 
   function updateLightbox() {
     if (!lightboxImg) return;
-    if (lightboxViewport) {
-      lightboxViewport.style.transition = "none";
-      lightboxViewport.style.transform = "translateX(0)";
+    if (lightboxTrack) {
+      lightboxTrack.style.transition = "none";
+      lightboxTrack.style.transform = "translateX(0)";
     }
     lightboxImg.src = lbImages[lbIndex];
     lightboxImg.alt = "Imagen " + (lbIndex + 1) + " de " + lbImages.length;
@@ -473,39 +474,39 @@
     let lbIsDragging = false;
 
     lightbox.addEventListener("touchstart", (e) => {
-      if (e.touches.length !== 1 || !lightboxViewport) return;
+      if (e.touches.length !== 1 || !lightboxTrack) return;
       lbTouchStartX = e.touches[0].clientX;
       lbTouchDeltaX = 0;
       lbIsDragging = true;
-      lightboxViewport.style.transition = "none";
+      lightboxTrack.style.transition = "none";
     }, { passive: true });
 
     lightbox.addEventListener("touchmove", (e) => {
-      if (!lbIsDragging || e.touches.length !== 1 || !lightboxViewport) return;
+      if (!lbIsDragging || e.touches.length !== 1 || !lightboxTrack) return;
       let delta = e.touches[0].clientX - lbTouchStartX;
       // Resistencia en los extremos, no hay vecino que revelar
       const atStart = lbIndex === 0 && delta > 0;
       const atEnd = lbIndex === lbImages.length - 1 && delta < 0;
       if (atStart || atEnd) delta *= 0.3;
       lbTouchDeltaX = delta;
-      lightboxViewport.style.transform = `translateX(${delta}px)`;
+      lightboxTrack.style.transform = `translateX(${delta}px)`;
     }, { passive: true });
 
     lightbox.addEventListener("touchend", () => {
-      if (!lbIsDragging || !lightboxViewport) return;
+      if (!lbIsDragging || !lightboxTrack) return;
       lbIsDragging = false;
-      lightboxViewport.style.transition = "transform 0.3s ease";
+      lightboxTrack.style.transition = "transform 0.3s ease";
 
       const threshold = 60;
-      const width = lightboxViewport.clientWidth;
+      const width = lightboxTrack.clientWidth;
       if (lbTouchDeltaX < -threshold && lbIndex < lbImages.length - 1) {
-        lightboxViewport.style.transform = `translateX(${-width}px)`;
+        lightboxTrack.style.transform = `translateX(${-width}px)`;
         setTimeout(() => { lbIndex++; updateLightbox(); }, 300);
       } else if (lbTouchDeltaX > threshold && lbIndex > 0) {
-        lightboxViewport.style.transform = `translateX(${width}px)`;
+        lightboxTrack.style.transform = `translateX(${width}px)`;
         setTimeout(() => { lbIndex--; updateLightbox(); }, 300);
       } else {
-        lightboxViewport.style.transform = "translateX(0)";
+        lightboxTrack.style.transform = "translateX(0)";
       }
     });
   }
