@@ -928,6 +928,10 @@ ul {
 .project-techs__icon {
   font-size: 2rem;
   line-height: 1;
+  height: 2rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 svg.project-techs__icon {

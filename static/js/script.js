@@ -264,16 +264,24 @@
     });
   }
 
+  const IMG_EXTENSIONS = ["png", "webp", "jpg", "jpeg"];
+
   async function discoverImages(baseName) {
     const found = [];
-    const first = await probeImage(IMG_DIR + baseName + ".png");
-    if (!first) return found;
-    found.push(first);
+    for (const ext of IMG_EXTENSIONS) {
+      const src = IMG_DIR + baseName + "." + ext;
+      const ok = await probeImage(src);
+      if (ok) { found.push(src); break; }
+    }
+    if (!found.length) return found;
     let n = 2;
     while (n < 50) {
-      const next = await probeImage(IMG_DIR + baseName + "_" + n + ".png");
-      if (!next) break;
-      found.push(next);
+      let matched = false;
+      for (const ext of IMG_EXTENSIONS) {
+        const next = await probeImage(IMG_DIR + baseName + "_" + n + "." + ext);
+        if (next) { found.push(next); matched = true; break; }
+      }
+      if (!matched) break;
       n++;
     }
     return found;
