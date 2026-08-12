@@ -244,9 +244,45 @@
 
     // Navegación con teclado
     carousel.setAttribute("tabindex", "-1");
-    carousel.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") goTo(index - 1);
-      if (e.key === "ArrowRight") goTo(index + 1);
+    carousel.addEventListener("keydown", (e) => {e});
+
+    /* Swipe táctil con animación de arrastre para el Carrusel */
+    let trackStartX = 0;
+    let trackIsDragging = false;
+
+    track.addEventListener('touchstart', (e) => {
+      trackIsDragging = true;
+      trackStartX = e.touches[0].clientX;
+      // Desactiva la transición para el arrastre en tiempo real
+      track.style.transition = 'none'; 
+    }, { passive: true });
+
+    track.addEventListener('touchmove', (e) => {
+      if (!trackIsDragging) return;
+      const currentX = e.touches[0].clientX;
+      const diffX = currentX - trackStartX;
+      const baseTranslate = -index * 100;
+      
+      // Combina la posición actual en porcentaje con los píxeles arrastrados
+      track.style.transform = `translateX(calc(${baseTranslate}% + ${diffX}px))`;
+    }, { passive: true });
+
+    track.addEventListener('touchend', (e) => {
+      if (!trackIsDragging) return;
+      trackIsDragging = false;
+      // Restaura la transición original definida en tu CSS
+      track.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+      
+      const endX = e.changedTouches[0].clientX;
+      const diffX = endX - trackStartX;
+      const threshold = 50;
+
+      if (diffX < -threshold && index < count - 1) {
+        index++;
+      } else if (diffX > threshold && index > 0) {
+        index--;
+      }
+      update(); // El update() se encarga de reajustar el transform final
     });
 
     update();
@@ -377,6 +413,7 @@
 
   function updateLightbox() {
     if (!lightboxImg) return;
+    lightboxImg.style.transform = "translateX(0)";
     lightboxImg.src = lbImages[lbIndex];
     lightboxImg.alt = "Imagen " + (lbIndex + 1) + " de " + lbImages.length;
     const multi = lbImages.length > 1;
@@ -422,26 +459,44 @@
       if (e.key === "ArrowRight") lbNext();
     });
 
-    /* Swipe táctil para moverse entre imágenes */
+    /* Swipe táctil con animación de arrastre para el Lightbox */
     let lbTouchStartX = 0;
     let lbTouchDeltaX = 0;
+    let lbIsDragging = false;
 
     lightbox.addEventListener("touchstart", (e) => {
       if (e.touches.length !== 1) return;
       lbTouchStartX = e.touches[0].clientX;
       lbTouchDeltaX = 0;
+      lbIsDragging = true;
+      // Desactiva la transición CSS para que siga al dedo instantáneamente
+      if (lightboxImg) lightboxImg.style.transition = "none";
     }, { passive: true });
 
     lightbox.addEventListener("touchmove", (e) => {
-      if (e.touches.length !== 1) return;
+      if (!lbIsDragging || e.touches.length !== 1 || !lightboxImg) return;
       lbTouchDeltaX = e.touches[0].clientX - lbTouchStartX;
+      // Mueve la imagen visualmente con el dedo
+      lightboxImg.style.transform = `translateX(${lbTouchDeltaX}px)`;
     }, { passive: true });
 
     lightbox.addEventListener("touchend", () => {
-      const threshold = 45;
-      if (lbTouchDeltaX < -threshold) lbNext();
-      else if (lbTouchDeltaX > threshold) lbPrev();
-      lbTouchDeltaX = 0;
+      if (!lbIsDragging) return;
+      lbIsDragging = false;
+      if (!lightboxImg) return;
+  
+      // Restaura la transición suave
+      lightboxImg.style.transition = "transform 0.3s ease";
+
+      const threshold = 60; // Píxeles de arrastre necesarios para cambiar
+      if (lbTouchDeltaX < -threshold && lbIndex < lbImages.length - 1) {
+        lbNext();
+      } else if (lbTouchDeltaX > threshold && lbIndex > 0) {
+        lbPrev();
+      } else {
+        // Si no se arrastró lo suficiente, la imagen vuelve a su centro
+        lightboxImg.style.transform = "translateX(0)";
+      }
     });
   }
 
