@@ -338,14 +338,37 @@
   const lightboxPrev = d.getElementById("lightboxPrev");
   const lightboxNext = d.getElementById("lightboxNext");
   const lightboxCounter = d.getElementById("lightboxCounter");
+  const lightboxDots = d.getElementById("lightboxDots");
 
   let lbImages = [];
   let lbIndex = 0;
+  let lbDotEls = [];
+
+  function renderLightboxDots() {
+    if (!lightboxDots) return;
+    lightboxDots.innerHTML = "";
+    lbDotEls = [];
+    if (lbImages.length <= 1) return;
+    lbImages.forEach((_, i) => {
+      const dot = d.createElement("button");
+      dot.type = "button";
+      dot.className = "lightbox__dot";
+      dot.setAttribute("aria-label", "Ir a la imagen " + (i + 1));
+      dot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        lbIndex = i;
+        updateLightbox();
+      });
+      lightboxDots.appendChild(dot);
+      lbDotEls.push(dot);
+    });
+  }
 
   function openLightbox(images, index, alt) {
     if (!lightbox || !lightboxImg) return;
     lbImages = images;
     lbIndex = index;
+    renderLightboxDots();
     updateLightbox();
     lightbox.classList.add("is-open");
     lightbox.setAttribute("aria-hidden", "false");
@@ -365,6 +388,8 @@
       lightboxCounter.style.display = multi ? "" : "none";
       lightboxCounter.textContent = (lbIndex + 1) + " / " + lbImages.length;
     }
+    if (lightboxDots) lightboxDots.style.display = multi ? "" : "none";
+    lbDotEls.forEach((dot, i) => dot.classList.toggle("is-active", i === lbIndex));
   }
 
   function closeLightbox() {
@@ -395,6 +420,28 @@
       if (e.key === "Escape") closeLightbox();
       if (e.key === "ArrowLeft") lbPrev();
       if (e.key === "ArrowRight") lbNext();
+    });
+
+    /* Swipe táctil para moverse entre imágenes */
+    let lbTouchStartX = 0;
+    let lbTouchDeltaX = 0;
+
+    lightbox.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1) return;
+      lbTouchStartX = e.touches[0].clientX;
+      lbTouchDeltaX = 0;
+    }, { passive: true });
+
+    lightbox.addEventListener("touchmove", (e) => {
+      if (e.touches.length !== 1) return;
+      lbTouchDeltaX = e.touches[0].clientX - lbTouchStartX;
+    }, { passive: true });
+
+    lightbox.addEventListener("touchend", () => {
+      const threshold = 45;
+      if (lbTouchDeltaX < -threshold) lbNext();
+      else if (lbTouchDeltaX > threshold) lbPrev();
+      lbTouchDeltaX = 0;
     });
   }
 

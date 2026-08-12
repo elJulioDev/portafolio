@@ -1156,6 +1156,34 @@ svg.project-techs__icon {
   user-select: none;
 }
 
+.lightbox__dots {
+  display: none;
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+}
+
+.lightbox__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: rgba(242, 243, 240, 0.4);
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.lightbox__dot.is-active {
+  background: var(--text);
+  transform: scale(1.3);
+}
+
 /* ============================================================
    CONTACTO
    ============================================================ */
@@ -1623,15 +1651,15 @@ a.contact__value:hover {
 
   .project-info__description {
     display: -webkit-box;
-    line-clamp: 3;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
   .project-description.is-expanded .project-info__description {
-    line-clamp: inset;
     -webkit-line-clamp: unset;
+    line-clamp: unset;
     overflow: visible;
   }
 
@@ -1662,6 +1690,37 @@ a.contact__value:hover {
 
   .carousel__arrow--prev { left: 8px; }
   .carousel__arrow--next { right: 8px; }
+
+  .lightbox {
+    padding: 0;
+  }
+
+  .lightbox__panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .lightbox__panel img {
+    width: 100%;
+    height: auto;
+    max-height: 100vh;
+    max-height: 100dvh;
+    object-fit: contain;
+    border-radius: 0;
+    border: none;
+  }
+
+  .lightbox__arrow {
+    display: none;
+  }
+
+  .lightbox__counter {
+    display: none;
+  }
+
+  .lightbox__dots {
+    display: flex;
+  }
 
   .lightbox__close {
     top: 12px;
