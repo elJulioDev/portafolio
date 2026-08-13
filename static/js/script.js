@@ -218,6 +218,11 @@
 
     function update() {
       track.style.transform = "translateX(" + -index * 100 + "%)";
+      d.querySelectorAll(".project-description.is-expanded").forEach((block) => {
+        block.classList.remove("is-expanded");
+        const btn = block.querySelector(".project-desc-toggle");
+        if (btn) { btn.textContent = "Leer más..."; btn.setAttribute("aria-expanded", "false"); }
+      });
       dots.forEach((dot, i) => {
         dot.classList.toggle("is-active", i === index);
         dot.setAttribute("aria-selected", String(i === index));
@@ -248,34 +253,55 @@
 
     /* Swipe táctil con animación de arrastre para el Carrusel */
     let trackStartX = 0;
+    let trackStartY = 0;
     let trackIsDragging = false;
+    let trackDirectionLocked = false;
+    let trackIsHorizontal = false;
 
     track.addEventListener('touchstart', (e) => {
       trackIsDragging = true;
+      trackDirectionLocked = false;
+      trackIsHorizontal = false;
       trackStartX = e.touches[0].clientX;
-      // Desactiva la transición para el arrastre en tiempo real
+      trackStartY = e.touches[0].clientY;
       track.style.transition = 'none'; 
     }, { passive: true });
 
     track.addEventListener('touchmove', (e) => {
       if (!trackIsDragging) return;
       const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
       const diffX = currentX - trackStartX;
+      const diffY = currentY - trackStartY;
+
+      if (!trackDirectionLocked) {
+        if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) {
+          trackDirectionLocked = true;
+          trackIsHorizontal = Math.abs(diffX) > Math.abs(diffY);
+        }
+        return;
+      }
+
+      if (!trackIsHorizontal) return;
+
+      e.preventDefault();
       const baseTranslate = -index * 100;
-      
-      // Combina la posición actual en porcentaje con los píxeles arrastrados
       track.style.transform = `translateX(calc(${baseTranslate}% + ${diffX}px))`;
-    }, { passive: true });
+    }, { passive: false });
 
     track.addEventListener('touchend', (e) => {
       if (!trackIsDragging) return;
       trackIsDragging = false;
-      // Restaura la transición original definida en tu CSS
       track.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
       
+      if (!trackIsHorizontal) {
+        update();
+        return;
+      }
+
       const endX = e.changedTouches[0].clientX;
       const diffX = endX - trackStartX;
-      const threshold = 50;
+      const threshold = 80;
 
       if (diffX < -threshold && index < count - 1) {
         index++;
@@ -297,8 +323,7 @@
       const btn = block.querySelector(".project-desc-toggle");
       if (!p || !btn) return;
       if (block.classList.contains("is-expanded")) return;
-      const overflowing = p.scrollHeight > p.clientHeight + 1;
-      btn.classList.toggle("is-visible", overflowing);
+      btn.classList.toggle("is-visible", p.scrollHeight > p.clientHeight + 1);
     });
   }
 
@@ -458,7 +483,7 @@
     if (lightboxNext) lightboxNext.addEventListener("click", (e) => { e.stopPropagation(); lbNext(); });
 
     lightbox.addEventListener("click", (e) => {
-      if (e.target === lightbox || e.target === lightboxClose) closeLightbox();
+      if (e.target.tagName !== "IMG") closeLightbox();
     });
 
     d.addEventListener("keydown", (e) => {

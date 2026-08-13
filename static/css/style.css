@@ -812,18 +812,33 @@ ul {
   justify-content: center;
 }
 
-.project-visual img {
+.project-visual > img {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transition: transform 0.5s ease;
+  cursor: zoom-in;
+}
+
+.project-visual:not(:has(.project-gallery)) {
+  aspect-ratio: auto;
+}
+
+.project-visual:hover > img,
+.project-visual:focus-within > img {
+  transform: scale(1.05);
+}
+
+.project-visual .project-gallery img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   transition: transform 0.5s ease;
   cursor: zoom-in;
-}
-
-.project-visual:hover > img,
-.project-visual:focus-within > img {
-  transform: scale(1.05);
+  display: block;
 }
 
 .project-visual__placeholder {
@@ -1065,11 +1080,22 @@ svg.project-techs__icon {
 .lightbox__panel {
   position: relative;
   width: min(1200px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lightbox__body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
 }
 
 .lightbox__viewport {
   position: relative;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   height: 85vh;
   overflow: hidden;
   border-radius: 10px;
@@ -1134,9 +1160,7 @@ svg.project-techs__icon {
 
 /* Lightbox carousel arrows */
 .lightbox__arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  flex-shrink: 0;
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -1164,19 +1188,16 @@ svg.project-techs__icon {
 }
 
 .lightbox__arrow--prev {
-  left: 16px;
+  order: -1;
 }
 
 .lightbox__arrow--next {
-  right: 16px;
+  order: 1;
 }
 
 /* Lightbox image counter */
 .lightbox__counter {
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: 12px;
   font-family: var(--font-label);
   font-size: 0.85rem;
   color: var(--text-muted);
@@ -1721,12 +1742,8 @@ a.contact__value:hover {
   }
 
   .carousel__arrow {
-    width: 36px;
-    height: 36px;
+    display: none;
   }
-
-  .carousel__arrow--prev { left: 8px; }
-  .carousel__arrow--next { right: 8px; }
 
   .lightbox {
     padding: 0;
@@ -1735,6 +1752,10 @@ a.contact__value:hover {
   .lightbox__panel {
     width: 100%;
     max-width: 100%;
+  }
+
+  .lightbox__body {
+    gap: 0;
   }
 
   .lightbox__viewport {
@@ -1768,14 +1789,6 @@ a.contact__value:hover {
     height: 38px;
     font-size: 1.3rem;
   }
-
-  .lightbox__arrow {
-    width: 40px;
-    height: 40px;
-  }
-
-  .lightbox__arrow--prev { left: 8px; }
-  .lightbox__arrow--next { right: 8px; }
 
   .project-gallery__more {
     font-size: 1.3rem;
