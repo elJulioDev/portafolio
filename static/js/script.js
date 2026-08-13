@@ -482,12 +482,19 @@
   let lbSwipeDelta = 0;
   let lbSwiping = false;
   let lbLastTap = 0;
+  let lbBox = null;
 
   function lbClamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
 
   function lbApplyZoom() {
     lightboxImg.style.transform = "translate(" + lbTx + "px," + lbTy + "px) scale(" + lbScale + ")";
     if (lightboxViewport) lightboxViewport.classList.toggle("is-zooming", lbScale > 1);
+  }
+
+  function lbCaptureBox() {
+    const vr = lightboxViewport.getBoundingClientRect();
+    const r = lightboxImg.getBoundingClientRect();
+    lbBox = { left: r.left - vr.left, top: r.top - vr.top, width: r.width, height: r.height };
   }
 
   function lbResetZoom() {
@@ -498,15 +505,43 @@
     lbPan = null;
     lightboxImg.style.transition = "transform 0.25s ease";
     lbApplyZoom();
-    setTimeout(() => { lightboxImg.style.transition = "none"; }, 260);
+    setTimeout(() => {
+      lightboxImg.style.transition = "none";
+      lbCaptureBox();
+    }, 260);
   }
 
   function lbClampPan() {
-    const r = lightboxImg.getBoundingClientRect();
-    const maxX = (lbScale - 1) * r.width / 2;
-    const maxY = (lbScale - 1) * r.height / 2;
-    lbTx = lbClamp(lbTx, -maxX, maxX);
-    lbTy = lbClamp(lbTy, -maxY, maxY);
+    if (!lbBox || !lightboxViewport) return;
+    const vw = lightboxViewport.clientWidth;
+    const vh = lightboxViewport.clientHeight;
+    const cx = lbBox.left + lbBox.width / 2;
+    const cy = lbBox.top + lbBox.height / 2;
+    const sw = lbScale * lbBox.width;
+    const sh = lbScale * lbBox.height;
+    const minCx = sw >= vw ? vw - sw / 2 : vw / 2;
+    const maxCx = sw >= vw ? sw / 2 : vw / 2;
+    const minCy = sh >= vh ? vh - sh / 2 : vh / 2;
+    const maxCy = sh >= vh ? sh / 2 : vh / 2;
+    lbTx = lbClamp(lbTx, minCx - cx, maxCx - cx);
+    lbTy = lbClamp(lbTy, minCy - cy, maxCy - cy);
+  }
+
+  function lbHandleTap() {
+    const now = Date.now();
+    if (now - lbLastTap < 300) {
+      lbLastTap = 0;
+      if (lbScale > 1) {
+        lbResetZoom();
+      } else {
+        lbScale = 2.5;
+        lightboxImg.style.transition = "transform 0.3s ease";
+        lbApplyZoom();
+        setTimeout(() => { lightboxImg.style.transition = "none"; }, 320);
+      }
+    } else {
+      lbLastTap = now;
+    }
   }
 
   if (lightbox) {
@@ -533,13 +568,16 @@
         lbPan = null;
         const dx = t[1].clientX - t[0].clientX;
         const dy = t[1].clientY - t[0].clientY;
+        const vr = lightboxViewport.getBoundingClientRect();
         lbPinch = {
           dist: Math.hypot(dx, dy),
           midX: (t[0].clientX + t[1].clientX) / 2,
           midY: (t[0].clientY + t[1].clientY) / 2,
           scale: lbScale,
           tx: lbTx,
-          ty: lbTy
+          ty: lbTy,
+          originX: vr.left + (lbBox ? lbBox.left + lbBox.width / 2 : 0),
+          originY: vr.top + (lbBox ? lbBox.top + lbBox.height / 2 : 0)
         };
         lightboxImg.style.transition = "none";
         return;
@@ -572,10 +610,10 @@
         const p = lbPinch;
         const s = lbClamp(p.scale * dist / Math.max(1, p.dist), 1, 4);
         lbScale = s;
-        const lx = (p.midX - p.tx) / p.scale;
-        const ly = (p.midY - p.ty) / p.scale;
-        lbTx = midX - s * lx;
-        lbTy = midY - s * ly;
+        const lx = (p.midX - p.originX - p.tx) / p.scale;
+        const ly = (p.midY - p.originY - p.ty) / p.scale;
+        lbTx = midX - p.originX - s * lx;
+        lbTy = midY - p.originY - s * ly;
         if (s <= 1) { lbTx = 0; lbTy = 0; }
         lbClampPan();
         lbApplyZoom();
@@ -601,6 +639,7 @@
     lightbox.addEventListener("touchend", (e) => {
       if (!lightboxTrack) return;
       const t = e.touches;
+      const ct = e.changedTouches;
       if (lbPinch && t.length < 2) {
         lbPinch = null;
         if (lbScale > 1 && t.length === 1) {
@@ -609,22 +648,18 @@
         return;
       }
       if (lbPan) {
+        const last = ct.length ? ct[ct.length - 1] : null;
+        const moved = last ? Math.hypot(last.clientX - lbPan.x, last.clientY - lbPan.y) : 0;
         lbPan = null;
+        if (t.length === 0 && moved < 10) {
+          lbHandleTap();
+        }
         return;
       }
       if (lbSwiping) {
         lbSwiping = false;
         if (Math.abs(lbSwipeDelta) < 10) {
-          const now = Date.now();
-          if (now - lbLastTap < 300) {
-            lbLastTap = 0;
-            lbScale = 2.5;
-            lightboxImg.style.transition = "transform 0.3s ease";
-            lbApplyZoom();
-            setTimeout(() => { lightboxImg.style.transition = "none"; }, 320);
-          } else {
-            lbLastTap = now;
-          }
+          lbHandleTap();
           return;
         }
         lightboxTrack.style.transition = "transform 0.3s ease";
@@ -638,19 +673,6 @@
           setTimeout(() => { lbIndex--; updateLightbox(); }, 300);
         } else {
           lightboxTrack.style.transform = "translateX(0)";
-        }
-        return;
-      }
-      if (t.length === 0 && lbScale === 1) {
-        const now = Date.now();
-        if (now - lbLastTap < 300) {
-          lbLastTap = 0;
-          lbScale = 2.5;
-          lightboxImg.style.transition = "transform 0.3s ease";
-          lbApplyZoom();
-          setTimeout(() => { lightboxImg.style.transition = "none"; }, 320);
-        } else {
-          lbLastTap = now;
         }
       }
     });
