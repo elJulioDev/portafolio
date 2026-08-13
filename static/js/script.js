@@ -454,6 +454,7 @@
     }
     if (lightboxDots) lightboxDots.style.display = multi ? "" : "none";
     lbDotEls.forEach((dot, i) => dot.classList.toggle("is-active", i === lbIndex));
+    lbResetZoom();
   }
 
   function closeLightbox() {
@@ -471,6 +472,43 @@
     if (lbIndex < lbImages.length - 1) { lbIndex++; updateLightbox(); }
   }
 
+  /* Zoom táctil (pinch) + arrastre dentro del lightbox */
+  let lbScale = 1;
+  let lbTx = 0;
+  let lbTy = 0;
+  let lbPinch = null;
+  let lbPan = null;
+  let lbSwipeX = 0;
+  let lbSwipeDelta = 0;
+  let lbSwiping = false;
+  let lbLastTap = 0;
+
+  function lbClamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+  function lbApplyZoom() {
+    lightboxImg.style.transform = "translate(" + lbTx + "px," + lbTy + "px) scale(" + lbScale + ")";
+    if (lightboxViewport) lightboxViewport.classList.toggle("is-zooming", lbScale > 1);
+  }
+
+  function lbResetZoom() {
+    lbScale = 1;
+    lbTx = 0;
+    lbTy = 0;
+    lbPinch = null;
+    lbPan = null;
+    lightboxImg.style.transition = "transform 0.25s ease";
+    lbApplyZoom();
+    setTimeout(() => { lightboxImg.style.transition = "none"; }, 260);
+  }
+
+  function lbClampPan() {
+    const r = lightboxImg.getBoundingClientRect();
+    const maxX = (lbScale - 1) * r.width / 2;
+    const maxY = (lbScale - 1) * r.height / 2;
+    lbTx = lbClamp(lbTx, -maxX, maxX);
+    lbTy = lbClamp(lbTy, -maxY, maxY);
+  }
+
   if (lightbox) {
     if (lightboxPrev) lightboxPrev.addEventListener("click", (e) => { e.stopPropagation(); lbPrev(); });
     if (lightboxNext) lightboxNext.addEventListener("click", (e) => { e.stopPropagation(); lbNext(); });
@@ -486,45 +524,134 @@
       if (e.key === "ArrowRight") lbNext();
     });
 
-    /* Swipe táctil: arrastra el viewport completo, revela la imagen vecina */
-    let lbTouchStartX = 0;
-    let lbTouchDeltaX = 0;
-    let lbIsDragging = false;
-
+    /* Zoom táctil (pinch) + arrastre + swipe dentro del lightbox */
     lightbox.addEventListener("touchstart", (e) => {
-      if (e.touches.length !== 1 || !lightboxTrack) return;
-      lbTouchStartX = e.touches[0].clientX;
-      lbTouchDeltaX = 0;
-      lbIsDragging = true;
-      lightboxTrack.style.transition = "none";
+      if (!lightboxTrack) return;
+      const t = e.touches;
+      if (t.length === 2) {
+        lbSwiping = false;
+        lbPan = null;
+        const dx = t[1].clientX - t[0].clientX;
+        const dy = t[1].clientY - t[0].clientY;
+        lbPinch = {
+          dist: Math.hypot(dx, dy),
+          midX: (t[0].clientX + t[1].clientX) / 2,
+          midY: (t[0].clientY + t[1].clientY) / 2,
+          scale: lbScale,
+          tx: lbTx,
+          ty: lbTy
+        };
+        lightboxImg.style.transition = "none";
+        return;
+      }
+      if (t.length === 1 && lbScale > 1) {
+        lbPinch = null;
+        lbSwiping = false;
+        lbPan = { x: t[0].clientX, y: t[0].clientY, tx: lbTx, ty: lbTy };
+        lightboxImg.style.transition = "none";
+        return;
+      }
+      if (lbScale === 1) {
+        lbSwipeX = t[0].clientX;
+        lbSwipeDelta = 0;
+        lbSwiping = true;
+        lightboxTrack.style.transition = "none";
+      }
     }, { passive: true });
 
     lightbox.addEventListener("touchmove", (e) => {
-      if (!lbIsDragging || e.touches.length !== 1 || !lightboxTrack) return;
-      let delta = e.touches[0].clientX - lbTouchStartX;
-      // Resistencia en los extremos, no hay vecino que revelar
-      const atStart = lbIndex === 0 && delta > 0;
-      const atEnd = lbIndex === lbImages.length - 1 && delta < 0;
-      if (atStart || atEnd) delta *= 0.3;
-      lbTouchDeltaX = delta;
-      lightboxTrack.style.transform = `translateX(${delta}px)`;
-    }, { passive: true });
+      if (!lightboxTrack) return;
+      const t = e.touches;
+      if (lbPinch && t.length >= 2) {
+        e.preventDefault();
+        const dx = t[1].clientX - t[0].clientX;
+        const dy = t[1].clientY - t[0].clientY;
+        const dist = Math.hypot(dx, dy);
+        const midX = (t[0].clientX + t[1].clientX) / 2;
+        const midY = (t[0].clientY + t[1].clientY) / 2;
+        const p = lbPinch;
+        const s = lbClamp(p.scale * dist / Math.max(1, p.dist), 1, 4);
+        lbScale = s;
+        const lx = (p.midX - p.tx) / p.scale;
+        const ly = (p.midY - p.ty) / p.scale;
+        lbTx = midX - s * lx;
+        lbTy = midY - s * ly;
+        if (s <= 1) { lbTx = 0; lbTy = 0; }
+        lbClampPan();
+        lbApplyZoom();
+        return;
+      }
+      if (lbPan && t.length === 1) {
+        e.preventDefault();
+        lbTx = lbPan.tx + (t[0].clientX - lbPan.x);
+        lbTy = lbPan.ty + (t[0].clientY - lbPan.y);
+        lbClampPan();
+        lbApplyZoom();
+        return;
+      }
+      if (lbSwiping && t.length === 1) {
+        const delta = t[0].clientX - lbSwipeX;
+        const atStart = lbIndex === 0 && delta > 0;
+        const atEnd = lbIndex === lbImages.length - 1 && delta < 0;
+        lbSwipeDelta = delta * (atStart || atEnd ? 0.3 : 1);
+        lightboxTrack.style.transform = "translateX(" + lbSwipeDelta + "px)";
+      }
+    }, { passive: false });
 
-    lightbox.addEventListener("touchend", () => {
-      if (!lbIsDragging || !lightboxTrack) return;
-      lbIsDragging = false;
-      lightboxTrack.style.transition = "transform 0.3s ease";
-
-      const threshold = 60;
-      const width = lightboxTrack.clientWidth;
-      if (lbTouchDeltaX < -threshold && lbIndex < lbImages.length - 1) {
-        lightboxTrack.style.transform = `translateX(${-width}px)`;
-        setTimeout(() => { lbIndex++; updateLightbox(); }, 300);
-      } else if (lbTouchDeltaX > threshold && lbIndex > 0) {
-        lightboxTrack.style.transform = `translateX(${width}px)`;
-        setTimeout(() => { lbIndex--; updateLightbox(); }, 300);
-      } else {
-        lightboxTrack.style.transform = "translateX(0)";
+    lightbox.addEventListener("touchend", (e) => {
+      if (!lightboxTrack) return;
+      const t = e.touches;
+      if (lbPinch && t.length < 2) {
+        lbPinch = null;
+        if (lbScale > 1 && t.length === 1) {
+          lbPan = { x: t[0].clientX, y: t[0].clientY, tx: lbTx, ty: lbTy };
+        }
+        return;
+      }
+      if (lbPan) {
+        lbPan = null;
+        return;
+      }
+      if (lbSwiping) {
+        lbSwiping = false;
+        if (Math.abs(lbSwipeDelta) < 10) {
+          const now = Date.now();
+          if (now - lbLastTap < 300) {
+            lbLastTap = 0;
+            lbScale = 2.5;
+            lightboxImg.style.transition = "transform 0.3s ease";
+            lbApplyZoom();
+            setTimeout(() => { lightboxImg.style.transition = "none"; }, 320);
+          } else {
+            lbLastTap = now;
+          }
+          return;
+        }
+        lightboxTrack.style.transition = "transform 0.3s ease";
+        const threshold = 60;
+        const width = lightboxTrack.clientWidth;
+        if (lbSwipeDelta < -threshold && lbIndex < lbImages.length - 1) {
+          lightboxTrack.style.transform = "translateX(" + (-width) + "px)";
+          setTimeout(() => { lbIndex++; updateLightbox(); }, 300);
+        } else if (lbSwipeDelta > threshold && lbIndex > 0) {
+          lightboxTrack.style.transform = "translateX(" + width + "px)";
+          setTimeout(() => { lbIndex--; updateLightbox(); }, 300);
+        } else {
+          lightboxTrack.style.transform = "translateX(0)";
+        }
+        return;
+      }
+      if (t.length === 0 && lbScale === 1) {
+        const now = Date.now();
+        if (now - lbLastTap < 300) {
+          lbLastTap = 0;
+          lbScale = 2.5;
+          lightboxImg.style.transition = "transform 0.3s ease";
+          lbApplyZoom();
+          setTimeout(() => { lightboxImg.style.transition = "none"; }, 320);
+        } else {
+          lbLastTap = now;
+        }
       }
     });
   }

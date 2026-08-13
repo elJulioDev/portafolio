@@ -1220,6 +1220,10 @@ svg.project-techs__icon {
   touch-action: pan-y;
 }
 
+.lightbox__viewport.is-zooming {
+  touch-action: none;
+}
+
 /* ============================================================
    CONTACTO
    ============================================================ */
