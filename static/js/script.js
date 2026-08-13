@@ -295,20 +295,26 @@
       track.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
       
       if (!trackIsHorizontal) {
-        update();
+        track.style.transform = "translateX(" + -index * 100 + "%)";
         return;
       }
 
       const endX = e.changedTouches[0].clientX;
       const diffX = endX - trackStartX;
       const threshold = 80;
+      const prevIndex = index;
 
       if (diffX < -threshold && index < count - 1) {
         index++;
       } else if (diffX > threshold && index > 0) {
         index--;
       }
-      update(); // El update() se encarga de reajustar el transform final
+
+      if (index !== prevIndex) {
+        update();
+      } else {
+        track.style.transform = "translateX(" + -index * 100 + "%)";
+      }
     });
 
     update();
