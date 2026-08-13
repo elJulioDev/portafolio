@@ -368,34 +368,21 @@
 
   function renderGallery(vis, images, altText) {
     const count = images.length;
-    if (count === 1) {
-      const img = d.createElement("img");
-      img.src = images[0];
-      img.alt = altText;
-      img.loading = "lazy";
-      vis.appendChild(img);
-      return;
+    const img = d.createElement("img");
+    img.src = images[0];
+    img.alt = altText;
+    img.loading = "lazy";
+    vis.appendChild(img);
+
+    if (count > 1) {
+      const badge = d.createElement("div");
+      badge.className = "project-visual__badge";
+      badge.setAttribute("aria-hidden", "true");
+      badge.innerHTML =
+        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>' +
+        "<span>+" + (count - 1) + "</span>";
+      vis.appendChild(badge);
     }
-    const grid = d.createElement("div");
-    grid.className = "project-gallery project-gallery--" + Math.min(count, 3);
-    const visibleCount = Math.min(count, 3);
-    for (let i = 0; i < visibleCount; i++) {
-      const item = d.createElement("div");
-      item.className = "project-gallery__item";
-      const img = d.createElement("img");
-      img.src = images[i];
-      img.alt = altText + " " + (i + 1);
-      img.loading = "lazy";
-      item.appendChild(img);
-      if (i === 2 && count > 3) {
-        const more = d.createElement("div");
-        more.className = "project-gallery__more";
-        more.textContent = "+" + (count - 2);
-        item.appendChild(more);
-      }
-      grid.appendChild(item);
-    }
-    vis.appendChild(grid);
   }
 
   /* ---------- Lightbox: carrusel de imágenes ---------- */

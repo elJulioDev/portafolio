@@ -784,7 +784,7 @@ ul {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
   gap: clamp(28px, 3.5vw, 44px);
-  align-items: center;
+  align-items: stretch;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -802,6 +802,8 @@ ul {
 
 .project-visual {
   width: 100%;
+  align-self: start;
+  position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: 10px;
@@ -814,31 +816,40 @@ ul {
 
 .project-visual > img {
   width: 100%;
-  height: auto;
-  max-height: 100%;
-  object-fit: contain;
-  object-position: center;
-  transition: transform 0.5s ease;
-  cursor: zoom-in;
-}
-
-.project-visual:not(:has(.project-gallery)) {
-  aspect-ratio: auto;
-}
-
-.project-visual:hover > img,
-.project-visual:focus-within > img {
-  transform: scale(1.05);
-}
-
-.project-visual .project-gallery img {
-  width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   transition: transform 0.5s ease;
   cursor: zoom-in;
   display: block;
+}
+
+.project-visual__badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: rgba(11, 14, 17, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.project-visual__badge svg {
+  color: var(--volt);
+}
+
+.project-visual:hover > img,
+.project-visual:focus-within > img {
+  transform: scale(1.05);
 }
 
 .project-visual__placeholder {
@@ -851,60 +862,10 @@ ul {
   font-size: 0.9rem;
 }
 
-/* Gallery grid: multi-image preview inside project card */
-.project-gallery {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  gap: 4px;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.project-gallery--2 {
-  grid-template-columns: 1fr 1fr;
-}
-
-.project-gallery--3 {
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-}
-
-.project-gallery--3 .project-gallery__item:first-child {
-  grid-row: 1 / -1;
-}
-
-.project-gallery__item {
-  overflow: hidden;
-  position: relative;
-}
-
-.project-gallery__item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  transition: transform 0.5s ease;
-  cursor: zoom-in;
-  display: block;
-}
-
-.project-gallery__more {
-  position: absolute;
-  inset: 0;
-  background: rgba(5, 7, 9, 0.6);
+.project-info {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text);
-  font-family: var(--font-heading);
-  font-size: 1.6rem;
-  letter-spacing: 0.04em;
-  pointer-events: none;
-}
-
-.project-gallery__item:hover img {
-  transform: scale(1.05);
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .project-info__title {
@@ -923,6 +884,17 @@ ul {
   font-size: 1rem;
   max-width: 55ch;
   margin-bottom: 22px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.project-description.is-expanded .project-info__description {
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  overflow: visible;
 }
 
 .project-techs {
@@ -976,6 +948,10 @@ svg.project-techs__icon {
   cursor: pointer;
 }
 
+.project-desc-toggle.is-visible {
+  display: inline-block;
+}
+
 .project-link {
   display: inline-flex;
   align-items: center;
@@ -985,6 +961,8 @@ svg.project-techs__icon {
   color: var(--text);
   text-decoration: none;
   transition: color var(--transition);
+  margin-top: auto;
+  padding-top: 18px;
 }
 
 .project-link:hover,
@@ -1697,32 +1675,11 @@ a.contact__value:hover {
     grid-template-columns: 1fr;
     gap: 24px;
     padding: 20px;
+    align-content: start;
   }
 
   .project-visual {
     aspect-ratio: 4 / 3;
-  }
-
-  .project-gallery {
-    gap: 3px;
-  }
-
-  .project-info__description {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .project-description.is-expanded .project-info__description {
-    -webkit-line-clamp: unset;
-    line-clamp: unset;
-    overflow: visible;
-  }
-
-  .project-desc-toggle.is-visible {
-    display: inline-block;
   }
 
   .project-techs {
@@ -1787,10 +1744,6 @@ a.contact__value:hover {
     right: 12px;
     width: 38px;
     height: 38px;
-    font-size: 1.3rem;
-  }
-
-  .project-gallery__more {
     font-size: 1.3rem;
   }
 }
