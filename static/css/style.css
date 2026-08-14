@@ -194,8 +194,7 @@ ul {
 }
 
 .navbar__menu-footer {
-  display: flex;
-  align-items: center;
+  display: none;
 }
 
 .navbar__link {
@@ -204,6 +203,10 @@ ul {
   font-weight: 500;
   position: relative;
   transition: color var(--transition);
+}
+
+.navbar__link i {
+  display: none;
 }
 
 .navbar__link::after {
@@ -1438,17 +1441,9 @@ a.contact__value:hover {
   .navbar__menu-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding-bottom: 1.1rem;
+    justify-content: flex-end;
+    padding-bottom: 0.5rem;
     margin-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .navbar__menu-brand {
-    font-family: var(--font-heading);
-    font-size: 1.5rem;
-    letter-spacing: 0.04em;
-    color: var(--text);
   }
 
   .navbar__menu-close {
@@ -1462,19 +1457,33 @@ a.contact__value:hover {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: border-color var(--transition), color var(--transition);
+    flex-shrink: 0;
+    transition: border-color var(--transition), color var(--transition), background var(--transition);
   }
 
   .navbar__menu-close:hover {
     border-color: var(--volt);
     color: var(--volt);
+    background: var(--bg);
   }
 
   .navbar__link {
-    display: block;
-    padding: 0.9rem 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.8rem 0.6rem;
     font-size: 1rem;
     border-radius: 10px;
+    margin-bottom: 2px;
+  }
+
+  .navbar__link i {
+    display: inline-flex;
+    width: 22px;
+    justify-content: center;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    transition: color var(--transition);
   }
 
   .navbar__link:hover,
@@ -1483,16 +1492,39 @@ a.contact__value:hover {
     background: rgba(182, 236, 112, 0.08);
   }
 
-  .navbar__menu-footer {
-    display: block;
-    margin-top: auto;
-    padding-top: 1.1rem;
+  .navbar__link::after {
+    display: none;
   }
 
-  .navbar__menu-footer .navbar__link--cta {
-    width: 100%;
-    text-align: center;
-    padding: 12px 20px;
+  .navbar__link:hover i,
+  .navbar__link.is-active i {
+    color: var(--volt);
+  }
+
+  .navbar__menu-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .navbar__social {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    transition: color var(--transition);
+  }
+
+  .navbar__social:hover {
+    color: var(--volt);
   }
 
   /* Fondo oscurecido detrás del panel */
