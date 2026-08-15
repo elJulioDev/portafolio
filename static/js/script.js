@@ -702,4 +702,49 @@
       openLightbox(all, Math.max(0, idx), img.alt);
     });
   });
+
+  /* ---------- Modal de certificados ---------- */
+  const certModal = d.getElementById("certModal");
+  const certModalImg = d.getElementById("certModalImg");
+  const certModalTitle = d.getElementById("certModalTitle");
+  const certModalDesc = d.getElementById("certModalDesc");
+  const certModalIssuer = d.getElementById("certModalIssuer");
+  const certModalDate = d.getElementById("certModalDate");
+  const certModalUrl = d.getElementById("certModalUrl");
+
+  function openCertModal(card) {
+    if (!certModal) return;
+    certModalImg.src = card.dataset.certImg;
+    certModalImg.alt = card.dataset.certTitle;
+    certModalTitle.textContent = card.dataset.certTitle;
+    certModalDesc.textContent = card.dataset.certDesc;
+    certModalIssuer.textContent = card.dataset.certIssuer;
+    certModalDate.textContent = card.dataset.certDate;
+    certModalUrl.href = card.dataset.certUrl;
+    certModal.setAttribute("aria-hidden", "false");
+    d.body.classList.add("no-scroll");
+  }
+
+  function closeCertModal() {
+    if (!certModal) return;
+    certModal.setAttribute("aria-hidden", "true");
+    d.body.classList.remove("no-scroll");
+  }
+
+  d.querySelectorAll(".cert-card__badge-wrap").forEach((wrap) => {
+    wrap.addEventListener("click", () => {
+      openCertModal(wrap.closest(".cert-card"));
+    });
+  });
+
+  if (certModal) {
+    certModal.querySelectorAll("[data-cert-close]").forEach((el) => {
+      el.addEventListener("click", closeCertModal);
+    });
+    d.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && certModal.getAttribute("aria-hidden") === "false") {
+        closeCertModal();
+      }
+    });
+  }
 })();
