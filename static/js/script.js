@@ -11,6 +11,115 @@
   const yearEl = d.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+  /* ---------- Render de contenido desde data.js ---------- */
+  const DATA = window.PORTFOLIO_DATA || {};
+  const esc = (s) =>
+    String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const LEVEL_TEXT = { high: "Avanzado", mid: "Intermedio", low: "Bajo" };
+
+  // iconHtml(iconKey, sizeClass) — resuelve el icono desde el registry.
+  // sizeClass: "tech-item__icon" (sección) o "project-techs__icon" (proyecto).
+  function iconHtml(key, sizeClass) {
+    const ic = (DATA.icons || {})[key];
+    if (!ic) return "";
+    if (ic.svg) {
+      const attrs = Object.entries(ic.svg.attrs || {})
+        .map(([k, v]) => k + '="' + v + '"')
+        .join(" ");
+      return '<svg class="' + sizeClass + " " + sizeClass + "--" + key + '" ' + attrs + ">" + ic.svg.inner + "</svg>";
+    }
+    const mod = ic.mod ? " " + sizeClass + "--" + ic.mod : "";
+    return '<i class="' + ic.cls + " " + sizeClass + mod + '" aria-hidden="true"></i>';
+  }
+
+  /* Tecnologías */
+  const techCats = d.getElementById("techCats");
+  if (techCats && DATA.technologies) {
+    techCats.innerHTML = DATA.technologies
+      .map(
+        (cat) =>
+          '<details class="tech-cat">' +
+          '<summary class="tech-cat__head">' +
+          '<span class="tech-cat__tag">' + esc(cat.tag) + "</span>" +
+          '<h3 class="tech-cat__title">' + esc(cat.title) + "</h3>" +
+          "</summary>" +
+          '<div class="tech-cat__content">' +
+          '<p class="tech-cat__desc">' + esc(cat.desc) + "</p>" +
+          '<ul class="tech-cat__list">' +
+          cat.items
+            .map((it) => {
+              const ic = DATA.icons[it.icon];
+              return (
+                '<li class="tech-item">' +
+                iconHtml(it.icon, "tech-item__icon") +
+                '<span class="tech-item__name">' + esc(ic.label) + "</span>" +
+                '<span class="tech-item__level tech-item__level--' + it.level + '">' +
+                esc(LEVEL_TEXT[it.level] || "Bajo") +
+                "</span></li>"
+              );
+            })
+            .join("") +
+          "</ul></div>" +
+          "</details>"
+      )
+      .join("");
+  }
+
+  /* Certificados */
+  const certGrid = d.getElementById("certGrid");
+  if (certGrid && DATA.certificates) {
+    certGrid.innerHTML = DATA.certificates
+      .map(
+        (c) =>
+          '<article class="cert-card" ' +
+          'data-cert-img="' + esc(c.img) + '" ' +
+          'data-cert-title="' + esc(c.title) + '" ' +
+          'data-cert-desc="' + esc(c.desc) + '" ' +
+          'data-cert-date="' + esc(c.date) + '" ' +
+          'data-cert-issuer="' + esc(c.issuer) + '" ' +
+          'data-cert-url="' + esc(c.url) + '">' +
+          '<div class="cert-card__badge-wrap">' +
+          '<img class="cert-card__badge" src="' + esc(c.img) + '" alt="Badge ' + esc(c.title) + '" loading="lazy" />' +
+          "</div>" +
+          '<div class="cert-card__body">' +
+          '<h3 class="cert-card__title">' + esc(c.title) + "</h3>" +
+          '<p class="cert-card__desc">' + esc(c.desc) + "</p>" +
+          '<span class="cert-card__date">' + esc(c.date) + "</span>" +
+          '<a href="' + esc(c.url) + '" target="_blank" rel="noopener" class="cert-card__link">Ver insignia</a>' +
+          "</div></article>"
+      )
+      .join("");
+  }
+
+  /* Proyectos */
+  const carouselTrack = d.getElementById("carouselTrack");
+  if (carouselTrack && DATA.projects) {
+    carouselTrack.innerHTML = DATA.projects
+      .map(
+        (p) =>
+          '<article class="project-row">' +
+          '<div class="project-visual" data-project="' + esc(p.key) + '"></div>' +
+          '<div class="project-info">' +
+          '<h3 class="project-info__title">' + esc(p.title) + "</h3>" +
+          '<div class="project-description">' +
+          '<p class="project-info__description">' + p.desc + "</p>" +
+          '<button class="project-desc-toggle" type="button" aria-expanded="false">Leer más...</button>' +
+          "</div>" +
+          '<ul class="project-techs">' +
+          p.techs
+            .map(
+              (key) =>
+                "<li>" + iconHtml(key, "project-techs__icon") + "<span>" + esc(DATA.icons[key].label) + "</span></li>"
+            )
+            .join("") +
+          "</ul>" +
+          '<a href="' + esc(p.url) + '" target="_blank" rel="noopener" class="project-link">Ver código ' +
+          '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a>' +
+          "</div></article>"
+      )
+      .join("");
+  }
+
   /* ---------- Menú móvil (panel lateral) ---------- */
   const toggle = d.getElementById("menuToggle");
   const menu = d.getElementById("navbarMenu");

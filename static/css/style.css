@@ -895,8 +895,15 @@ ul {
    PROYECTOS — Carrusel
    ============================================================ */
 .projects-carousel {
-  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(10px, 2vw, 22px);
 }
+
+.carousel__arrow--prev { grid-column: 1; grid-row: 1; }
+.carousel__viewport { grid-column: 2; grid-row: 1; }
+.carousel__arrow--next { grid-column: 3; grid-row: 1; }
 
 .carousel__viewport {
   overflow: hidden;
@@ -913,12 +920,12 @@ ul {
   min-width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-  gap: clamp(28px, 3.5vw, 44px);
+  gap: clamp(24px, 3vw, 36px);
   align-items: stretch;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: clamp(20px, 2.5vw, 30px);
+  padding: clamp(22px, 2.6vw, 32px);
   transition:
     border-color var(--transition),
     box-shadow var(--transition);
@@ -1000,20 +1007,20 @@ ul {
 
 .project-info__title {
   font-family: var(--font-heading);
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-size: clamp(1.6rem, 2.7vw, 2.05rem);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  line-height: 1;
-  margin-bottom: 14px;
+  line-height: 1.05;
+  margin-bottom: 12px;
   color: var(--text);
 }
 
 .project-info__description {
   color: var(--text-muted);
-  font-size: 1rem;
-  max-width: 55ch;
-  margin-bottom: 22px;
+  font-size: 0.98rem;
+  max-width: none;
+  margin-bottom: 20px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   line-clamp: 3;
@@ -1031,8 +1038,8 @@ ul {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 14px 20px;
-  margin-bottom: 26px;
+  gap: 12px 18px;
+  margin-bottom: 20px;
 }
 
 .project-techs li {
@@ -1043,17 +1050,17 @@ ul {
 }
 
 .project-techs__icon {
-  font-size: 2rem;
+  font-size: 1.65rem;
   line-height: 1;
-  height: 2rem;
+  height: 1.65rem;
   display: flex;
   align-items: flex-end;
   justify-content: center;
 }
 
 svg.project-techs__icon {
-  width: 2rem;
-  height: 2rem;
+  width: 1.65rem;
+  height: 1.65rem;
   flex-shrink: 0;
 }
 
@@ -1062,7 +1069,7 @@ svg.project-techs__icon {
 }
 
 .project-techs span {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
 }
 
@@ -1071,8 +1078,8 @@ svg.project-techs__icon {
   background: none;
   border: none;
   padding: 0;
-  margin: -14px 0 22px;
-  font-size: 0.82rem;
+  margin: -10px 0 18px;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--volt);
   cursor: pointer;
@@ -1086,13 +1093,13 @@ svg.project-techs__icon {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 1rem;
+  font-size: 0.96rem;
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
   transition: color var(--transition);
   margin-top: auto;
-  padding-top: 18px;
+  padding-top: 16px;
 }
 
 .project-link:hover,
@@ -1102,11 +1109,8 @@ svg.project-techs__icon {
 
 /* Flechas del carrusel */
 .carousel__arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: var(--bg-panel-2);
   border: 1px solid var(--border);
@@ -1130,9 +1134,6 @@ svg.project-techs__icon {
   cursor: default;
   pointer-events: none;
 }
-
-.carousel__arrow--prev { left: 16px; }
-.carousel__arrow--next { right: 16px; }
 
 /* Puntos indicadores */
 .carousel__dots {
@@ -1852,6 +1853,14 @@ a.contact__value:hover {
 
   .carousel__arrow {
     display: none;
+  }
+
+  .projects-carousel {
+    grid-template-columns: 1fr;
+  }
+
+  .carousel__viewport {
+    grid-column: 1;
   }
 
   .lightbox {
