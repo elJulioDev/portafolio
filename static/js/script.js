@@ -358,7 +358,10 @@
 
     // Navegación con teclado
     carousel.setAttribute("tabindex", "-1");
-    carousel.addEventListener("keydown", (e) => {e});
+    carousel.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") { e.preventDefault(); goTo(index - 1); }
+      if (e.key === "ArrowRight") { e.preventDefault(); goTo(index + 1); }
+    });
 
     /* Swipe táctil con animación de arrastre para el Carrusel */
     let trackStartX = 0;

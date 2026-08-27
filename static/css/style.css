@@ -408,32 +408,7 @@ ul {
   flex-wrap: wrap;
 }
 
-.hero__image {
-  display: flex;
-  justify-content: center;
-}
 
-.hero__placeholder {
-  width: min(340px, 80%);
-  aspect-ratio: 4 / 5;
-  border-radius: 24px;
-  background: var(--surface);
-  border: 1px dashed var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  box-shadow: var(--shadow);
-}
-
-.hero__image img {
-  width: min(340px, 80%);
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
-  border-radius: 24px;
-  box-shadow: var(--shadow);
-}
 
 /* ============================================================
    SOBRE MÍ
@@ -450,19 +425,7 @@ ul {
   justify-content: center;
 }
 
-.about__placeholder {
-  width: 100%;
-  max-width: 380px;
-  aspect-ratio: 4 / 5;
-  border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px dashed var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
+
 
 .about__frame {
   width: min(340px, 100%);
@@ -989,16 +952,6 @@ ul {
   transform: scale(1.05);
 }
 
-.project-visual__placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
 .project-info {
   display: flex;
   flex-direction: column;
@@ -1518,10 +1471,6 @@ a.contact__value:hover {
 
   .about__image {
     position: static;
-  }
-
-  .hero__image {
-    order: -1;
   }
 
   .hero__bg-overlay {
