@@ -1,10 +1,4 @@
 {
-  "me": [
-    "static/img/me.jpeg"
-  ],
-  "proyecto_nn": [
-    "static/img/proyecto_nn.webp"
-  ],
   "proyecto_bodega": [
     "static/img/proyecto_bodega.webp",
     "static/img/proyecto_bodega_2.webp",
@@ -13,12 +7,18 @@
     "static/img/proyecto_bodega_5.webp",
     "static/img/proyecto_bodega_6.webp"
   ],
-  "proyecto_marcaciones": [
-    "static/img/proyecto_marcaciones.webp"
-  ],
   "proyecto_kf": [
     "static/img/proyecto_kf.webp",
     "static/img/proyecto_kf_2.webp",
     "static/img/proyecto_kf_3.webp"
+  ],
+  "proyecto_marcaciones": [
+    "static/img/proyecto_marcaciones.webp"
+  ],
+  "me": [
+    "static/img/me.jpeg"
+  ],
+  "proyecto_nn": [
+    "static/img/proyecto_nn.webp"
   ]
 }
