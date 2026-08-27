@@ -209,17 +209,17 @@
   }
 
   /* ---------- Tecnologías: acordeón desplegable solo en móvil ---------- */
-  const techCats = d.querySelectorAll(".tech-cat");
+  const techAccordions = d.querySelectorAll(".tech-cat");
   const isDesktopViewport = () =>
     window.matchMedia("(min-width: 721px)").matches;
 
   function syncTechAccordion() {
-    techCats.forEach((cat) => {
+    techAccordions.forEach((cat) => {
       cat.open = isDesktopViewport();
     });
   }
 
-  techCats.forEach((cat) => {
+  techAccordions.forEach((cat) => {
     cat.addEventListener("click", (e) => {
       if (isDesktopViewport()) { e.preventDefault(); return; }
       const content = cat.querySelector(".tech-cat__content");
