@@ -209,21 +209,40 @@
   }
 
   /* ---------- Tecnologías: acordeón desplegable solo en móvil ---------- */
-  const techCatHeads = d.querySelectorAll(".tech-cat__head");
+  const techCats = d.querySelectorAll(".tech-cat");
   const isDesktopViewport = () =>
     window.matchMedia("(min-width: 721px)").matches;
 
   function syncTechAccordion() {
-    techCatHeads.forEach((head) => {
-      const details = head.closest(".tech-cat");
-      if (!details) return;
-      details.open = isDesktopViewport();
+    techCats.forEach((cat) => {
+      cat.open = isDesktopViewport();
     });
   }
 
-  techCatHeads.forEach((head) => {
-    head.addEventListener("click", (e) => {
-      if (isDesktopViewport()) e.preventDefault();
+  techCats.forEach((cat) => {
+    cat.addEventListener("click", (e) => {
+      if (isDesktopViewport()) { e.preventDefault(); return; }
+      const content = cat.querySelector(".tech-cat__content");
+      if (!content) return;
+      if (cat.open) {
+        e.preventDefault();
+        content.style.gridTemplateRows = "0fr";
+        const onEnd = () => {
+          cat.open = false;
+          content.style.gridTemplateRows = "";
+          content.removeEventListener("transitionend", onEnd);
+        };
+        content.addEventListener("transitionend", onEnd);
+      } else {
+        e.preventDefault();
+        cat.open = true;
+        content.style.gridTemplateRows = "0fr";
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            content.style.gridTemplateRows = "1fr";
+          });
+        });
+      }
     });
   });
 
