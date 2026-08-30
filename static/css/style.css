@@ -568,15 +568,15 @@ ul {
 .tech-cat__content {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: grid-template-rows 0.38s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-.tech-cat__content > * {
+.tech-cat__content-inner {
   min-height: 0;
   overflow: hidden;
 }
 
-.tech-cat[open] .tech-cat__content {
+.tech-cat.is-expanded > .tech-cat__content {
   grid-template-rows: 1fr;
 }
 
@@ -1676,10 +1676,16 @@ a.contact__value:hover {
     gap: 5px;
     padding: 14px 42px 14px 16px;
     cursor: pointer;
-    transition: background var(--transition);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: background 0.38s cubic-bezier(0.65, 0, 0.35, 1);
   }
 
   .tech-cat__head:hover {
+    background: var(--surface-hover);
+  }
+
+  .tech-cat__head:active {
     background: var(--surface-hover);
   }
 
@@ -1695,10 +1701,10 @@ a.contact__value:hover {
     border-right: 2px solid var(--volt);
     border-bottom: 2px solid var(--volt);
     transform: translateY(-50%) rotate(45deg);
-    transition: transform var(--transition);
+    transition: transform 0.38s cubic-bezier(0.65, 0, 0.35, 1);
   }
 
-  .tech-cat[open] .tech-cat__head::after {
+  .tech-cat.is-expanded .tech-cat__head::after {
     transform: translateY(-50%) rotate(225deg);
   }
 
@@ -1872,5 +1878,11 @@ a.contact__value:hover {
   .about__image img {
     transition: none;
     transform: none;
+  }
+
+  .tech-cat__content,
+  .tech-cat__head::after,
+  .tech-cat__head {
+    transition: none;
   }
 }

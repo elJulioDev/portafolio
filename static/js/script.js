@@ -44,6 +44,7 @@
           '<h3 class="tech-cat__title">' + esc(cat.title) + "</h3>" +
           "</summary>" +
           '<div class="tech-cat__content">' +
+          '<div class="tech-cat__content-inner">' +
           '<p class="tech-cat__desc">' + esc(cat.desc) + "</p>" +
           '<ul class="tech-cat__list">' +
           cat.items
@@ -59,7 +60,7 @@
               );
             })
             .join("") +
-          "</ul></div>" +
+          "</ul></div></div>" +
           "</details>"
       )
       .join("");
@@ -212,18 +213,74 @@
   const techAccordions = d.querySelectorAll(".tech-cat");
   const isDesktopViewport = () =>
     window.matchMedia("(min-width: 721px)").matches;
+  const prefersReducedMotion = () =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Abre/cierra un <details> de tecnologías animando su altura real
+  // (grid-template-rows) en vez de depender del toggle nativo, que no
+  // se puede animar. `animate=false` se usa para sincronizar el estado
+  // inicial o el cambio de breakpoint sin disparar ninguna transición.
+  function setTechCatExpanded(details, expand, animate) {
+    const content = details.querySelector(".tech-cat__content");
+    if (!content) return;
+
+    // Cancela cualquier animación de cierre pendiente para este panel
+    if (content._techCatCleanup) {
+      content._techCatCleanup();
+      content._techCatCleanup = null;
+    }
+
+    const shouldAnimate = animate && !prefersReducedMotion();
+
+    if (expand) {
+      details.open = true; // hace visible el contenido (display:block) para poder medirlo/animarlo
+      if (!shouldAnimate) {
+        details.classList.add("is-expanded");
+        return;
+      }
+      // Fuerza un reflow para que el navegador registre el estado
+      // colapsado (0fr) ANTES de aplicar la clase que expande, y así
+      // la transición tenga un punto de partida real (sin esto se abre
+      // instantáneo porque ambos cambios ocurrirían en el mismo frame).
+      void details.offsetHeight;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          details.classList.add("is-expanded");
+        });
+      });
+    } else {
+      if (!shouldAnimate) {
+        details.classList.remove("is-expanded");
+        details.open = false;
+        return;
+      }
+      details.classList.remove("is-expanded"); // dispara la transición hacia 0fr
+      const onEnd = (e) => {
+        if (e.target !== content || e.propertyName !== "grid-template-rows") return;
+        cleanup();
+        details.open = false;
+      };
+      const cleanup = () => content.removeEventListener("transitionend", onEnd);
+      content._techCatCleanup = cleanup;
+      content.addEventListener("transitionend", onEnd);
+    }
+  }
 
   function syncTechAccordion() {
+    const desktop = isDesktopViewport();
     techAccordions.forEach((cat) => {
-      cat.open = isDesktopViewport();
+      setTechCatExpanded(cat, desktop, false);
     });
   }
 
   techAccordions.forEach((cat) => {
-    cat.addEventListener("click", (e) => {
-      if (isDesktopViewport()) { e.preventDefault(); return; }
+    const head = cat.querySelector(".tech-cat__head");
+    if (!head) return;
+    head.addEventListener("click", (e) => {
       e.preventDefault();
-      cat.open = !cat.open;
+      if (isDesktopViewport()) return; // en escritorio siempre están abiertas
+      const isOpen = cat.classList.contains("is-expanded");
+      setTechCatExpanded(cat, !isOpen, true);
     });
   });
 
