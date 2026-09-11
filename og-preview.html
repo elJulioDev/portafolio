@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1200" />
+  <title>OG Preview — elJulioDev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0b0e11;
+      --volt: #afff47;
+      --text: #f0f0f0;
+      --text-muted: #b0b0b0;
+      --font-heading: 'Bebas Neue', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: var(--font-body);
+      color: var(--text);
+      position: relative;
+    }
+
+    .bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1920&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center 30%;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to right, var(--bg) 30%, rgba(11, 14, 17, 0.8) 55%, rgba(11, 14, 17, 0.4) 100%),
+        linear-gradient(to bottom, var(--bg) 0%, transparent 10%, transparent 90%, var(--bg) 100%);
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+      padding: 80px 100px;
+    }
+
+    .eyebrow {
+      color: var(--volt);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .title {
+      font-family: var(--font-heading);
+      font-size: 110px;
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 0.95;
+      margin-bottom: 16px;
+    }
+
+    .title-name {
+      display: block;
+    }
+
+    .title-accent {
+      color: var(--volt);
+    }
+
+    .subtitle {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .alias {
+      color: var(--volt);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 20px;
+      margin-left: 10px;
+    }
+
+    .text {
+      color: var(--text-muted);
+      font-size: 18px;
+      line-height: 1.6;
+      max-width: 52ch;
+      margin-bottom: 36px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 16px;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn--primary {
+      background: var(--volt);
+      color: var(--bg);
+    }
+
+    .btn--solid {
+      background: #1a1f24;
+      color: var(--text);
+      border: 1px solid #2a3038;
+    }
+
+    .brand {
+      position: absolute;
+      top: 50px;
+      right: 80px;
+      font-family: var(--font-heading);
+      font-size: 36px;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+
+    .brand-dot {
+      color: var(--volt);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="overlay"></div>
+
+  <div class="brand">elJulioDev<span class="brand-dot">.</span></div>
+
+  <div class="content">
+    <p class="eyebrow">Hola, soy</p>
+    <h1 class="title">
+      Alexis
+      <span class="title-name">González<span class="title-accent">.</span></span>
+    </h1>
+    <p class="subtitle">
+      Ingeniero en Informática · Desarrollador Full Stack
+      <span class="alias">@elJulioDev</span>
+    </p>
+    <p class="text">
+      Construyo soluciones web eficientes y escalables, desde el frontend
+      hasta la base de datos. Aquí encontrarás mis proyectos, las
+      tecnologías que domino y cómo contactarme.
+    </p>
+    <div class="buttons">
+      <a href="#" class="btn btn--primary">GitHub</a>
+      <a href="#" class="btn btn--solid">LinkedIn</a>
+      <a href="#" class="btn btn--solid">Descargar CV</a>
+    </div>
+  </div>
+</body>
+</html>
