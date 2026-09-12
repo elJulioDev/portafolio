@@ -6,6 +6,7 @@ import { ThemeProvider } from "next-themes"
 import { fontVariables } from "@/lib/fonts"
 import { siteConfig } from "@/config/site"
 import { JsonLd } from "@/features/portfolio/components/json-ld"
+import { SiteHeader } from "@/features/portfolio/components/site-header"
 
 import "./globals.css"
 
@@ -91,8 +92,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <JsonLd />
-          {children}
+          <div className="group/layout relative isolate">
+            <JsonLd />
+            <SiteHeader />
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

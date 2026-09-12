@@ -43,10 +43,10 @@ export function SiteHeader() {
   const isDark = mounted && resolvedTheme === "dark"
 
   return (
-    <header className="sticky top-0 z-50 bg-background px-2">
-      <div className="screen-line-top screen-line-bottom mx-auto flex h-(--header-height) max-w-3xl items-center gap-2 border-x px-4">
+    <header className="sticky top-0 z-50 max-w-screen overflow-x-clip bg-background px-2">
+      <div className="screen-line-top screen-line-bottom screen-line-bottom-border mx-auto flex h-(--header-height) items-center gap-2 border-x pr-2 pl-4 sm:gap-4 md:max-w-3xl after:z-1">
         {/* Brand */}
-        <Link href="/" className="font-pixel text-xs text-foreground hover:opacity-80 transition-opacity">
+        <Link href="/" className="font-sans font-medium text-sm text-foreground hover:opacity-80 transition-opacity shrink-0">
           elJulioDev
         </Link>
 
@@ -57,7 +57,7 @@ export function SiteHeader() {
           href="https://github.com/elJulioDev"
           target="_blank"
           rel="noopener"
-          className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           aria-label="GitHub"
         >
           <GitHubIcon className="size-4" />
@@ -69,7 +69,7 @@ export function SiteHeader() {
         {/* Theme toggle */}
         <button
           onClick={() => setTheme(isDark ? "light" : "dark")}
-          className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >
           {mounted ? (

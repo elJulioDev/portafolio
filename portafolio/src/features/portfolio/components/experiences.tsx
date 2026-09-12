@@ -1,57 +1,63 @@
+"use client"
+
+import { useState } from "react"
+
 import { Panel, PanelHeader, PanelTitle } from "./panel"
-import { Separator } from "./separator"
+import { Tag } from "./tag"
 import { EXPERIENCES } from "../data/experiences"
 
-function BriefcaseIcon() {
+function ChevronDownIcon({ className }: { className?: string }) {
   return (
-    <svg className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-      <rect width="20" height="14" x="2" y="6" rx="2" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   )
 }
 
+const MAX = 3
+
 export function Experiences() {
+  const [open, setOpen] = useState(false)
+
+  const visibleExperiences = open ? EXPERIENCES : EXPERIENCES.slice(0, MAX)
+  const hasMore = EXPERIENCES.length > MAX
+
   return (
-    <>
-      <Separator />
+    <Panel id="experience">
+      <PanelHeader>
+        <PanelTitle>
+          <a href="#experience">Experiencia</a>
+        </PanelTitle>
+      </PanelHeader>
 
-      <Panel id="experiences" className="screen-line-top">
-        <PanelHeader>
-          <PanelTitle>
-            <a href="#experiences">Experiencia</a>
-          </PanelTitle>
-        </PanelHeader>
-
-        {EXPERIENCES.map((exp, i) => (
-          <div key={i}>
-            <PanelHeader>
-              <div className="flex items-center gap-3">
-                <BriefcaseIcon />
-                <div className="flex-1">
-                  <h3 className="text-sm font-medium">{exp.company}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {exp.location} · {exp.locationType}
-                    {exp.status && ` · ${exp.status}`}
-                  </p>
-                </div>
+      <div className="pr-2 pl-4">
+        {visibleExperiences.map((exp, i) => (
+          <div key={i} className="border-b border-line py-4 last:border-none">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex-1">
+                <h3 className="text-sm font-medium">{exp.company}</h3>
+                <p className="text-xs text-muted-foreground">
+                  {exp.location} · {exp.locationType}
+                </p>
               </div>
-            </PanelHeader>
+            </div>
 
             {exp.positions.map((pos, j) => (
-              <div key={j} className="typeset space-y-3 px-4 py-4">
+              <div key={j} className="space-y-2 mt-2">
                 <div className="flex items-baseline justify-between gap-2">
                   <h4 className="text-sm font-medium text-foreground">
                     {pos.title}
                   </h4>
                   <span className="shrink-0 text-xs text-muted-foreground">
-                    {pos.period} · {pos.duration}
+                    {pos.period}
                   </span>
                 </div>
 
-                <p className="text-xs text-muted-foreground">
-                  {pos.employmentType}
-                </p>
+                {pos.employmentType && (
+                  <p className="text-xs text-muted-foreground">
+                    {pos.employmentType}
+                  </p>
+                )}
 
                 {pos.bullets && pos.bullets.length > 0 && (
                   <ul className="list-disc space-y-1 pl-4 text-sm">
@@ -62,13 +68,9 @@ export function Experiences() {
                 )}
 
                 {pos.tags && pos.tags.length > 0 && (
-                  <ul className="flex flex-wrap gap-1.5">
+                  <ul className="flex flex-wrap gap-1.5 pt-1">
                     {pos.tags.map((tag) => (
-                      <li key={tag} className="flex">
-                        <span className="inline-flex items-center rounded-md border border-border bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
-                          {tag}
-                        </span>
-                      </li>
+                      <Tag key={tag}>{tag}</Tag>
                     ))}
                   </ul>
                 )}
@@ -76,7 +78,19 @@ export function Experiences() {
             ))}
           </div>
         ))}
-      </Panel>
-    </>
+      </div>
+
+      {hasMore && (
+        <div className="screen-line-top -mt-px flex items-center justify-center py-4">
+          <button
+            onClick={() => setOpen(!open)}
+            className="inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-1.5 text-sm text-secondary-foreground shadow-[inset_0_0_1px] shadow-foreground/20 transition-colors hover:bg-secondary/80"
+          >
+            <span>{open ? "Show less" : "Show more"}</span>
+            <ChevronDownIcon className={`size-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+          </button>
+        </div>
+      )}
+    </Panel>
   )
 }

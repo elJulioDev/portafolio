@@ -1,4 +1,8 @@
-import { Panel, PanelContent, PanelHeader, PanelTitle } from "./panel"
+"use client"
+
+import { Panel, PanelHeader, PanelTitle } from "./panel"
+import { CollapsibleList } from "./collapsible-list"
+import { IconTile } from "./icon-tile"
 import { CERTIFICATIONS } from "../data/certifications"
 
 function ArrowUpRightIcon() {
@@ -12,12 +16,12 @@ function ArrowUpRightIcon() {
 function CertificationItem({ certification }: { certification: typeof CERTIFICATIONS[number] }) {
   return (
     <div className="relative flex items-center pr-2 hover:bg-accent-muted transition-colors">
-      {/* Icon */}
-      <div className="mx-4 flex size-6 shrink-0 items-center justify-center rounded bg-muted">
-        <span className="text-xs">☁</span>
+      <div className="mx-4">
+        <IconTile>
+          <span className="text-xs">☁</span>
+        </IconTile>
       </div>
 
-      {/* Content */}
       <div className="flex-1 space-y-1 border-l border-dashed border-line p-4 pr-2">
         <h3 className="text-sm leading-snug font-medium text-balance">
           <a href={certification.url} target="_blank" rel="noopener">
@@ -65,11 +69,11 @@ export function Certifications() {
         </PanelTitle>
       </PanelHeader>
 
-      <PanelContent className="p-0">
-        {CERTIFICATIONS.map((cert, i) => (
-          <CertificationItem key={i} certification={cert} />
-        ))}
-      </PanelContent>
+      <CollapsibleList
+        items={CERTIFICATIONS}
+        max={6}
+        renderItem={(cert) => <CertificationItem certification={cert} />}
+      />
     </Panel>
   )
 }

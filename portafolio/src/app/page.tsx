@@ -1,4 +1,4 @@
-import { SiteHeader } from "@/features/portfolio/components/site-header"
+import { cn } from "@/lib/utils"
 import { ProfileHeader } from "@/features/portfolio/components/profile-header"
 import { Overview } from "@/features/portfolio/components/overview"
 import { SocialLinks } from "@/features/portfolio/components/social-links"
@@ -9,35 +9,50 @@ import { Experiences } from "@/features/portfolio/components/experiences"
 import { Education } from "@/features/portfolio/components/education"
 import { GitHubContributions } from "@/features/portfolio/components/github-contributions"
 import { ContactForm } from "@/features/portfolio/components/contact-form"
-import { Separator } from "@/features/portfolio/components/separator"
 import { Footer } from "@/features/portfolio/components/footer"
+
+function Separator({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "stripe-divider h-(--separator-height) w-full border-x",
+        className
+      )}
+    />
+  )
+}
 
 export default function Home() {
   return (
-    <>
-      <SiteHeader />
-
-      <main className="mx-auto w-full max-w-3xl">
+    <div className="[--separator-height:--spacing(8)] **:data-[slot=panel]:scroll-mt-[calc(var(--header-height)+var(--separator-height))]">
+      <div className="mx-auto md:max-w-3xl">
         <ProfileHeader />
         <Separator />
+
         <Overview />
-        <Separator />
         <SocialLinks />
-        <Separator variant="stripe" />
-        <TechStack />
-        <Projects />
-        <Separator variant="stripe" />
-        <Experiences />
-        <Education />
-        <Certifications />
-        <Separator variant="stripe" />
         <GitHubContributions />
         <Separator />
-        <ContactForm />
-      </main>
 
-      <Separator variant="stripe" />
+        <TechStack />
+        <Separator />
+
+        <Experiences />
+        <Separator />
+
+        <Education />
+        <Separator />
+
+        <Projects />
+        <Separator />
+
+        <Certifications />
+        <Separator />
+
+        <ContactForm />
+      </div>
+
       <Footer />
-    </>
+    </div>
   )
 }

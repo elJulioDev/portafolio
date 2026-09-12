@@ -3,20 +3,15 @@
 import { useState } from "react"
 import Image from "next/image"
 
-import { Panel, PanelContent, PanelHeader, PanelTitle } from "./panel"
+import { Panel, PanelHeader, PanelTitle } from "./panel"
+import { CollapsibleList } from "./collapsible-list"
+import { IconTile } from "./icon-tile"
+import { Tag } from "./tag"
 import { PROJECTS } from "../data/projects"
 
-function ChevronIcon({ open }: { open: boolean }) {
+function ChevronDownIcon({ className }: { className?: string }) {
   return (
-    <svg
-      className={`size-4 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="6 9 12 15 18 9" />
     </svg>
   )
@@ -40,25 +35,19 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
         onClick={() => setOpen(!open)}
         className="flex w-full items-center text-left hover:bg-accent-muted transition-colors"
       >
-        {/* Icon/Logo */}
-        <div className="mx-4 flex size-6 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground">
-          <span className="text-xs font-medium">
-            {project.title.charAt(0)}
-          </span>
+        <div className="mx-4">
+          <IconTile>
+            <span className="text-xs font-medium">{project.title.charAt(0)}</span>
+          </IconTile>
         </div>
 
-        {/* Content */}
         <div className="flex flex-1 items-center gap-2 border-l border-dashed border-line p-4 pr-2">
           <div className="flex-1">
-            <h3 className="mb-1 text-sm leading-snug font-medium text-balance">
+            <h3 className="text-sm leading-snug font-medium text-balance">
               {project.title}
             </h3>
-            <p className="text-sm text-muted-foreground">
-              {project.techs.slice(0, 3).join(" · ")}
-            </p>
           </div>
 
-          {/* External link */}
           <a
             href={project.url}
             target="_blank"
@@ -70,17 +59,15 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
             <LinkIcon />
           </a>
 
-          {/* Chevron */}
-          <ChevronIcon open={open} />
+          <ChevronDownIcon
+            className={`size-4 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          />
         </div>
       </button>
 
-      {/* Expanded content */}
-      <div
-        className={`overflow-hidden transition-all duration-200 ${open ? "max-h-96" : "max-h-0"}`}
-      >
+      <div className={`overflow-hidden transition-all duration-200 ${open ? "max-h-96" : "max-h-0"}`}>
         <div className="space-y-4 border-t border-line p-4">
-          <p className="typeset">{project.desc}</p>
+          <p className="typeset typeset-description">{project.desc}</p>
 
           {project.images.length > 0 && (
             <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
@@ -96,11 +83,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
           {project.techs.length > 0 && (
             <ul className="flex flex-wrap gap-1.5">
               {project.techs.map((tech) => (
-                <li key={tech} className="flex">
-                  <span className="inline-flex items-center rounded-md border border-border bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
-                    {tech}
-                  </span>
-                </li>
+                <Tag key={tech}>{tech}</Tag>
               ))}
             </ul>
           )}
@@ -115,31 +98,18 @@ export function Projects() {
     <Panel id="projects">
       <PanelHeader>
         <PanelTitle>
-          <a href="#projects">Proyectos</a>
+          <a href="#projects">Projects</a>
           <sup className="top-[-0.75em] ml-1 text-sm font-medium tracking-normal text-muted-foreground">
             ({PROJECTS.length})
           </sup>
         </PanelTitle>
       </PanelHeader>
 
-      <div className="relative py-4">
-        {/* Background vertical lines */}
-        <div className="pointer-events-none absolute inset-0 -z-1 grid grid-cols-1 gap-4 max-sm:hidden sm:grid-cols-2">
-          <div className="border-r border-line" />
-          <div className="border-l border-line" />
-        </div>
-
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {PROJECTS.map((project) => (
-            <li
-              key={project.key}
-              className="max-sm:screen-line-top max-sm:screen-line-bottom sm:nth-[2n+1]:screen-line-top sm:nth-[2n+1]:screen-line-bottom"
-            >
-              <ProjectItem project={project} />
-            </li>
-          ))}
-        </ul>
-      </div>
+      <CollapsibleList
+        items={PROJECTS}
+        max={4}
+        renderItem={(project) => <ProjectItem project={project} />}
+      />
     </Panel>
   )
 }

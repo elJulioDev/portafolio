@@ -1,18 +1,26 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 
 import { Panel } from "./panel"
 import { siteConfig } from "@/config/site"
+import {
+  ContributionGraph,
+  ContributionGraphBlock,
+  ContributionGraphCalendar,
+  ContributionGraphFooter,
+  ContributionGraphLegend,
+  ContributionGraphTotalCount,
+} from "@/registry/components/contribution-graph"
 
-interface ContributionDay {
+interface Activity {
   date: string
   count: number
-  level: 0 | 1 | 2 | 3 | 4
+  level: number
 }
 
 export function GitHubContributions() {
-  const [contributions, setContributions] = useState<ContributionDay[]>([])
+  const [contributions, setContributions] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -20,10 +28,10 @@ export function GitHubContributions() {
       try {
         const username = siteConfig.github.split("/").pop()
         const res = await fetch(
-          `https://github-contributions-api.jogruber.de/v4/${username}`
+          `https://github-contributions-api.jogruber.de/v4/${username}?y=last`
         )
         const data = await res.json()
-        setContributions(data.contributions?.slice(-365) || [])
+        setContributions(data.contributions || [])
       } catch {
         setContributions([])
       } finally {
@@ -33,88 +41,84 @@ export function GitHubContributions() {
     fetchContributions()
   }, [])
 
-  const total = contributions.reduce((sum, d) => sum + d.count, 0)
+  const data = useMemo(
+    () =>
+      contributions.map((c) => ({
+        date: c.date,
+        count: c.count,
+        level: c.level,
+      })),
+    [contributions]
+  )
 
-  // Group by week
-  const weeks: ContributionDay[][] = []
-  for (let i = 0; i < contributions.length; i += 7) {
-    weeks.push(contributions.slice(i, i + 7))
-  }
-
-  // Gray scale matching ncdai
-  const levelColors = [
-    "bg-muted",
-    "bg-zinc-200 dark:bg-zinc-800",
-    "bg-zinc-300 dark:bg-zinc-700",
-    "bg-zinc-400 dark:bg-zinc-600",
-    "bg-zinc-500 dark:bg-zinc-500",
-  ]
+  const totalCount = contributions.reduce((sum, c) => sum + c.count, 0)
 
   const firstDate = contributions[0]?.date || ""
-  const lastDate = contributions[contributions.length - 1]?.date || ""
+  const lastDate = contributions.at(-1)?.date || ""
+
+  function formatDate(dateStr: string) {
+    const d = new Date(dateStr)
+    return `${d.getDate().toString().padStart(2, "0")}.${(d.getMonth() + 1).toString().padStart(2, "0")}.${d.getFullYear()}`
+  }
 
   return (
     <Panel className="screen-line-top-none">
       <h2 className="sr-only">GitHub contributions</h2>
 
-      <figure className="py-4 px-4">
-        {loading ? (
-          <div className="flex h-45 w-full items-center justify-center">
-            <div className="size-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-          </div>
-        ) : contributions.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No se pudieron cargar las contribuciones.
-          </p>
-        ) : (
-          <>
-            {/* Graph */}
-            <div className="overflow-x-auto">
-              <div className="flex gap-[3px]">
-                {weeks.map((week, wi) => (
-                  <div key={wi} className="flex flex-col gap-[3px]">
-                    {week.map((day) => (
-                      <div
-                        key={day.date}
-                        className={`size-[10px] rounded-[2px] ${levelColors[day.level]}`}
-                        title={`${day.count} contribuciones el ${day.date}`}
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
+      {loading ? (
+        <div className="flex h-45 w-full items-center justify-center">
+          <div className="size-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+        </div>
+      ) : data.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          No se pudieron cargar las contribuciones.
+        </p>
+      ) : (
+        <ContributionGraph
+          className="mx-auto gap-4 py-4"
+          data={data}
+          blockSize={12}
+          blockMargin={2}
+          blockRadius={0}
+        >
+          <ContributionGraphCalendar
+            className="px-4 **:data-[slot=month-labels]:text-muted-foreground"
+            title="GitHub Contributions"
+          >
+            {({ activity, dayIndex, weekIndex }) => (
+              <ContributionGraphBlock
+                activity={activity}
+                dayIndex={dayIndex}
+                weekIndex={weekIndex}
+              />
+            )}
+          </ContributionGraphCalendar>
 
-            {/* Footer */}
-            <div className="mt-4 flex items-center justify-between text-sm">
-              <figcaption className="text-pretty tabular-nums text-muted-foreground">
-                <span className="mr-2 tracking-wide text-muted-foreground/80">
-                  Fig. 2.
-                </span>
-                {total.toLocaleString()} contribuciones, {firstDate} – {lastDate}.{" "}
-                <a
-                  href={siteConfig.github}
-                  className="link-underline"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  GitHub
-                </a>
-                .
-              </figcaption>
+          <ContributionGraphFooter className="px-4 text-sm sm:gap-x-4">
+            <ContributionGraphTotalCount>
+              {({ totalCount: tc }) => (
+                <figcaption className="text-pretty tabular-nums">
+                  <span className="mr-2 tracking-wide text-muted-foreground/80">
+                    Fig. 2.
+                  </span>
+                  {tc.toLocaleString()} contributions, {formatDate(firstDate)} – {formatDate(lastDate)}. Source:{" "}
+                  <a
+                    href={siteConfig.github}
+                    className="link-underline"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    GitHub
+                  </a>
+                  .
+                </figcaption>
+              )}
+            </ContributionGraphTotalCount>
 
-              {/* Legend */}
-              <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                <span>Menos</span>
-                {levelColors.map((color, i) => (
-                  <div key={i} className={`size-[10px] rounded-[2px] ${color}`} />
-                ))}
-                <span>Más</span>
-              </div>
-            </div>
-          </>
-        )}
-      </figure>
+            <ContributionGraphLegend aria-hidden />
+          </ContributionGraphFooter>
+        </ContributionGraph>
+      )}
 
       <div className="h-px" />
     </Panel>
