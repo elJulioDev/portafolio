@@ -7,3 +7,5 @@ Thumbs.db
 
 venv
 AGENTS.md
+.agents/
+skills-lock.json
