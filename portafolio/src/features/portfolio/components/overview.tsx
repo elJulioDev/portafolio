@@ -10,6 +10,15 @@ function VerifiedIcon() {
   )
 }
 
+function PinIcon() {
+  return (
+    <svg className="inline-block size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  )
+}
+
 export function Overview() {
   return (
     <div className="space-y-6 border-x">
@@ -23,6 +32,30 @@ export function Overview() {
             <path d="M12 12c0 6-4 8-4 8" />
           </svg>
         </div>
+      </div>
+
+      {/* Roles / Location / Pronoun */}
+      <div className="space-y-2 px-4 text-sm">
+        {USER.roles.map((r, i) => (
+          <p key={i}>
+            {r.title} @
+            <a href={r.anchor} className="link-underline font-medium text-foreground">
+              {r.company}
+            </a>
+          </p>
+        ))}
+        <p className="flex items-center gap-1 text-muted-foreground">
+          <PinIcon />
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(USER.location)}`}
+            target="_blank"
+            rel="noopener"
+            className="link-underline"
+          >
+            {USER.location}
+          </a>
+        </p>
+        <p className="text-muted-foreground">{USER.pronoun}</p>
       </div>
 
       {/* Biography */}

@@ -28,38 +28,52 @@ export function Experiences() {
             <PanelHeader>
               <div className="flex items-center gap-3">
                 <BriefcaseIcon />
-                <div>
-                  <h3 className="text-sm font-medium">
-                    {exp.company}
-                  </h3>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium">{exp.company}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {exp.role}
+                    {exp.location} · {exp.locationType}
+                    {exp.status && ` · ${exp.status}`}
                   </p>
                 </div>
               </div>
             </PanelHeader>
 
-            <PanelHeader>
-              <span className="text-sm text-muted-foreground">
-                <time>{exp.period}</time>
-              </span>
-            </PanelHeader>
+            {exp.positions.map((pos, j) => (
+              <div key={j} className="typeset space-y-3 px-4 py-4">
+                <div className="flex items-baseline justify-between gap-2">
+                  <h4 className="text-sm font-medium text-foreground">
+                    {pos.title}
+                  </h4>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {pos.period} · {pos.duration}
+                  </span>
+                </div>
 
-            <div className="typeset px-4 pb-4">
-              <p className="text-sm">{exp.desc}</p>
+                <p className="text-xs text-muted-foreground">
+                  {pos.employmentType}
+                </p>
 
-              {exp.techs && exp.techs.length > 0 && (
-                <ul className="flex flex-wrap gap-1.5 mt-3">
-                  {exp.techs.map((tech: string) => (
-                    <li key={tech} className="flex">
-                      <span className="inline-flex items-center rounded-md border border-border bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
-                        {tech}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+                {pos.bullets && pos.bullets.length > 0 && (
+                  <ul className="list-disc space-y-1 pl-4 text-sm">
+                    {pos.bullets.map((b, k) => (
+                      <li key={k}>{b}</li>
+                    ))}
+                  </ul>
+                )}
+
+                {pos.tags && pos.tags.length > 0 && (
+                  <ul className="flex flex-wrap gap-1.5">
+                    {pos.tags.map((tag) => (
+                      <li key={tag} className="flex">
+                        <span className="inline-flex items-center rounded-md border border-border bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
+                          {tag}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
           </div>
         ))}
       </Panel>

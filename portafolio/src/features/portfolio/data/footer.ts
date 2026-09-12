@@ -1,0 +1,26 @@
+export const FOOTER_INFO = {
+  tagline: "Portafolio profesional de un Desarrollador Full Stack.",
+  craftedBy: "elJulioDev",
+  craftedByUrl: "https://github.com/elJulioDev",
+  buildHash: "a1b2c3d",
+  buildUrl: "https://github.com/elJulioDev/portafolio/commit/a1b2c3d",
+  date: "2026-09-12",
+  deployedOn: "Vercel",
+  deployedOnUrl: "https://vercel.com",
+  sourceCodeUrl: "https://github.com/elJulioDev/portafolio",
+  license: "MIT License",
+  licenseUrl: "https://github.com/elJulioDev/portafolio/blob/main/LICENSE",
+  typeface: "Geist",
+  typefaceUrl: "https://vercel.com/font",
+  stack: [
+    { name: "next", version: "16.3.5", url: "https://nextjs.org" },
+    { name: "react", version: "19.2.8", url: "https://react.dev" },
+    { name: "tailwindcss", version: "4.3.3", url: "https://tailwindcss.com" },
+  ],
+  inspiredBy: [
+    { name: "Tailwind CSS", url: "https://tailwindcss.com" },
+    { name: "shadcn/ui", url: "https://ui.shadcn.com" },
+    { name: "chanhdai.com", url: "https://chanhdai.com" },
+    { name: "Vercel", url: "https://vercel.com" },
+  ],
+}
