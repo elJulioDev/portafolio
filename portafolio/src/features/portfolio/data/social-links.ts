@@ -12,6 +12,12 @@ export const SOCIAL_LINKS = [
     href: "https://www.linkedin.com/in/alexis-gonz%C3%A1lez-p%C3%A9rez/",
   },
   {
+    name: "instagram",
+    title: "Instagram",
+    handle: "@_.elJulio._",
+    href: "https://www.instagram.com/_.elJulio._",
+  },
+  {
     name: "email",
     title: "Email",
     handle: "alexisdevelopgz@gmail.com",

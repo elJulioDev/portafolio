@@ -1,16 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 import { cn } from "@/lib/utils"
-
-function ChevronDownIcon({ className }: { className?: string }) {
-  return (
-    <svg className={cn("size-4", className)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  )
-}
+import {
+  ChevronsUpDownIcon,
+  type ChevronsUpDownIconHandle,
+} from "@/components/animated-icons/chevrons-up-down-icon"
 
 function CollapsibleList<T>({
   items,
@@ -24,8 +20,18 @@ function CollapsibleList<T>({
   className?: string
 }) {
   const [expanded, setExpanded] = useState(false)
+  const chevronRef = useRef<ChevronsUpDownIconHandle>(null)
   const hasMore = items.length > max
   const visibleItems = expanded ? items : items.slice(0, max)
+
+  const toggleExpand = () => {
+    if (expanded) {
+      chevronRef.current?.stopAnimation()
+    } else {
+      chevronRef.current?.startAnimation()
+    }
+    setExpanded(!expanded)
+  }
 
   return (
     <div className={className}>
@@ -40,16 +46,13 @@ function CollapsibleList<T>({
       {hasMore && (
         <div className="screen-line-top -mt-px flex items-center justify-center py-4">
           <button
-            onClick={() => setExpanded(!expanded)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted shadow-[inset_0_0_1px] shadow-foreground/20"
+            onClick={toggleExpand}
+            className="inline-flex items-center gap-1.5 rounded-[min(var(--radius-lg),10px)] bg-secondary px-2.5 py-1.5 text-sm text-secondary-foreground shadow-[inset_0_0_1px] shadow-foreground/20 transition-colors hover:bg-secondary/80"
           >
             <span>{expanded ? "Show less" : `Show all (${items.length})`}</span>
-            <ChevronDownIcon
-              className={cn(
-                "transition-transform duration-200",
-                expanded && "rotate-180"
-              )}
-            />
+            <div className="shrink-0 text-muted-foreground [&_svg]:h-lh [&_svg]:w-4">
+              <ChevronsUpDownIcon ref={chevronRef} duration={0.15} />
+            </div>
           </button>
         </div>
       )}

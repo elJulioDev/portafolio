@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import Image from "next/image"
 
 import { Panel, PanelHeader, PanelTitle } from "./panel"
@@ -8,14 +8,10 @@ import { CollapsibleList } from "./collapsible-list"
 import { IconTile } from "./icon-tile"
 import { Tag } from "./tag"
 import { PROJECTS } from "../data/projects"
-
-function ChevronDownIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  )
-}
+import {
+  ChevronsUpDownIcon,
+  type ChevronsUpDownIconHandle,
+} from "@/components/animated-icons/chevrons-up-down-icon"
 
 function LinkIcon() {
   return (
@@ -28,11 +24,21 @@ function LinkIcon() {
 
 function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
   const [open, setOpen] = useState(false)
+  const chevronRef = useRef<ChevronsUpDownIconHandle>(null)
+
+  const toggleOpen = () => {
+    if (open) {
+      chevronRef.current?.stopAnimation()
+    } else {
+      chevronRef.current?.startAnimation()
+    }
+    setOpen(!open)
+  }
 
   return (
     <div className="group">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={toggleOpen}
         className="flex w-full items-center text-left hover:bg-accent-muted transition-colors"
       >
         <div className="mx-4">
@@ -59,9 +65,9 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
             <LinkIcon />
           </a>
 
-          <ChevronDownIcon
-            className={`size-4 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          />
+          <div className="shrink-0 text-muted-foreground [&_svg]:h-lh [&_svg]:w-4">
+            <ChevronsUpDownIcon ref={chevronRef} duration={0.15} />
+          </div>
         </div>
       </button>
 

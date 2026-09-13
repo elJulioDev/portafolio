@@ -12,6 +12,12 @@ import {
   ContributionGraphLegend,
   ContributionGraphTotalCount,
 } from "@/registry/components/contribution-graph"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface Activity {
   date: string
@@ -61,6 +67,15 @@ export function GitHubContributions() {
     return `${d.getDate().toString().padStart(2, "0")}.${(d.getMonth() + 1).toString().padStart(2, "0")}.${d.getFullYear()}`
   }
 
+  function formatTooltipDate(dateStr: string) {
+    const d = new Date(dateStr + "T00:00:00")
+    return d.toLocaleDateString("es-CL", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+  }
+
   return (
     <Panel className="screen-line-top-none">
       <h2 className="sr-only">GitHub contributions</h2>
@@ -81,18 +96,31 @@ export function GitHubContributions() {
           blockMargin={2}
           blockRadius={0}
         >
-          <ContributionGraphCalendar
-            className="px-4 **:data-[slot=month-labels]:text-muted-foreground"
-            title="GitHub Contributions"
-          >
-            {({ activity, dayIndex, weekIndex }) => (
-              <ContributionGraphBlock
-                activity={activity}
-                dayIndex={dayIndex}
-                weekIndex={weekIndex}
-              />
-            )}
-          </ContributionGraphCalendar>
+          <TooltipProvider>
+            <ContributionGraphCalendar
+              className="px-4 **:data-[slot=month-labels]:text-muted-foreground"
+              title="GitHub Contributions"
+            >
+              {({ activity, dayIndex, weekIndex }) => (
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <g data-slot="tooltip-trigger" />
+                    }
+                  >
+                    <ContributionGraphBlock
+                      activity={activity}
+                      dayIndex={dayIndex}
+                      weekIndex={weekIndex}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {activity.count} contribuciones, {formatTooltipDate(activity.date)}
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </ContributionGraphCalendar>
+          </TooltipProvider>
 
           <ContributionGraphFooter className="px-4 text-sm sm:gap-x-4">
             <ContributionGraphTotalCount>
