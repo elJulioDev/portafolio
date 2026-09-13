@@ -286,7 +286,7 @@
   @apply relative h-8;
   &:before {
     content: "";
-    @apply absolute left-[-100vw] -z-1 h-full w-[200vw] diagonal-stripes;
+    @apply absolute left-[-100vw] h-full w-[200vw] diagonal-stripes;
   }
 }
 
