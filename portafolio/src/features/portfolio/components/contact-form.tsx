@@ -43,7 +43,7 @@ export function ContactForm() {
   }
 
   return (
-    <Panel>
+    <Panel id="contact">
       <PanelHeader>
         <PanelTitle>Contacto</PanelTitle>
       </PanelHeader>

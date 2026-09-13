@@ -34,14 +34,14 @@ type CommandLinkItem = {
 const MENU_LINKS: CommandLinkItem[] = [
   {
     title: "Inicio",
-    href: "/",
+    href: "/#inicio",
     kind: "page",
     icon: <ElJulioDevMark />,
     shortcut: "GH",
   },
   {
     title: "Stack",
-    href: "/#stack",
+    href: "/#tech-stack",
     kind: "page",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -97,7 +97,7 @@ const MENU_LINKS: CommandLinkItem[] = [
 const PORTFOLIO_LINKS: CommandLinkItem[] = [
   {
     title: "Inicio",
-    href: "/#hello",
+    href: "/#inicio",
     kind: "page",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -107,7 +107,7 @@ const PORTFOLIO_LINKS: CommandLinkItem[] = [
   },
   {
     title: "Stack",
-    href: "/#stack",
+    href: "/#tech-stack",
     kind: "page",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -152,14 +152,11 @@ function CommandMenuTrigger({ onClick }: { onClick: () => void }) {
       onClick={onClick}
     >
       <Search className="size-4" />
-
-      <span className="font-sans text-sm/4 font-medium sm:hidden">Buscar…</span>
-
+      <span className="font-sans text-sm/4 font-medium sm:hidden">Buscar...</span>
       <KbdGroup className="hidden gap-0.75 sm:in-[.os-macos_&]:flex">
         <Kbd className="w-5 min-w-auto">⌘</Kbd>
         <Kbd className="w-5 min-w-auto">K</Kbd>
       </KbdGroup>
-
       <KbdGroup className="hidden gap-0.75 sm:not-[.os-macos_&]:flex">
         <Kbd>Ctrl</Kbd>
         <Kbd className="w-5 min-w-auto">K</Kbd>
@@ -170,7 +167,7 @@ function CommandMenuTrigger({ onClick }: { onClick: () => void }) {
 
 function CommandMenuInput() {
   return (
-    <CommandInput placeholder="Escribe un comando o busca…" />
+    <CommandInput placeholder="Escribe un comando o busca..." />
   )
 }
 
@@ -182,7 +179,7 @@ function CommandMenuItem({
   onHighlight?: () => void
 }) {
   return (
-    <CommandItem {...props}>
+    <CommandItem {...props} onSelect={props.onSelect}>
       {children}
     </CommandItem>
   )
@@ -209,7 +206,6 @@ function CommandLinkGroup({
         >
           {link.icon}
           <p className="line-clamp-1">{link.title}</p>
-
           {link.shortcut && (
             <CommandShortcut className="font-mono tracking-[0.2em] max-sm:hidden">
               {link.shortcut}
@@ -224,7 +220,6 @@ function CommandLinkGroup({
 export default function CommandMenu() {
   const router = useRouter()
   const { setTheme, resolvedTheme } = useTheme()
-
   const [open, setOpen] = useState(false)
   const [selectedCommandKind, setSelectedCommandKind] = useState<CommandKind | null>(null)
 
@@ -240,14 +235,19 @@ export default function CommandMenu() {
   const handleOpenLink = useCallback(
     (href: string) => {
       setOpen(false)
-      if (href.startsWith("#")) {
-        const element = document.querySelector(href)
+      
+      // Manejador para desplazamiento suave por hash
+      if (href.includes("#")) {
+        const hash = href.substring(href.indexOf("#"))
+        const element = document.querySelector(hash)
         if (element) {
           element.scrollIntoView({ behavior: "smooth" })
+          window.history.pushState(null, "", href)
+          return
         }
-      } else {
-        router.push(href)
       }
+      
+      router.push(href)
     },
     [router]
   )
@@ -269,28 +269,23 @@ export default function CommandMenu() {
       <CommandMenuTrigger
         onClick={() => setOpen(true)}
       />
-
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandMenuInput />
-
         <div className="rounded-xl bg-background ring-1 ring-border">
           <CommandList className="min-h-80">
             <CommandEmpty>No se encontraron resultados.</CommandEmpty>
-
             <CommandLinkGroup
               heading="Menú"
               links={MENU_LINKS}
               onLinkHighlight={handleLinkHighlight}
               onLinkSelect={handleOpenLink}
             />
-
             <CommandLinkGroup
               heading="Portafolio"
               links={PORTFOLIO_LINKS}
               onLinkHighlight={handleLinkHighlight}
               onLinkSelect={handleOpenLink}
             />
-
             <CommandGroup heading="Tema">
               <CommandMenuItem
                 onHighlight={() => setSelectedCommandKind("command")}
@@ -332,7 +327,6 @@ export default function CommandMenu() {
             </CommandGroup>
           </CommandList>
         </div>
-
         <div className="flex items-center justify-between gap-2 rounded-b-2xl px-4 text-xs font-medium">
           <ElJulioDevMark className="size-6 text-muted-foreground" />
           <div className="flex items-center gap-2 max-sm:hidden">

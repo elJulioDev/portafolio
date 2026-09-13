@@ -20,23 +20,23 @@ export const siteConfig = {
 export const MAIN_NAV: NavItem<Route>[] = [
   {
     title: "Inicio",
-    href: "/",
+    href: "/#inicio" as Route,
   },
   {
     title: "Stack",
-    href: "/#stack",
+    href: "/#tech-stack" as Route,
   },
   {
     title: "Experiencia",
-    href: "/#experience",
+    href: "/#experience" as Route,
   },
   {
     title: "Proyectos",
-    href: "/#projects",
+    href: "/#projects" as Route,
   },
   {
     title: "Contacto",
-    href: "/#contact",
+    href: "/#contact" as Route,
   },
 ]
 
