@@ -96,7 +96,7 @@ export function Footer() {
           <dl className="grid grid-cols-2 gap-px bg-line font-mono md:grid-cols-4">
             <Field label="Crafted by">
               <a className="link-underline" href={githubLink.href} target="_blank" rel="noopener">
-                @{githubLink.handle}
+                {githubLink.handle}
               </a>
             </Field>
 
@@ -152,7 +152,9 @@ export function Footer() {
                     <span className="font-mono text-muted-foreground/80" aria-hidden>
                       {String(index + 1).padStart(2, "0")}
                     </span>
-                    {item.name}
+                    <a href={item.url} target="_blank" rel="noopener" className="link-underline">
+                      {item.name}
+                    </a>
                   </li>
                 ))}
               </ol>

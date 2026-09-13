@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import { Press_Start_2P } from "next/font/google"
-import Script from "next/script"
 import { ThemeProvider } from "next-themes"
 
 import { fontVariables } from "@/lib/fonts"
@@ -70,9 +69,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <Script
+        <script
           id="theme-script"
-          strategy="beforeInteractive"
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `
               try {

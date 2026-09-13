@@ -6,7 +6,7 @@ export const siteConfig = {
   name: "elJulioDev",
   title: "elJulioDev — Desarrollador Full Stack",
   description:
-    "Portafolio profesional de Alexis González. Ingeniero en Informática y Desarrollador Full Stack.",
+    "Portafolio profesional de Alexis González.",
   url: "https://eljuliodev.github.io",
   author: "Alexis González Pérez",
   username: "elJulioDev",

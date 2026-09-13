@@ -164,9 +164,7 @@ export function Education() {
                       {Array.isArray(item.skills) && item.skills.length > 0 && (
                         <ul className="flex flex-wrap gap-1.5 pt-3 pl-9">
                           {item.skills.map((skill, index) => (
-                            <li key={index} className="flex">
-                              <Tag>{skill}</Tag>
-                            </li>
+                            <Tag key={index}>{skill}</Tag>
                           ))}
                         </ul>
                       )}
@@ -245,9 +243,7 @@ export function Education() {
                       {Array.isArray(item.skills) && item.skills.length > 0 && (
                         <ul className="flex flex-wrap gap-1.5 pt-3 pl-9">
                           {item.skills.map((skill, index) => (
-                            <li key={index} className="flex">
-                              <Tag>{skill}</Tag>
-                            </li>
+                            <Tag key={index}>{skill}</Tag>
                           ))}
                         </ul>
                       )}

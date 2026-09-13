@@ -16,6 +16,7 @@ export function ProfileHeader() {
               src={USER.avatar}
               alt={USER.displayName}
               fill
+              sizes="(max-width: 640px) 128px, 160px"
               className="object-cover rounded-full inset-ring-1 inset-ring-foreground/10"
               priority
             />

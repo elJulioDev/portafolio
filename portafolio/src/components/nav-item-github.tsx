@@ -12,11 +12,11 @@ export function NavItemGitHub() {
     async function fetchStargazers() {
       try {
         const response = await fetch(
-          `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_USERNAME}.github.io`,
+          `https://api.github.com/repos/${GITHUB_USERNAME}/portafolio`,
           {
             headers: {
               Accept: "application/vnd.github+json",
-              "X-GitHub-Api-Version": "2026-03-10",
+              "X-GitHub-Api-Version": "2022-11-28",
             },
           }
         )
@@ -37,7 +37,7 @@ export function NavItemGitHub() {
 
   return (
     <GitHubStars
-      repo={`${GITHUB_USERNAME}/${GITHUB_USERNAME}.github.io`}
+      repo={`${GITHUB_USERNAME}/portafolio`}
       stargazersCount={stargazersCount}
     />
   )
