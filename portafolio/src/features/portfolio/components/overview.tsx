@@ -120,7 +120,7 @@ export function Overview() {
         </div>
       </PanelContent>
 
-      <div className="pointer-events-none absolute inset-y-0 left-1/2 -z-1 w-px -translate-x-2.5 border-r border-dashed border-line max-sm:hidden" />
+      <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-2.5 border-r border-dashed border-line max-sm:hidden" />
     </Panel>
   )
 }
