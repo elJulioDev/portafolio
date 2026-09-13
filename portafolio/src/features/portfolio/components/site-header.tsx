@@ -14,8 +14,8 @@ const CommandMenu = dynamic(() => import("@/components/command-menu"))
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="screen-line-top screen-line-bottom mx-auto flex h-(--header-height) items-center gap-2 border-x screen-line-bottom-border px-2 pl-4 sm:gap-4 md:max-w-3xl">
+    <header className="sticky top-0 z-50 max-w-screen overflow-x-clip bg-background px-2">
+      <div className="screen-line-top screen-line-bottom mx-auto flex h-(--header-height) items-center gap-2 border-x screen-line-bottom-border pl-4 pr-2 after:z-1 sm:gap-4 md:max-w-3xl">
         <Link href="/" aria-label="Home">
           <ElJulioDevMark className="h-6 shrink-0" />
         </Link>

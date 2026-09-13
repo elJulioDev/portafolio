@@ -80,15 +80,16 @@ export function GitHubContributions() {
     <Panel className="screen-line-top-none">
       <h2 className="sr-only">GitHub contributions</h2>
 
-      {loading ? (
-        <div className="flex h-45 w-full items-center justify-center">
-          <div className="size-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-        </div>
-      ) : data.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          No se pudieron cargar las contribuciones.
-        </p>
-      ) : (
+      <div className="bg-background">
+        {loading ? (
+          <div className="flex h-45 w-full items-center justify-center">
+            <div className="size-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+          </div>
+        ) : data.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            No se pudieron cargar las contribuciones.
+          </p>
+        ) : (
         <ContributionGraph
           className="mx-auto gap-4 py-4"
           data={data}
@@ -146,7 +147,8 @@ export function GitHubContributions() {
             <ContributionGraphLegend aria-hidden />
           </ContributionGraphFooter>
         </ContributionGraph>
-      )}
+        )}
+      </div>
 
       <div className="h-px" />
     </Panel>

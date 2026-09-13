@@ -22,7 +22,7 @@ export function TechStack() {
         {TECH_STACK.map((category, index) => (
           <div
             key={category.tag}
-            className="grid items-start gap-y-2 border-b border-line py-4 last:border-none sm:grid-cols-[var(--col-left-width)_1fr]"
+            className="grid items-start gap-y-2 border-b border-line bg-background py-4 last:border-none sm:grid-cols-[var(--col-left-width)_1fr]"
           >
             <div className="pl-4 text-sm/(--badge-height)">
               <span

@@ -7,6 +7,7 @@ import { fontVariables } from "@/lib/fonts"
 import { siteConfig } from "@/config/site"
 import { JsonLd } from "@/features/portfolio/components/json-ld"
 import { SiteHeader } from "@/features/portfolio/components/site-header"
+import { TopographicBackground } from "@/components/topographic-background"
 
 import "./globals.css"
 
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   authors: [{ name: siteConfig.author }],
   creator: siteConfig.username,
   icons: {
-    icon: "/favicon.svg",
+    icon: "/logo.svg",
   },
   openGraph: {
     type: "website",
@@ -93,9 +94,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="group/layout relative isolate">
+            <TopographicBackground />
             <JsonLd />
             <SiteHeader />
-            {children}
+            <main className="max-w-screen overflow-x-clip px-2">
+              {children}
+            </main>
           </div>
         </ThemeProvider>
       </body>

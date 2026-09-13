@@ -15,7 +15,7 @@ function ArrowUpRightIcon() {
 
 function CertificationItem({ certification }: { certification: typeof CERTIFICATIONS[number] }) {
   return (
-    <div className="relative flex items-center pr-2 hover:bg-accent-muted transition-colors">
+    <div className="relative flex items-center bg-background pr-2 hover:bg-accent-muted transition-colors">
       <div className="mx-4">
         <IconTile>
           <span className="text-xs">☁</span>

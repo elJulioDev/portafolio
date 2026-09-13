@@ -23,13 +23,13 @@ export const EXPERIENCES: Experience[] = [
     company: "Municipalidad de Coltauco",
     companyUrl: "https://coltauco.cl",
     logo: "https://www.google.com/s2/favicons?domain=coltauco.cl&sz=24",
-    location: "Región del Libertador General Bernardo O'Higgins, Chile",
+    location: "Coltauco, Chile",
     locationType: "Presencial",
     positions: [
       {
         title: "Programador Full Stack",
         icon: "code",
-        employmentType: "Contrato de prácticas",
+        employmentType: "Práctica",
         period: "feb. 2026 — abr. 2026",
         duration: "3 meses",
         description: `Durante mi práctica profesional, fui integrado como soporte TI para optimizar los procesos internos de la municipalidad. Mi labor principal consistió en tomar bases de código y requerimientos específicos para expandirlos, mejorarlos a profundidad y llevarlos a producción, impactando directamente en la eficiencia de los funcionarios.

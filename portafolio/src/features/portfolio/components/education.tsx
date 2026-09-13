@@ -23,12 +23,12 @@ export function Education() {
         </PanelTitle>
       </PanelHeader>
 
-      {EDUCATION.map((edu, i) => (
-        <div
-          key={i}
-          id={`education-${i}`}
-          className="screen-line-bottom scroll-mt-14 p-4 pr-2"
-        >
+        {EDUCATION.map((edu, i) => (
+          <div
+            key={i}
+            id={`education-${i}`}
+            className="screen-line-bottom scroll-mt-14 bg-background p-4 pr-2"
+          >
           <div className="flex items-start gap-3">
             <IconTile>
               <GraduationCapIcon />

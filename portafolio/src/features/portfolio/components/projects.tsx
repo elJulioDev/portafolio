@@ -36,7 +36,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
   }
 
   return (
-    <div className="group">
+    <div className="group bg-background">
       <button
         onClick={toggleOpen}
         className="flex w-full items-center text-left hover:bg-accent-muted transition-colors"

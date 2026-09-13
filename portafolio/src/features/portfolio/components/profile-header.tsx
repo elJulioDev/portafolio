@@ -10,7 +10,7 @@ export function ProfileHeader() {
     <div className="screen-line-bottom grid grid-cols-[auto_1fr] grid-rows-[1fr_auto] overflow-y-clip border-x screen-line-bottom-border after:z-1">
       {/* Avatar — columna 1, ambas filas */}
       <div className="flex flex-col sm:row-span-2 sm:row-start-1">
-        <div className="screen-line-top mt-auto shrink-0 border-r border-line flex flex-col items-center justify-end p-4">
+        <div className="screen-line-top mt-auto shrink-0 border-r border-line flex flex-col items-center justify-center">
           <div className="pointer-events-none relative size-30 min-[24rem]:size-32 sm:size-40">
             <Image
               src={USER.avatar}

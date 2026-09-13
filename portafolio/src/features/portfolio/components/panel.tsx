@@ -78,7 +78,7 @@ function PanelDescription({
 
 function PanelContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div data-slot="panel-body" className={cn("p-4", className)} {...props} />
+    <div data-slot="panel-body" className={cn("p-4 bg-background", className)} {...props} />
   )
 }
 

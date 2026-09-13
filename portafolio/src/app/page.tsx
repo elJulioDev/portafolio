@@ -8,6 +8,7 @@ import { Certifications } from "@/features/portfolio/components/certifications"
 import { Experiences } from "@/features/portfolio/components/experiences"
 import { Education } from "@/features/portfolio/components/education"
 import { GitHubContributions } from "@/features/portfolio/components/github-contributions"
+import { About } from "@/features/portfolio/components/about"
 import { ContactForm } from "@/features/portfolio/components/contact-form"
 import { Footer } from "@/features/portfolio/components/footer"
 
@@ -32,6 +33,9 @@ export default function Home() {
         <Overview />
         <SocialLinks />
         <GitHubContributions />
+        <Separator />
+        
+        <About />
         <Separator />
 
         <TechStack />

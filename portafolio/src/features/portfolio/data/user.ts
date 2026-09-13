@@ -11,10 +11,7 @@ export const USER = {
     { title: "Desarrollador Full Stack", company: "Municipalidad de Coltauco", anchor: "#experiences" },
     { title: "Freelance Developer", company: "Independiente", anchor: "#experiences" },
   ],
-  about: [
-    "Soy Ingeniero en Informática egresado de INACAP, apasionado por la resolución de problemas lógicos y el desarrollo de software eficiente. Me especializo en el ecosistema Full Stack, construyendo soluciones desde cero o tomando bases de código heredadas para optimizarlas, expandirlas y llevarlas a producción.",
-    "En el sector público lideré el despliegue técnico y la refactorización backend (PHP/MySQL) de herramientas clave de gestión institucional. También diseño librerías de Deep Learning con Python y NumPy, y exploro el desarrollo de videojuegos con Godot Engine y C#.",
-  ],
+  about: "Ingeniero en Informático enfocado en la resolución eficiente de problemas y la optimización de procesos operativos. Destaco por mi capacidad para integrarme rápidamente a equipos de trabajo, adoptando las herramientas del entorno para refactorizar, mejorar o construir sistemas estables. Poseo una visión integral del ciclo de vida del software, priorizando siempre la calidad del producto, el trabajo colaborativo y la entrega de soluciones tecnológicas que impacten directamente en la productividad de los usuarios finales.",
   flipSentences: [
     "Full Stack Developer",
     "PHP & MySQL",
