@@ -1,19 +1,39 @@
-export interface Education {
-  institution: string
-  degree: string
+export type Education = {
+  id: string
+  school: string
+  degree?: string
   fieldOfStudy?: string
-  period: string
+  period: {
+    start: string
+    end?: string
+  }
   location?: string
-  tags?: string[]
+  description?: string
+  skills?: string[]
+  isExpanded?: boolean
 }
 
 export const EDUCATION: Education[] = [
   {
-    institution: "INACAP",
-    degree: "Ingeniería en Informática",
-    fieldOfStudy: "Informática",
-    period: "2020 — 2024",
-    location: "Rancagua, Chile",
-    tags: ["PHP", "MySQL", "Python", "POO", "Bases de Datos", "Ing. de Software"],
+    id: "inacap",
+    school: "Universidad Tecnológica de Chile, INACAP",
+    degree: "Ingeniería",
+    fieldOfStudy: "Computer Science",
+    period: { start: "mar. 2022", end: "dic. 2025" },
+    description:
+      "Formación en ingeniería informática con foco en desarrollo de software, bases de datos, arquitectura de sistemas y metodologías ágiles. Proyectos académicos incluyen sistemas de gestión, aplicaciones web full-stack y análisis de datos.",
+    skills: [
+      "PHP",
+      "MySQL",
+      "Python",
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "Node.js",
+      "Bases de Datos",
+      "Ingeniería de Software",
+      "Metodologías Ágiles",
+    ],
+    
   },
 ]

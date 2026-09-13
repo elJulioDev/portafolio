@@ -235,7 +235,7 @@ export function Experiences() {
                           type="button"
                           data-slot="collapsible-trigger"
                           onClick={() => togglePosition(posKey)}
-                          className="group block w-full text-left relative before:absolute before:-top-1 before:-right-1 before:-bottom-1.5 before:left-7 before:-z-1 before:rounded-lg before:transition-[background-color] before:ease-out hover:before:bg-accent-muted outline-none focus-visible:before:inset-ring-2 focus-visible:before:inset-ring-ring/50"
+                          className="group block w-full text-left relative before:absolute before:-top-1 before:-right-1 before:-bottom-1.5 before:left-7 before:rounded-lg before:transition-[background-color] before:ease-out hover:before:bg-accent-muted outline-none focus-visible:before:inset-ring-2 focus-visible:before:inset-ring-ring/50"
                         >
                           <div className="relative z-1 mb-1 flex items-start gap-3 text-base">
                             <div data-slot="icon-tile" className="flex size-6 shrink-0 items-center justify-center rounded-md select-none border border-muted-foreground/15 bg-muted text-muted-foreground ring-1 ring-border/50 ring-offset-1 ring-offset-background dark:ring-line [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
@@ -252,7 +252,7 @@ export function Experiences() {
                             </div>
                           </div>
 
-                          <dl className="flex items-center gap-2 pl-9 text-sm text-muted-foreground">
+                          <dl className="flex items-center gap-2 pl-9 text-sm text-muted-foreground relative z-1">
                             <div>
                               <dt className="sr-only">Tipo de empleo</dt>
                               <dd>{pos.employmentType}</dd>

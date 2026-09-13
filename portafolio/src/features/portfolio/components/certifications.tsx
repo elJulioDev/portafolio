@@ -15,14 +15,14 @@ function ArrowUpRightIcon() {
 
 function CertificationItem({ certification }: { certification: typeof CERTIFICATIONS[number] }) {
   return (
-    <div className="relative flex items-center bg-background pr-2 hover:bg-accent-muted transition-colors">
-      <div className="mx-4">
-        <IconTile>
-          <span className="text-xs">☁</span>
-        </IconTile>
-      </div>
-
-      <div className="flex-1 space-y-1 border-l border-dashed border-line p-4 pr-2">
+    <div className="group bg-background">
+      <div className="relative flex items-center pr-2 hover:bg-accent-muted transition-colors">
+        <div className="mx-4">
+          <IconTile>
+            <span className="text-xs">☁</span>
+          </IconTile>
+        </div>
+        <div className="flex-1 space-y-1 border-l border-dashed border-line p-4 pr-2">
         <h3 className="text-sm leading-snug font-medium text-balance">
           <a href={certification.url} target="_blank" rel="noopener">
             <span className="absolute inset-0" aria-hidden />
@@ -51,8 +51,9 @@ function CertificationItem({ certification }: { certification: typeof CERTIFICAT
       </div>
 
       {certification.url && (
-        <ArrowUpRightIcon />
-      )}
+          <ArrowUpRightIcon />
+        )}
+      </div>
     </div>
   )
 }

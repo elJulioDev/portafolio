@@ -4,6 +4,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@custom-variant data-vertical (&[data-orientation="vertical"]);
+@custom-variant data-horizontal (&[data-orientation="horizontal"]);
+
 @custom-variant retina {
   @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2x) {
     @slot;
