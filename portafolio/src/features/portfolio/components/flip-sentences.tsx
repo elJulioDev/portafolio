@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 
 import { cn } from "@/lib/utils"
+import { ShimmeringText } from "@/components/shimmering-text"
 
 interface FlipSentencesProps {
   sentences: string[]
@@ -17,12 +18,15 @@ export function FlipSentences({
 }: FlipSentencesProps) {
   const [index, setIndex] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
+  const [shimmerActive, setShimmerActive] = useState(true)
 
   const nextSentence = useCallback(() => {
     setIsVisible(false)
+    setShimmerActive(false)
     setTimeout(() => {
       setIndex((prev) => (prev + 1) % sentences.length)
       setIsVisible(true)
+      setShimmerActive(true)
     }, 300)
   }, [sentences.length])
 
@@ -48,7 +52,7 @@ export function FlipSentences({
             : "opacity-0 -translate-y-2"
         )}
       >
-        {sentences[index]}
+        <ShimmeringText text={sentences[index]} duration={1.5} repeat={0} isStopped={!shimmerActive} />
       </span>
     </div>
   )
