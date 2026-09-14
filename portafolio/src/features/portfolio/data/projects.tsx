@@ -13,7 +13,22 @@ export const PROJECTS: Project[] = [
     key: "proyecto_bodega",
     title: "Sistema Bodega",
     date: "abr. 2026",
-    desc: "Sistema modular de gestión de bodegas e inventario en PHP y MySQL: stock, productos, proveedores y movimientos.",
+    desc: `Plataforma web modular orientada a la administración eficiente de inventario, control de stock y seguimiento de solicitudes de materiales organizacionales. Desarrollada en PHP y MySQL con un enfoque estricto en seguridad, escalabilidad y trazabilidad.
+
+**Arquitectura y Core de Seguridad:**
+- Control de Acceso Basado en Roles (RBAC) con tres niveles jerárquicos (Administrador, Encargado, Solicitante) y validación estricta en la protección de rutas.
+- Protección integrada contra ataques de falsificación mediante tokens CSRF nativos (generados con random_bytes) y gestión segura de sesiones.
+- Estructura lógica escalable, separando el negocio por dominios (Bodegas, Productos, Movimientos, Facturas) apoyada por un motor de helpers de UI personalizados.
+
+**Gestión de Flujos e Inventario:**
+- Motor avanzado de Solicitudes de Consumo con sistema de caducidad automática programada para evitar embotellamientos operativos.
+- Resoluciones granulares: permite aprobaciones o rechazos parciales por ítem, exigiendo justificación y generando un historial de auditoría automático (logs) por cada interacción.
+- Trazabilidad total y automatizada: el despacho de solicitudes y los traslados inter-bodegas actualizan el stock en tiempo real mediante transacciones atómicas.
+
+**Experiencia de Usuario (UI/UX):**
+- Sistema de diseño a medida basado en Bootstrap 5.3 con soporte nativo y fluido para temas Claro/Oscuro/Sistema, guardando preferencias localmente.
+- Dashboards analíticos dinámicos que se adaptan al rol del usuario, mostrando KPIs en tiempo real, alertas de stock bajo mínimo y gráficos de tendencias.
+- Layout responsivo con menú lateral colapsable y vistas de comprobantes de traslado estructuradas específicamente para una impresión física limpia.`,
     url: "https://github.com/elJulioDev/Sistema-Bodega",
     techs: ["HTML", "CSS", "JavaScript", "PHP", "MySQL", "XAMPP"],
     images: [
@@ -29,7 +44,22 @@ export const PROJECTS: Project[] = [
     key: "proyecto_marcaciones",
     title: "Sistema Marcaciones",
     date: "abr. 2026",
-    desc: "Plataforma web de asistencia laboral municipal: importa relojes biométricos, calcula horas e incidencias y exporta XLSX.",
+    desc: `Plataforma web corporativa para la gestión integral de la asistencia laboral municipal. Desarrollada completamente desde cero en PHP y MariaDB sin dependencias de terceros (cero uso de Composer), priorizando la estabilidad y el máximo rendimiento en servidores institucionales.
+
+**Arquitectura y Motor Interno:**
+- Diseño basado en capas (MVC) con un Front Controller exclusivo, enrutador ligero y autoloader PSR-4 personalizado.
+- Importación masiva desde relojes biométricos procesada mediante streaming de archivos NDJSON e inserciones por lotes.
+- Exportador nativo de archivos Excel (.xlsx) construido a medida, incluyendo un motor de compresión ZIP implementado en PHP puro.
+
+**Gestión de Asistencia e Incidencias:**
+- Algoritmo automatizado que clasifica el estado de los registros (OK, Observado, Incompleto, Error) y calcula las horas trabajadas.
+- Deduplicación criptográfica (Hash MD5) de marcaciones para prevenir colisiones en la base de datos y permitir reimportaciones seguras.
+- Sistema de recálculo parcial inteligente que respeta y blinda las correcciones manuales ejecutadas por Recursos Humanos.
+
+**Interfaz y Herramientas (UI/UX):**
+- Calendario interactivo con vistas de día, matriz semanal y mensual, renderizado de forma fluida vía peticiones AJAX.
+- Dashboard analítico, bandeja de resolución de incidencias con filtros avanzados y generación de reportes operativos en un clic.
+- Interfaz responsiva moderna con soporte a cambio de tema (claro/oscuro) y validación de RUT chileno (Módulo 11).`,
     url: "https://github.com/elJulioDev/Sistema-Marcaciones",
     techs: ["HTML", "CSS", "JavaScript", "PHP", "MySQL", "XAMPP"],
     images: [
