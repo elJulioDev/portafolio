@@ -9,11 +9,14 @@ export function NavItemGitHub() {
   const [stargazersCount, setStargazersCount] = useState(0)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     async function fetchStargazers() {
       try {
         const response = await fetch(
           `https://api.github.com/repos/${GITHUB_USERNAME}/portafolio`,
           {
+            signal: controller.signal,
             headers: {
               Accept: "application/vnd.github+json",
               "X-GitHub-Api-Version": "2022-11-28",
@@ -27,12 +30,15 @@ export function NavItemGitHub() {
 
         const json = (await response.json()) as { stargazers_count?: number }
         setStargazersCount(Number(json?.stargazers_count) || 0)
-      } catch {
-        // Silently fail
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          // Silently fail
+        }
       }
     }
 
     fetchStargazers()
+    return () => controller.abort()
   }, [])
 
   return (

@@ -30,21 +30,28 @@ export function GitHubContributions() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     async function fetchContributions() {
       try {
         const username = siteConfig.github.split("/").pop()
         const res = await fetch(
-          `https://github-contributions-api.jogruber.de/v4/${username}?y=last`
+          `https://github-contributions-api.jogruber.de/v4/${username}?y=last`,
+          { signal: controller.signal }
         )
         const data = await res.json()
         setContributions(data.contributions || [])
-      } catch {
-        setContributions([])
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          setContributions([])
+        }
       } finally {
         setLoading(false)
       }
     }
+    
     fetchContributions()
+    return () => controller.abort()
   }, [])
 
   const data = useMemo(

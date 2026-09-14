@@ -85,7 +85,8 @@ export function ProfileHeader() {
     nextThemeScore: 700,
     nextPointScore: 100,
     scoreFlashUntil: 0,
-    scoreFlashValue: 0
+    scoreFlashValue: 0,
+    isVisible: true
   })
 
   const GRAVITY = 0.6
@@ -94,6 +95,13 @@ export function ProfileHeader() {
 
   gameLoopRef.current = (time: number) => {
     const state = gameState.current
+
+    if (!state.isVisible) {
+      // Solo solicita el siguiente frame sin calcular nada
+      reqRef.current = requestAnimationFrame(gameLoopRef.current)
+      return
+    }
+
     if (!state.isPlaying) return
 
     const delta = time - state.lastTime
@@ -149,8 +157,17 @@ export function ProfileHeader() {
     // Velocidad y fondo
     state.speed += 0.001 * timeScale
     const groundSpeedMul = window.innerWidth < 640 ? 0.65 : 1
-    state.groundX = (state.groundX - state.speed * timeScale * groundSpeedMul) % 1200
-    if (groundRef.current) groundRef.current.style.backgroundPositionX = `${state.groundX}px`
+    const moveAmount = state.speed * timeScale * groundSpeedMul
+
+    // Mantenemos groundX siempre en (-1200, 0] para que nunca crezca sin límite
+    state.groundX -= moveAmount
+    if (state.groundX <= -1200) {
+      state.groundX += 1200
+    }
+
+    if (groundRef.current) {
+      groundRef.current.style.backgroundPositionX = `${Math.round(state.groundX)}px`
+    }
 
     // Nubes — se mueven más lento que el suelo
     state.clouds.forEach((cloud, i) => {
@@ -166,7 +183,7 @@ export function ProfileHeader() {
         }
       }
       if (cloudRefs.current[i]) {
-        cloudRefs.current[i].style.transform = `translateX(${cloud.x}px)`
+        cloudRefs.current[i].style.transform = `translate3d(${cloud.x}px, 0, 0)`
       }
     })
 
@@ -204,7 +221,7 @@ export function ProfileHeader() {
       }
 
       if (cactusRefs.current[i]) {
-        cactusRefs.current[i].style.transform = `translateX(${cactus.x}px)`
+        cactusRefs.current[i].style.transform = `translate3d(${cactus.x}px, 0, 0)`
       }
 
       // Cactus hitbox — relativo al frame (77×52), y=0 arriba del sprite
@@ -276,7 +293,7 @@ export function ProfileHeader() {
     }
 
     if (dinoRef.current) {
-      dinoRef.current.style.transform = `translateY(-${state.yPos}px)`
+      dinoRef.current.style.transform = `translate3d(0, -${state.yPos}px, 0)`
       dinoRef.current.style.backgroundPosition = bgPos
     }
 
@@ -329,14 +346,14 @@ export function ProfileHeader() {
     
     gameState.current.cacti.forEach((cactus, i) => {
       if (cactusRefs.current[i]) {
-        cactusRefs.current[i].style.transform = `translateX(${cactus.x}px)`
+        cactusRefs.current[i].style.transform = `translate3d(${cactus.x}px, 0, 0)`
         cactusRefs.current[i].style.backgroundPosition = `-${cactus.frameX}px -${cactus.frameY}px`
       }
     })
 
     gameState.current.clouds.forEach((cloud, i) => {
       if (cloudRefs.current[i]) {
-        cloudRefs.current[i].style.transform = `translateX(${cloud.x}px)`
+        cloudRefs.current[i].style.transform = `translate3d(${cloud.x}px, 0, 0)`
         cloudRefs.current[i].style.top = `${cloud.y}px`
       }
     })
@@ -346,46 +363,19 @@ export function ProfileHeader() {
   }
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-
-      if (['Space', 'ArrowUp', 'w'].includes(e.code) || e.code === 'Space') {
-        if (gameState.current.isPlaying) {
-          e.preventDefault()
-          if (gameState.current.yPos <= 0.5) {
-            gameState.current.isJumping = true
-            gameState.current.yVelocity = JUMP_FORCE
-            sfxJump.current?.play()
-          }
-        } else {
-          if (window.scrollY < 400) {
-            e.preventDefault()
-            startGameRef.current()
-          }
-        }
-      } else if (['ArrowDown', 's'].includes(e.code)) {
-        if (gameState.current.isPlaying) {
-          e.preventDefault()
-          gameState.current.isDucking = true
-        }
-      }
+  const observer = new IntersectionObserver(([entry]) => {
+    gameState.current.isVisible = entry.isIntersecting
+    if (entry.isIntersecting) {
+      // Evita que el delta de tiempo se dispare al volver a la pestaña
+      gameState.current.lastTime = performance.now()
     }
+  }, { threshold: 0 })
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (['ArrowDown', 's'].includes(e.code)) {
-        gameState.current.isDucking = false
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown, { passive: false })
-    window.addEventListener('keyup', handleKeyUp)
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      window.removeEventListener('keyup', handleKeyUp)
-      if (reqRef.current) cancelAnimationFrame(reqRef.current)
-    }
-  }, [])
+  if (containerRef.current) {
+    observer.observe(containerRef.current)
+  }
+  return () => observer.disconnect()
+}, [])
 
   return (
     <>
@@ -447,20 +437,21 @@ export function ProfileHeader() {
                 backgroundSize: "contain",
                 imageRendering: "pixelated",
                 transform: "translateX(1500px)",
-                display: showOverlay === 'START' ? 'none' : 'block'
+                display: showOverlay === 'START' ? 'none' : 'block',
+                willChange: "transform"
               }}
             />
           ))}
 
           <div className="absolute bottom-16 sm:bottom-24 left-0 w-full h-0">
-            <div 
+            <div
               ref={groundRef}
               className="absolute top-[-10px] left-0 w-full h-[22px] z-0 dark:invert opacity-80"
               style={{
                 backgroundImage: "url('/images/dino/ground.webp')",
                 backgroundRepeat: "repeat-x",
-                backgroundPosition: "left top",
-                imageRendering: "pixelated"
+                backgroundPosition: "0px top",
+                imageRendering: "pixelated",
               }}
             />
 
@@ -479,7 +470,8 @@ export function ProfileHeader() {
                     backgroundRepeat: "no-repeat",
                     imageRendering: "pixelated",
                     transform: "translateX(1500px)",
-                    display: showOverlay === 'START' ? 'none' : 'block'
+                    display: showOverlay === 'START' ? 'none' : 'block',
+                    willChange: "transform"
                   }}
                 />
               ))}
@@ -493,7 +485,8 @@ export function ProfileHeader() {
                   backgroundImage: "url('/images/dino/dinospritesheet.webp')",
                   backgroundPosition: "0px 0px",
                   backgroundRepeat: "no-repeat",
-                  imageRendering: "pixelated"
+                  imageRendering: "pixelated",
+                  willChange: "transform"
                 }}
               />
             </div>

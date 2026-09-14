@@ -228,7 +228,7 @@ export function TopographicBackground({
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     const isMobile = window.innerWidth < 768
-    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2)
+    const dpr = Math.min(window.devicePixelRatio || 1, 1)
     const start = performance.now()
     let raf = 0
     let visible = true
@@ -245,6 +245,12 @@ export function TopographicBackground({
         canvas!.height = h
         gl!.viewport(0, 0, w, h)
       }
+    }
+
+    let resizeTimeout: NodeJS.Timeout
+    function handleResize() {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(resize, 150)
     }
 
     function render(now: number) {
@@ -274,14 +280,18 @@ export function TopographicBackground({
       }
     }
 
-    window.addEventListener("resize", resize)
+    window.addEventListener("resize", handleResize) 
+    
     document.addEventListener("visibilitychange", handleVisibility)
     resize()
     raf = requestAnimationFrame(render)
 
     return () => {
       cancelAnimationFrame(raf)
-      window.removeEventListener("resize", resize)
+      clearTimeout(resizeTimeout)
+      
+      window.removeEventListener("resize", handleResize)
+      
       document.removeEventListener("visibilitychange", handleVisibility)
       gl.deleteProgram(program)
       gl.deleteShader(vs)

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import dynamic from "next/dynamic"
 import { ProfileHeader } from "@/features/portfolio/components/profile-header"
 import { Overview } from "@/features/portfolio/components/overview"
 import { SocialLinks } from "@/features/portfolio/components/social-links"
@@ -7,10 +8,13 @@ import { Projects } from "@/features/portfolio/components/projects"
 import { Certifications } from "@/features/portfolio/components/certifications"
 import { Experiences } from "@/features/portfolio/components/experiences"
 import { Education } from "@/features/portfolio/components/education"
-import { GitHubContributions } from "@/features/portfolio/components/github-contributions"
 import { About } from "@/features/portfolio/components/about"
 import { ContactForm } from "@/features/portfolio/components/contact-form"
 import { Footer } from "@/features/portfolio/components/footer"
+
+const GitHubContributions = dynamic(
+  () => import("@/features/portfolio/components/github-contributions").then(m => m.GitHubContributions)
+)
 
 function Separator({ className }: { className?: string }) {
   return (

@@ -155,11 +155,13 @@ export function Education() {
                         </dl>
                       </button>
 
-                      {isExpanded && item.description && (
-                        <div className="typeset typeset-description pt-3 pb-1 pl-9 text-sm text-muted-foreground">
-                          <p>{item.description}</p>
-                        </div>
-                      )}
+                      <div className={`overflow-hidden transition-all duration-200 ${isExpanded ? "max-h-96" : "max-h-0"}`}>
+                        {item.description && (
+                          <div className="typeset typeset-description pt-3 pb-1 pl-9 text-sm text-muted-foreground">
+                            <p>{item.description}</p>
+                          </div>
+                        )}
+                      </div>
 
                       {Array.isArray(item.skills) && item.skills.length > 0 && (
                         <ul className="flex flex-wrap gap-1.5 pt-3 pl-9">

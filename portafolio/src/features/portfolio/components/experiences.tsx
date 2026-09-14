@@ -272,9 +272,9 @@ export function Experiences() {
                           </dl>
                         </button>
 
-                        {isExpanded && (
+                        <div className={`overflow-hidden transition-all duration-200 ${isExpanded ? "max-h-96" : "max-h-0"}`}>
                           <Description text={pos.description!} />
-                        )}
+                        </div>
 
                         {pos.tags && pos.tags.length > 0 && (
                           <ul className="flex flex-wrap gap-1.5 pt-3 pl-9">

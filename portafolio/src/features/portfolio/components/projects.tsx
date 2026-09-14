@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import Image from "next/image"
+import { ImageIcon } from "lucide-react"
 
 import { Panel, PanelHeader, PanelTitle } from "./panel"
 import { CollapsibleList } from "./collapsible-list"
@@ -12,18 +12,86 @@ import {
   ChevronsUpDownIcon,
   type ChevronsUpDownIconHandle,
 } from "@/components/animated-icons/chevrons-up-down-icon"
+import dynamic from "next/dynamic"
+const Lightbox = dynamic(() => import("@/components/lightbox").then(m => m.Lightbox), {
+  ssr: false
+})
 
-function LinkIcon() {
+// Función para parsear texto enriquecido (igual que en experiencias)
+function parseDescription(text: string) {
+  const parts: Array<{ type: "paragraph" | "bold" | "list"; content: string | string[] }> = []
+  const lines = text.split("\n")
+  let inList = false
+  let listItems: string[] = []
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) {
+      if (inList && listItems.length > 0) {
+        parts.push({ type: "list", content: listItems })
+        listItems = []
+        inList = false
+      }
+      continue
+    }
+
+    if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
+      if (inList && listItems.length > 0) {
+        parts.push({ type: "list", content: listItems })
+        listItems = []
+        inList = false
+      }
+      parts.push({ type: "bold", content: trimmed.slice(2, -2) })
+    } else if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
+      inList = true
+      listItems.push(trimmed.slice(2).trim())
+    } else {
+      if (inList && listItems.length > 0) {
+        parts.push({ type: "list", content: listItems })
+        listItems = []
+        inList = false
+      }
+      parts.push({ type: "paragraph", content: trimmed })
+    }
+  }
+
+  if (inList && listItems.length > 0) {
+    parts.push({ type: "list", content: listItems })
+  }
+
+  return parts
+}
+
+// Componente visual de la descripción
+function Description({ text }: { text: string }) {
+  const parts = parseDescription(text)
   return (
-    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-    </svg>
+    <div className="pl-9 text-sm text-muted-foreground space-y-2 pt-2">
+      {parts.map((part, i) => {
+        if (part.type === "paragraph") {
+          return <p key={i}>{part.content}</p>
+        }
+        if (part.type === "bold") {
+          return <p key={i} className="font-medium text-foreground mt-2">{part.content}</p>
+        }
+        if (part.type === "list") {
+          return (
+            <ul key={i} className="list-disc space-y-1 pl-4">
+              {(part.content as string[]).map((item, j) => (
+                <li key={j}>{item}</li>
+              ))}
+            </ul>
+          )
+        }
+        return null
+      })}
+    </div>
   )
 }
 
 function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
   const [open, setOpen] = useState(false)
+  const [lightbox, setLightbox] = useState<{ images: string[], index: number } | null>(null)
   const chevronRef = useRef<ChevronsUpDownIconHandle>(null)
 
   const toggleOpen = () => {
@@ -35,67 +103,103 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
     setOpen(!open)
   }
 
+  // Validación segura: comprobar si existe array y si tiene elementos
+  const hasImages = project.images && project.images.length > 0
+
   return (
-    <div className="group bg-background">
-      <button
-        onClick={toggleOpen}
-        className="flex w-full items-center text-left hover:bg-accent-muted transition-colors"
-      >
-        <div className="mx-4">
-          <IconTile>
-            <span className="text-xs font-medium">{project.title.charAt(0)}</span>
-          </IconTile>
-        </div>
-
-        <div className="flex flex-1 items-center gap-2 border-l border-dashed border-line p-4 pr-2">
-          <div className="flex-1">
-            <h3 className="text-sm leading-snug font-medium text-balance">
-              {project.title}
-            </h3>
+    <>
+      <div className="group/project screen-line-bottom scroll-mt-14 space-y-4 bg-background p-4">
+        <div className="relative before:absolute before:left-3 before:h-full before:w-px before:bg-border">
+          
+          <div className="pointer-events-none absolute bottom-0 left-3 hidden size-4 bg-background group-last/project:flex" aria-hidden="true">
+            <span className="size-full -translate-y-2.25 rounded-bl-sm border-b border-l" />
           </div>
 
-          <a
-            href={project.url}
-            target="_blank"
-            rel="noopener"
-            className="relative flex size-6 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-            onClick={(e) => e.stopPropagation()}
-            aria-label="Open project"
-          >
-            <LinkIcon />
-          </a>
+          <div data-slot="collapsible" data-closed={!open} className="group/project-item relative">
+            <button
+              type="button"
+              data-slot="collapsible-trigger"
+              onClick={toggleOpen}
+              className="group block w-full text-left relative before:absolute before:-top-1 before:-right-1 before:-bottom-1.5 before:left-7 before:rounded-lg before:transition-[background-color] before:ease-out hover:before:bg-accent-muted outline-none focus-visible:before:inset-ring-2 focus-visible:before:inset-ring-ring/50"
+            >
+              <div className="relative z-1 mb-1 flex items-start gap-3 text-base">
+                <IconTile>
+                  <span className="text-xs font-medium">{project.title.charAt(0)}</span>
+                </IconTile>
+                <h3 className="flex-1 font-medium text-balance">{project.title}</h3>
+                
+                {/* Contenedor de iconos alineados a la derecha */}
+                <div className="flex shrink-0 items-center gap-3 text-muted-foreground group-data-disabled:hidden">
+                  {project.url && (
+                    <a
+                      href={project.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()} // Evita que se despliegue el acordeón al hacer clic en el enlace
+                      className="hover:text-foreground transition-colors"
+                      aria-label="Abrir repositorio"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link pointer-events-none size-4" aria-hidden="true">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                      </svg>
+                    </a>
+                  )}
+                  <div className="[&_svg]:h-lh [&_svg]:w-4">
+                    <ChevronsUpDownIcon ref={chevronRef} duration={0.15} />
+                  </div>
+                </div>
+              </div>
 
-          <div className="shrink-0 text-muted-foreground [&_svg]:h-lh [&_svg]:w-4">
-            <ChevronsUpDownIcon ref={chevronRef} duration={0.15} />
-          </div>
-        </div>
-      </button>
+              {/* Subtítulo: Muestra la fecha del proyecto */}
+              <dl className="flex items-center gap-2 pl-9 text-sm text-muted-foreground relative z-1">
+                <div>
+                  <dt className="sr-only">Fecha</dt>
+                  <dd className="flex items-center gap-0.5 tabular-nums">
+                    <span>{project.date || "2026"}</span>
+                  </dd>
+                </div>
+              </dl>
+            </button>
 
-      <div className={`overflow-hidden transition-all duration-200 ${open ? "max-h-96" : "max-h-0"}`}>
-        <div className="space-y-4 border-t border-line p-4">
-          <p className="typeset typeset-description">{project.desc}</p>
-
-          {project.images.length > 0 && (
-            <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-              <Image
-                src={project.images[0]}
-                alt={project.title}
-                fill
-                className="object-cover"
-              />
+            {/* Contenido desplegable (Imágenes + Descripción Enriquecida) */}
+            <div className={`overflow-hidden transition-all duration-200 ${open ? "max-h-[2000px]" : "max-h-0"}`}>
+              {hasImages && (
+                <div className="pl-9 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setLightbox({ images: project.images || [], index: 0 })}
+                    className="inline-flex items-center gap-2 rounded-md bg-secondary/50 px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary border border-border/50"
+                  >
+                    <ImageIcon className="size-4" />
+                    Ver imágenes ({project.images!.length})
+                  </button>
+                </div>
+              )}
+              <Description text={project.desc} />
             </div>
-          )}
 
-          {project.techs.length > 0 && (
-            <ul className="flex flex-wrap gap-1.5">
-              {project.techs.map((tech) => (
-                <Tag key={tech}>{tech}</Tag>
-              ))}
-            </ul>
-          )}
+            {/* Tags de tecnologías renderizados por fuera del contenedor desplegable */}
+            {project.techs.length > 0 && (
+              <ul className="flex flex-wrap gap-1.5 pt-3 pl-9">
+                {project.techs.map((tech) => (
+                  <Tag key={tech}>{tech}</Tag>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {lightbox && (
+        <Lightbox
+          images={lightbox.images}
+          index={lightbox.index}
+          alt={project.title}
+          onClose={() => setLightbox(null)}
+        />
+      )}
+    </>
   )
 }
 
@@ -104,7 +208,7 @@ export function Projects() {
     <Panel id="projects">
       <PanelHeader>
         <PanelTitle>
-          <a href="#projects">Projects</a>
+          <a href="#projects">Proyectos</a>
           <sup className="top-[-0.75em] ml-1 text-sm font-medium tracking-normal text-muted-foreground">
             ({PROJECTS.length})
           </sup>
