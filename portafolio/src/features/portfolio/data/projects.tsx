@@ -67,6 +67,56 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
+    key: "proyecto_survivor",
+    title: "ProyectSurvivor",
+    date: "ene. 2026",
+    desc: `Videojuego 2D de supervivencia top-down (estilo Vampire Survivors) desarrollado en Python utilizando la librería Pygame. Construido sobre un motor personalizado enfocado en la optimización extrema de memoria y CPU para soportar hordas masivas de entidades, incluyendo compatibilidad multiplataforma para PC y dispositivos móviles (Android).
+
+**Arquitectura del Motor y Optimización:**
+- Bucle de juego independiente de los fotogramas (*Frame-rate independent*) basado en multiplicadores de *DeltaTime*, permitiendo físicas e interpolaciones fluidas a tasas de refresco variables (60, 120, 240 y desbloqueado).
+- Gestor de memoria en bucle cerrado (*Object Pooling* estricto) para el reciclaje continuo de proyectiles, partículas y enemigos, eliminando la creación de objetos en tiempo real y los picos de latencia (*stutters*) por el *Garbage Collector*.
+- Sistema de renderizado espacial por *Chunks* que "hornea" (*bakes*) las calcomanías estáticas (como sangre) en texturas dinámicas, reduciendo la saturación de RAM al descargar zonas lejanas del mapa de forma automática (*eviction*).
+- Algoritmo de Nivel de Detalle Dinámico (*LOD*) que monitoriza la carga computacional (partículas vivas y enemigos renderizados) para degradar o simplificar la complejidad de los efectos visuales según las capacidades de la plataforma.
+
+**Lógica Matemática y Sistemas de Colisión:**
+- Detección de colisión continua (*Swept Collision / Line Sweeping*) para proyectiles supersónicos, utilizando algoritmos de intersección de vectores (\`rect.clipline\`) y posiciones históricas para asegurar el registro de impactos entre fotogramas y evitar el traspaso de *hitboxes*.
+- Motor de particionamiento espacial (*Spatial Grid*) optimizado con algoritmos de hashing unidimensional (claves numéricas combinadas en lugar de tuplas de coordenadas) para resolver proximidad y colisiones en un tiempo constante ultrarrápido O(1).
+- Inteligencia Artificial de enjambre con sistema *Anti-Clustering*, combinando repulsión radial cuadrática entre agentes, carriles paramétricos espaciales y cálculo de vectores predictivos que anticipan la trayectoria del jugador.
+
+**Mecánicas y Plataformas:**
+- Árbol de progresión sistémico (*Vampire Survivors style*) donde las estadísticas de la horda enemiga (velocidad, daño y salud máxima) escalan matemáticamente de forma proporcional al nivel alcanzado y los minutos de supervivencia del jugador.
+- Integración paramétrica *Multi-Touch* para Android, implementando *joysticks* virtuales multipunto, reescalado dinámico de los límites de cámara y módulos de auto-apuntado según la detección del sistema operativo subyacente.`,
+    url: "https://github.com/elJulioDev/ProyectSurvivor",
+    techs: ["Python", "Pygame", "Android", "Game Dev", "Matemáticas"],
+    images: [
+      "/images/proyectos/proyecto_ps.png",
+      "/images/proyectos/proyecto_ps_2.png"
+    ],
+  },
+  {
+    key: "proyecto_clubhouse",
+    title: "ClubHouse Digital",
+    date: "dic. 2025",
+    desc: `Plataforma web integral para la administración y gestión operativa de gimnasios, desarrollada como proyecto de título para Ingeniería en Informática en INACAP. Construida con un enfoque en la automatización del control de acceso y la escalabilidad del negocio.
+
+**Arquitectura y Backend (Django):**
+- Desarrollada en Python con Django 5, incorporando soporte híbrido para bases de datos relacionales (PostgreSQL vía Neon para producción y MySQL para entornos locales).
+- Backend de autenticación personalizado que permite inicios de sesión seguros tanto por RUT como por correo electrónico, bloqueando el acceso de superusuarios desde el front-end.
+- Despliegue optimizado con \`WhiteNoise\` para la gestión de archivos estáticos y scripts de inicialización por consola (\`init_system\`) para automatizar la creación de entornos y el poblamiento de datos con \`Faker\`.
+
+**Control de Acceso y Seguridad (Tecnología QR):**
+- Arquitectura basada en tres niveles de roles estrictos (Administrador, Moderador, Socio) que delimitan el acceso a dashboards, funciones operativas y endpoints de la API interna.
+- Sistema generador de códigos QR únicos utilizando \`qrcode[pil]\`, integrados en un pase digital para cada socio activo.
+- Escáner QR desarrollado en JavaScript puro capaz de validar accesos en tiempo real mediante solicitudes asíncronas, verificando la vigencia de la membresía y evitando accesos duplicados en el mismo día.
+
+**Gestión Operativa y Automatización:**
+- Motor de planes y membresías que procesa renovaciones, cambios y cancelaciones, calculando automáticamente fechas de vencimiento y prorrateos.
+- Generación dinámica de documentos en PDF utilizando \`xhtml2pdf\`, permitiendo la creación y envío automático de contratos de servicio y comprobantes de pago por correo electrónico (\`smtp\`).
+- Dashboards analíticos personalizados por rol que muestran métricas financieras (ingresos mensuales, ticket promedio), tendencias de retención y bitácoras de asistencia en vivo.`,
+    url: "https://github.com/elJulioDev/GimnasioQR",
+    techs: ["Python", "Django", "PostgreSQL", "MySQL", "JavaScript", "HTML/CSS"],
+  },
+  {
     key: "proyecto_nn",
     title: "Neural Network",
     date: "dic. 2025",
@@ -116,5 +166,27 @@ export const PROJECTS: Project[] = [
       "/images/proyectos/proyecto_kf_3.webp",
     ],
     date: "nov. 2026",
+  },
+  {
+    key: "proyecto_uw",
+    title: "Ultimate Warriors",
+    date: "2018 - 2025",
+    desc: `Juego de peleas 2D completo desarrollado enteramente en PowerPoint utilizando VBA. Este proyecto tiene un inmenso valor personal, ya que fue donde aprendí a programar y forjé las bases de la Programación Orientada a Objetos (POO), con un desarrollo técnico y evolutivo continuo que abarcó desde 2018 hasta su finalización en 2025.
+
+**Arquitectura y Motor del Juego:**
+- Motor gráfico propio (dbxwCore) construido en VBA con un *Game Loop* sincronizado por DeltaTime (vía \`GetTickCount\`) e integración de APIs nativas de Windows (\`GetAsyncKeyState\`, \`winmm.dll\`) para controles cero-latencia y gestión de audio.
+- Sistema de físicas y colisiones calculadas por frame, incluyendo gravedad, límites de pantalla dinámicos y detección precisa mediante *hitboxes* y *hurtboxes*.
+- Renderizado de sprites optimizado con sistema de caché en memoria, permitiendo animaciones de combate fluidas y renderizado de capas para efectos visuales complejos (auras y transformaciones).
+
+**Mecánicas de Combate y Escalamiento Dinámico:**
+- Sistema de transformaciones de fases infinitas que recalcula estadisticas base (velocidad, daño, defensa) en tiempo real mediante algoritmos matemáticos, incluyendo estados de riesgo/recompensa como el *Kaioken* (drenaje de vida calculado por tick).
+- Mecánicas avanzadas propias de *Fighting Games*: sistema de *Input Buffer* para lectura de combos, guardia, choques de embestidas, alteraciones de tiempo (*TimeJump*) y un sistema de físicas direccionales de retroceso (*knockback*).
+- Más de 25 habilidades pasivas y activas desarrolladas de forma modular (teletransporte, auto-evasiones con probabilidad estadística, manipulación de dimensiones y bloqueos de habilidades).
+
+**Diseño Data-Driven e Inteligencia Artificial:**
+- Arquitectura 100% basada en datos (Data-Driven Design): un parser JSON desarrollado a medida para VBA permite cargar dinámicamente 30 personajes, 22 escenarios y configuraciones de combate.
+- Desarrollo de un bot de Inteligencia Artificial externo en Python que funciona en paralelo, reaccionando al entorno del juego en tiempo real a través del intercambio estructurado y ultrarrápido de archivos JSON con el motor de VBA.`,
+    url: "https://github.com/elJulioDev/Ultimate-Warriors",
+    techs: ["VBA", "PowerPoint", "Python", "POO", "JSON", "Game Dev"],
   },
 ]
