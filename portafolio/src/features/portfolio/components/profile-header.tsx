@@ -231,6 +231,7 @@ export function ProfileHeader() {
     if (hit) {
       state.isPlaying = false
       state.isGameOver = true
+      if (reqRef.current) cancelAnimationFrame(reqRef.current)
       setShowOverlay('GAME_OVER')
       sfxDie.current?.play()
       const finalScore = Math.floor(state.score)
