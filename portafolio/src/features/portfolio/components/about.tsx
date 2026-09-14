@@ -18,8 +18,16 @@ function getGreeting() {
   const isSummer = month >= 9 || month <= 4
   const eveningStart = isSummer ? 21 : 19 
 
-  if (hour >= 0 && hour < 12) return "Buenos días"
+  // De 00:00 a 05:59 AM (Madrugada) -> "Buenas noches"
+  if (hour >= 0 && hour < 6) return "Buenas noches"
+  
+  // De 06:00 a 11:59 AM (Mañana) -> "Buenos días"
+  if (hour >= 6 && hour < 12) return "Buenos días"
+  
+  // De 12:00 al inicio de la tarde-noche -> "Buenas tardes"
   if (hour >= 12 && hour < eveningStart) return "Buenas tardes"
+  
+  // Desde el eveningStart hasta las 23:59 -> "Buenas noches"
   return "Buenas noches"
 }
 
