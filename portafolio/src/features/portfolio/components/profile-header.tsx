@@ -10,6 +10,8 @@ export function ProfileHeader() {
       
       {/* Banner T-Rex (Fila 1, Ocupa todo el ancho) */}
       <div className="relative col-span-2 w-full aspect-[3/1] max-h-[280px] border-b border-line bg-zinc-50 dark:bg-zinc-950 overflow-hidden">
+        {/* Panel de protección — bloquea clicks y selección */}
+        <div className="absolute inset-0 z-50 cursor-default select-none" />
         
         {/* Contador de Puntuación */}
         <div 
