@@ -1,4 +1,4 @@
-import { formatCompactNumber, formatNumber } from "@/utils/format"
+import { formatCompactNumber } from "@/utils/format"
 import { addQueryParams } from "@/utils/url"
 
 import { GITHUB_USERNAME } from "@/config/site"
@@ -37,21 +37,23 @@ export function GitHubStars({ repo, stargazersCount }: GitHubStarsProps) {
                   />
                 </svg>
 
-                <span
-                  className="text-[0.8125rem]/none text-muted-foreground tabular-nums"
-                  style={{ textBox: "trim-end cap alphabetic" }}
-                >
-                  {formatCompactNumber(stargazersCount).toLowerCase()}
-                </span>
+                {stargazersCount > 0 && (
+                  <span
+                    className="text-[0.8125rem]/none text-muted-foreground tabular-nums"
+                    style={{ textBox: "trim-end cap alphabetic" }}
+                  >
+                    {formatCompactNumber(stargazersCount).toLowerCase()}
+                  </span>
+                )}
 
-                <span className="sr-only">GitHub stars</span>
+                <span className="sr-only">Source Code</span>
               </a>
             }
           />
         }
       />
       <TooltipContent className="tabular-nums">
-        {formatNumber(stargazersCount)} stars
+        Source Code
       </TooltipContent>
     </Tooltip>
   )
