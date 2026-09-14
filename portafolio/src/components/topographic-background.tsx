@@ -227,35 +227,35 @@ export function TopographicBackground({
     const uLineWidth = gl.getUniformLocation(program, "u_lineWidth")
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    const isMobile = window.innerWidth < 768
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2)
     const start = performance.now()
     let raf = 0
     let visible = true
+    let lastW = 0
+    let lastH = 0
 
     function resize() {
       const w = Math.floor(canvas!.clientWidth * dpr)
       const h = Math.floor(canvas!.clientHeight * dpr)
-      if (canvas!.width !== w || canvas!.height !== h) {
+      if (lastW !== w || lastH !== h) {
+        lastW = w
+        lastH = h
         canvas!.width = w
         canvas!.height = h
         gl!.viewport(0, 0, w, h)
       }
     }
 
-    function handleVisibility() {
-      visible = document.visibilityState === "visible"
-    }
-
     function render(now: number) {
-      raf = requestAnimationFrame(render)
       if (!visible) return
+      raf = requestAnimationFrame(render)
 
-      resize()
       const t = reduceMotion ? 0 : (now - start) / 1000
       const { bg, fg } = colorsRef.current
 
       gl!.uniform1f(uTime, t)
-      gl!.uniform2f(uResolution, canvas!.width, canvas!.height)
+      gl!.uniform2f(uResolution, lastW, lastH)
       gl!.uniform3f(uBgColor, bg[0], bg[1], bg[2])
       gl!.uniform3f(uLineColor, fg[0], fg[1], fg[2])
       gl!.uniform1f(uLineOpacity, lineOpacity)
@@ -264,6 +264,14 @@ export function TopographicBackground({
       gl!.uniform1f(uLineWidth, lineWidth)
 
       gl!.drawArrays(gl!.TRIANGLES, 0, 3)
+    }
+
+    function handleVisibility() {
+      visible = document.visibilityState === "visible"
+      if (visible) {
+        resize()
+        raf = requestAnimationFrame(render)
+      }
     }
 
     window.addEventListener("resize", resize)
@@ -286,8 +294,8 @@ export function TopographicBackground({
     <canvas
       ref={canvasRef}
       aria-hidden
-      style={{ filter: blur > 0 ? `blur(${blur}px)` : undefined }}
       className={cn("pointer-events-none fixed inset-0 -z-10 h-full w-full scale-110", className)}
+      style={{ contain: "strict", filter: blur > 0 ? `blur(${blur}px)` : undefined }}
     />
   )
 }
