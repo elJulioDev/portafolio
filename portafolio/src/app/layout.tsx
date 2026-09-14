@@ -7,6 +7,7 @@ import { siteConfig } from "@/config/site"
 import { JsonLd } from "@/features/portfolio/components/json-ld"
 import { SiteHeader } from "@/features/portfolio/components/site-header"
 import { TopographicBackground } from "@/components/topographic-background"
+import { SmoothScroll } from "@/components/smooth-scroll"
 
 import "./globals.css"
 
@@ -86,21 +87,23 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="group/layout relative isolate">
-            <TopographicBackground />
-            <JsonLd />
-            <SiteHeader />
-            <main className="max-w-screen overflow-x-clip px-2">
-              {children}
-            </main>
-          </div>
-        </ThemeProvider>
+        <SmoothScroll>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="group/layout relative isolate">
+              <TopographicBackground />
+              <JsonLd />
+              <SiteHeader />
+              <main className="max-w-screen overflow-x-clip px-2">
+                {children}
+              </main>
+            </div>
+          </ThemeProvider>
+        </SmoothScroll>
       </body>
     </html>
   )
