@@ -30,6 +30,8 @@ export function ProfileHeader() {
   const gameLoopRef = useRef<(time: number) => void>(() => {})
   const startGameRef = useRef<() => void>(() => {})
 
+  const spriteData = useRef<{ dino: Uint8Array, dinoW: number, dinoH: number, cactus: Uint8Array, cactusW: number, cactusH: number } | null>(null)
+
   const sfxJump = useRef<HTMLAudioElement | null>(null)
   const sfxDie = useRef<HTMLAudioElement | null>(null)
   const sfxPoint = useRef<HTMLAudioElement | null>(null)
@@ -41,6 +43,40 @@ export function ProfileHeader() {
     sfxJump.current.preload = "auto"
     sfxDie.current.preload = "auto"
     sfxPoint.current.preload = "auto"
+
+    // Cargar sprites para colisión pixel-perfect
+    const loadSprite = (src: string): Promise<ImageData> =>
+      new Promise((resolve) => {
+        const img = new window.Image()
+        img.src = src
+        img.onload = () => {
+          const canvas = document.createElement("canvas")
+          canvas.width = img.width
+          canvas.height = img.height
+          const ctx = canvas.getContext("2d")!
+          ctx.drawImage(img, 0, 0)
+          resolve(ctx.getImageData(0, 0, img.width, img.height))
+        }
+      })
+
+    Promise.all([
+      loadSprite("/images/dino/dinospritesheet.webp"),
+      loadSprite("/images/dino/cactusspritesheet.webp"),
+    ]).then(([dinoData, cactusData]) => {
+      const extractAlpha = (data: ImageData): Uint8Array => {
+        const alpha = new Uint8Array(data.width * data.height)
+        for (let i = 0; i < alpha.length; i++) alpha[i] = data.data[i * 4 + 3]
+        return alpha
+      }
+      spriteData.current = {
+        dino: extractAlpha(dinoData),
+        dinoW: dinoData.width,
+        dinoH: dinoData.height,
+        cactus: extractAlpha(cactusData),
+        cactusW: cactusData.width,
+        cactusH: cactusData.height,
+      }
+    })
   }, [])
 
   const gameState = useRef({
@@ -153,7 +189,7 @@ export function ProfileHeader() {
 
     // Hitbox del dinosaurio
     const dinoX = window.innerWidth >= 640 ? 64 : 32
-    const dinoHitbox = { x: dinoX + 15, y: state.yPos, w: 30, h: state.isDucking ? 25 : 40 }
+    const dinoH = state.isDucking ? 25 : 40
     let hit = false
 
     // Lógica del "Pool" de Cactus
@@ -177,14 +213,52 @@ export function ProfileHeader() {
         cactusRefs.current[i].style.transform = `translateX(${cactus.x}px)`
       }
 
-      const cactusHitbox = { x: cactus.x + 25, y: 0, w: 25, h: 45 }
+      // AABB rápido
+      const dinoAABB = { x: dinoX + 15, y: state.yPos, w: 30, h: dinoH }
+      const cactusAABB = { x: cactus.x + 25, y: 0, w: 25, h: 45 }
+
       if (
-        dinoHitbox.x < cactusHitbox.x + cactusHitbox.w &&
-        dinoHitbox.x + dinoHitbox.w > cactusHitbox.x &&
-        dinoHitbox.y < cactusHitbox.y + cactusHitbox.h &&
-        dinoHitbox.y + dinoHitbox.h > cactusHitbox.y
+        dinoAABB.x < cactusAABB.x + cactusAABB.w &&
+        dinoAABB.x + dinoAABB.w > cactusAABB.x &&
+        dinoAABB.y < cactusAABB.y + cactusAABB.h &&
+        dinoAABB.y + dinoAABB.h > cactusAABB.y
       ) {
-        hit = true
+        // Pixel-perfect: verificar píxeles opacos en la intersección
+        const spr = spriteData.current
+        if (spr) {
+          const containerH = containerRef.current?.offsetHeight || 200
+          const dinoTopY = containerH - 55 - state.yPos
+
+          const ix = Math.max(dinoAABB.x, cactusAABB.x)
+          const iy = Math.max(dinoTopY, cactusAABB.y)
+          const ix2 = Math.min(dinoAABB.x + dinoAABB.w, cactusAABB.x + cactusAABB.w)
+          const iy2 = Math.min(dinoTopY + dinoH, cactusAABB.y + cactusAABB.h)
+
+          for (let py = iy; py < iy2 && !hit; py += 2) {
+            for (let px = ix; px < ix2 && !hit; px += 2) {
+              const dinoPx = px - dinoAABB.x
+              const dinoPy = py - dinoTopY
+              const cactusPx = px - cactusAABB.x
+              const cactusPy = py - cactusAABB.y
+
+              if (
+                dinoPx >= 0 && dinoPx < spr.dinoW && dinoPy >= 0 && dinoPy < spr.dinoH &&
+                cactusPx >= 0 && cactusPx < spr.cactusW && cactusPy >= 0 && cactusPy < spr.cactusH
+              ) {
+                const dinoFrameOffset = state.isDucking ? spr.dinoW * 49 : 0
+                const cactusIdx = cactusPy * spr.cactusW + cactusPx
+                const dinoIdx = dinoFrameOffset + dinoPy * spr.dinoW + dinoPx
+
+                if (spr.cactus[cactusIdx] > 0 && spr.dino[dinoIdx] > 0) {
+                  hit = true
+                }
+              }
+            }
+          }
+        } else {
+          // Fallback: AABB puro si los sprites aún no cargaron
+          hit = true
+        }
       }
     })
 
