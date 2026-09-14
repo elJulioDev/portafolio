@@ -365,10 +365,6 @@ export function ProfileHeader() {
           e.preventDefault()
           gameState.current.isDucking = true
         }
-      } else if (e.code === 'KeyH') {
-        showHitboxes.current = !showHitboxes.current
-        if (dinoHBRef.current) dinoHBRef.current.style.display = showHitboxes.current ? 'block' : 'none'
-        cactusHBRefs.current.forEach(el => { if (el) el.style.display = showHitboxes.current ? 'block' : 'none' })
       }
     }
 
@@ -495,29 +491,6 @@ export function ProfileHeader() {
                 backgroundPosition: "0px 0px",
                 backgroundRepeat: "no-repeat",
                 imageRendering: "pixelated"
-              }}
-            />
-
-            {[0, 1, 2].map((i) => (
-              <div
-                key={`hb-cactus-${i}`}
-                ref={(el) => { if (el) cactusHBRefs.current[i] = el }}
-                className="absolute left-0 z-50 pointer-events-none rounded-sm"
-                style={{
-                  display: 'none',
-                  border: '2px solid rgba(255, 0, 0, 0.8)',
-                  backgroundColor: 'rgba(255, 0, 0, 0.2)',
-                }}
-              />
-            ))}
-
-            <div
-              ref={dinoHBRef}
-              className="absolute left-0 z-50 pointer-events-none rounded-sm"
-              style={{
-                display: 'none',
-                border: '2px solid rgba(0, 255, 0, 0.8)',
-                backgroundColor: 'rgba(0, 255, 0, 0.2)',
               }}
             />
           </div>
