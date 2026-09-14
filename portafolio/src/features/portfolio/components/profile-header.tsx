@@ -72,9 +72,9 @@ export function ProfileHeader() {
       { x: 2000, frameX: 0, frameY: 0 }
     ],
     clouds: [
-      { x: 600, y: 40, speed: 2 },
-      { x: 1100, y: 55, speed: 2.3 },
-      { x: 1700, y: 45, speed: 2.6 }
+      { x: 600, y: 20, speed: 2 },
+      { x: 1100, y: 35, speed: 2.3 },
+      { x: 1700, y: 25, speed: 2.6 }
     ],
     yPos: 0,
     yVelocity: 0,
@@ -148,7 +148,8 @@ export function ProfileHeader() {
 
     // Velocidad y fondo
     state.speed += 0.001 * timeScale
-    state.groundX = (state.groundX - state.speed * timeScale) % 1200
+    const groundSpeedMul = window.innerWidth < 640 ? 0.65 : 1
+    state.groundX = (state.groundX - state.speed * timeScale * groundSpeedMul) % 1200
     if (groundRef.current) groundRef.current.style.backgroundPositionX = `${state.groundX}px`
 
     // Nubes — se mueven más lento que el suelo
@@ -157,7 +158,8 @@ export function ProfileHeader() {
       if (cloud.x < -120) {
         const maxX = Math.max(...state.clouds.map(c => c.x))
         cloud.x = Math.max(containerWidth, maxX) + 200 + Math.random() * 400
-        cloud.y = 30 + Math.random() * 35
+        const isMobile = window.innerWidth < 640
+        cloud.y = isMobile ? 15 + Math.random() * 25 : 30 + Math.random() * 35
         cloud.speed = 2 + Math.random() * 0.8
         if (cloudRefs.current[i]) {
           cloudRefs.current[i].style.top = `${cloud.y}px`
@@ -306,9 +308,9 @@ export function ProfileHeader() {
       groundX: 0,
       cacti: initialCacti,
       clouds: [
-        { x: containerWidth * 0.5, y: 40, speed: 2 },
-        { x: containerWidth * 0.9, y: 55, speed: 2.3 },
-        { x: containerWidth * 1.4, y: 45, speed: 2.6 }
+        { x: containerWidth * 0.5, y: 20, speed: 2 },
+        { x: containerWidth * 0.9, y: 35, speed: 2.3 },
+        { x: containerWidth * 1.4, y: 25, speed: 2.6 }
       ],
       yPos: 0,
       yVelocity: 0,
@@ -389,7 +391,7 @@ export function ProfileHeader() {
     <>
       <div id="inicio" className="screen-line-bottom grid grid-cols-[auto_1fr] overflow-y-clip border-x screen-line-bottom-border after:z-1">
         
-        <div ref={containerRef} className="relative col-span-2 w-full aspect-[3/1] max-h-[280px] border-b border-line bg-zinc-50 dark:bg-zinc-950 overflow-hidden group" style={{ touchAction: 'manipulation', contain: 'content' }}>
+        <div ref={containerRef} className="relative col-span-2 w-full aspect-[2/1] sm:aspect-[3/1] sm:max-h-[280px] border-b border-line bg-zinc-50 dark:bg-zinc-950 overflow-hidden group" style={{ touchAction: 'manipulation', contain: 'content' }}>
           
           <div 
             className="absolute inset-0 z-50 cursor-pointer select-none flex flex-col items-center justify-center"
@@ -408,7 +410,8 @@ export function ProfileHeader() {
             {showOverlay === 'START' && (
               <div className="bg-background/80 px-3 py-1.5 rounded-lg backdrop-blur-sm pointer-events-none animate-pulse">
                 <span className="text-[10px] sm:text-xs font-medium tracking-widest text-foreground" style={{ fontFamily: 'var(--font-pixel, monospace)' }}>
-                  JUGAR (ESPACIO/CLICK)
+                  <span className="sm:hidden">CLICK PARA JUGAR</span>
+                  <span className="hidden sm:inline">JUGAR (ESPACIO/CLICK)</span>
                 </span>
               </div>
             )}
@@ -437,10 +440,8 @@ export function ProfileHeader() {
             <div
               key={`cloud-${i}`}
               ref={(el) => { if (el) cloudRefs.current[i] = el }}
-              className="absolute left-0 z-0 dark:invert opacity-60"
+              className="absolute left-0 z-0 dark:invert opacity-60 max-sm:w-10 max-sm:h-7 sm:w-24 sm:h-8"
               style={{
-                width: "96px",
-                height: "32px",
                 backgroundImage: "url('/images/dino/cloud.webp')",
                 backgroundRepeat: "no-repeat",
                 backgroundSize: "contain",
@@ -451,7 +452,7 @@ export function ProfileHeader() {
             />
           ))}
 
-          <div className="absolute bottom-20 sm:bottom-24 left-0 w-full h-0">
+          <div className="absolute bottom-16 sm:bottom-24 left-0 w-full h-0">
             <div 
               ref={groundRef}
               className="absolute top-[-10px] left-0 w-full h-[22px] z-0 dark:invert opacity-80"
@@ -463,47 +464,49 @@ export function ProfileHeader() {
               }}
             />
 
-            {[0, 1, 2].map((i) => (
+            <div className="sm:scale-100 max-sm:scale-[0.65] max-sm:origin-bottom-left">
+              {[0, 1, 2].map((i) => (
+                <div 
+                  key={i}
+                  ref={(el) => {
+                    if (el) cactusRefs.current[i] = el
+                  }}
+                  className="absolute bottom-[-8px] left-0 z-10"
+                  style={{
+                    width: "77px", 
+                    height: "52px", 
+                    backgroundImage: "url('/images/dino/cactusspritesheet.webp')",
+                    backgroundRepeat: "no-repeat",
+                    imageRendering: "pixelated",
+                    transform: "translateX(1500px)",
+                    display: showOverlay === 'START' ? 'none' : 'block'
+                  }}
+                />
+              ))}
+
               <div 
-                key={i}
-                ref={(el) => {
-                  if (el) cactusRefs.current[i] = el
-                }}
-                className="absolute bottom-[-8px] left-0 z-10"
+                ref={dinoRef}
+                className="absolute bottom-[-6px] left-8 sm:left-16 z-20"
                 style={{
-                  width: "77px", 
-                  height: "52px", 
-                  backgroundImage: "url('/images/dino/cactusspritesheet.webp')",
+                  width: "61px",
+                  height: "49px",
+                  backgroundImage: "url('/images/dino/dinospritesheet.webp')",
+                  backgroundPosition: "0px 0px",
                   backgroundRepeat: "no-repeat",
-                  imageRendering: "pixelated",
-                  transform: "translateX(1500px)",
-                  display: showOverlay === 'START' ? 'none' : 'block'
+                  imageRendering: "pixelated"
                 }}
               />
-            ))}
-
-            <div 
-              ref={dinoRef}
-              className="absolute bottom-[-6px] left-8 sm:left-16 z-20"
-              style={{
-                width: "61px",
-                height: "49px",
-                backgroundImage: "url('/images/dino/dinospritesheet.webp')",
-                backgroundPosition: "0px 0px",
-                backgroundRepeat: "no-repeat",
-                imageRendering: "pixelated"
-              }}
-            />
+            </div>
           </div>
         </div>
 
         <div className="relative flex flex-col justify-end border-r border-line bg-background">
-          <div className="relative z-30 -mt-16 sm:-mt-18 size-32 sm:size-36 shrink-0 rounded-full border-[3px] sm:border-4 border-background bg-background">
+          <div className="relative z-30 -mt-10 sm:-mt-18 size-24 sm:size-36 shrink-0 rounded-full border-[3px] sm:border-4 border-background bg-background">
             <Image
               src={USER.avatar}
               alt={USER.displayName}
               fill
-              sizes="(max-width: 640px) 128px, 160px"
+              sizes="(max-width: 640px) 96px, 160px"
               className="object-cover rounded-full inset-ring-1 inset-ring-foreground/10"
               priority
             />
@@ -511,13 +514,13 @@ export function ProfileHeader() {
         </div>
 
         <div className="relative z-20 flex flex-col min-w-0 bg-background">
-          <div className="flex items-center h-8 sm:h-9 pl-3 sm:pl-4 overflow-hidden">
-            <h1 className="truncate text-xl sm:text-2xl font-medium tracking-tight leading-none">
+          <div className="flex items-center h-7 sm:h-9 pl-3 sm:pl-4 overflow-hidden">
+            <h1 className="truncate text-lg sm:text-2xl font-medium tracking-tight leading-none">
               {USER.displayName}
             </h1>
           </div>
           <FlipSentences
-            className="flex items-center h-8 sm:h-9 border-t border-line pl-3 sm:pl-4 font-mono text-xs sm:text-sm text-muted-foreground"
+            className="flex items-center h-7 sm:h-9 border-t border-line pl-3 sm:pl-4 font-mono text-xs sm:text-sm text-muted-foreground"
             sentences={USER.flipSentences}
             interval={5}
           />
