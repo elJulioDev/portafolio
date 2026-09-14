@@ -23,10 +23,25 @@ export function ProfileHeader() {
   const cloudRefs = useRef<(HTMLDivElement | null)[]>([])
   const groundRef = useRef<HTMLDivElement>(null)
   const scoreRef = useRef<HTMLDivElement>(null)
+  const hiScoreRef = useRef<HTMLDivElement>(null)
   const reqRef = useRef<number>(0)
+  const hiScore = useRef(0)
 
   const gameLoopRef = useRef<(time: number) => void>(() => {})
   const startGameRef = useRef<() => void>(() => {})
+
+  const sfxJump = useRef<HTMLAudioElement | null>(null)
+  const sfxDie = useRef<HTMLAudioElement | null>(null)
+  const sfxPoint = useRef<HTMLAudioElement | null>(null)
+
+  useEffect(() => {
+    sfxJump.current = new Audio("/sounds/dino/jump.wav")
+    sfxDie.current = new Audio("/sounds/dino/die.wav")
+    sfxPoint.current = new Audio("/sounds/dino/point.wav")
+    sfxJump.current.preload = "auto"
+    sfxDie.current.preload = "auto"
+    sfxPoint.current.preload = "auto"
+  }, [])
 
   const gameState = useRef({
     isPlaying: false,
@@ -50,7 +65,10 @@ export function ProfileHeader() {
     isDucking: false,
     frame: 0,
     lastTime: 0,
-    nextThemeScore: 700
+    nextThemeScore: 700,
+    nextPointScore: 100,
+    scoreFlashUntil: 0,
+    scoreFlashValue: 0
   })
 
   const GRAVITY = 0.6
@@ -77,28 +95,36 @@ export function ProfileHeader() {
     const containerWidth = containerRef.current?.offsetWidth || 800
 
     // Puntuación
-    state.score += 0.08 * (state.speed / 5) * timeScale
+    state.score += 0.14 * (state.speed / 5) * timeScale
     const currentScore = Math.floor(state.score).toString().padStart(5, '0')
-    if (scoreRef.current && scoreRef.current.innerText !== currentScore) {
-      scoreRef.current.innerText = currentScore
+    if (scoreRef.current) {
+      if (state.scoreFlashUntil > time) {
+        const blink = Math.floor(time / 100) % 2 === 0
+        scoreRef.current.style.opacity = blink ? '1' : '0.2'
+        scoreRef.current.innerText = state.scoreFlashValue.toString().padStart(5, '0')
+      } else {
+        scoreRef.current.style.opacity = '1'
+        if (scoreRef.current.innerText !== currentScore) {
+          scoreRef.current.innerText = currentScore
+        }
+      }
     }
 
-    // CAMBIO DE TEMA SUAVE
+    // Puntuación milestone
+    if (state.score >= state.nextPointScore) {
+      sfxPoint.current?.play()
+      state.scoreFlashUntil = time + 1500
+      state.scoreFlashValue = state.nextPointScore
+      state.nextPointScore += 100
+    }
+
+    // CAMBIO DE TEMA — instantáneo (igual que la tecla D)
     if (state.score >= state.nextThemeScore) {
       const { resolvedTheme, systemTheme } = themeStateRef.current
       const nextTheme = resolvedTheme === "dark" ? "light" : "dark"
       const targetTheme = nextTheme === systemTheme ? "system" : nextTheme
       
-      // Agregamos clase para forzar la transición CSS
-      document.documentElement.classList.add('dino-theme-transition')
-      
-      // Usamos el setter de next-themes puro, tal cual lo hace la tecla 'D'
       setTheme(targetTheme)
-      
-      // Limpiamos la transición una vez que termina el efecto
-      setTimeout(() => {
-        document.documentElement.classList.remove('dino-theme-transition')
-      }, 1000)
 
       state.nextThemeScore += 700
     }
@@ -166,6 +192,15 @@ export function ProfileHeader() {
       state.isPlaying = false
       state.isGameOver = true
       setShowOverlay('GAME_OVER')
+      sfxDie.current?.play()
+      const finalScore = Math.floor(state.score)
+      if (finalScore > hiScore.current) {
+        hiScore.current = finalScore
+        if (hiScoreRef.current) {
+          hiScoreRef.current.textContent = `HI ${finalScore.toString().padStart(5, '0')}`
+          hiScoreRef.current.style.display = 'block'
+        }
+      }
       if (dinoRef.current) {
         dinoRef.current.style.backgroundPosition = "-61px -49px"
       }
@@ -239,7 +274,10 @@ export function ProfileHeader() {
       isDucking: false,
       frame: 0,
       lastTime: performance.now(),
-      nextThemeScore: 700
+      nextThemeScore: 700,
+      nextPointScore: 100,
+      scoreFlashUntil: 0,
+      scoreFlashValue: 0
     }
 
     if (scoreRef.current) scoreRef.current.innerText = '00000'
@@ -273,6 +311,7 @@ export function ProfileHeader() {
           if (gameState.current.yPos <= 0.5) {
             gameState.current.isJumping = true
             gameState.current.yVelocity = JUMP_FORCE
+            sfxJump.current?.play()
           }
         } else {
           if (window.scrollY < 400) {
@@ -306,12 +345,6 @@ export function ProfileHeader() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: `
-        .dino-theme-transition, .dino-theme-transition * {
-          transition: background-color 0.8s ease-in-out, color 0.8s ease-in-out, border-color 0.8s ease-in-out, fill 0.8s ease-in-out, stroke 0.8s ease-in-out, filter 0.8s ease-in-out !important;
-        }
-      `}} />
-
       <div id="inicio" className="screen-line-bottom grid grid-cols-[auto_1fr] overflow-y-clip border-x screen-line-bottom-border after:z-1">
         
         <div ref={containerRef} className="relative col-span-2 w-full aspect-[3/1] max-h-[280px] border-b border-line bg-zinc-50 dark:bg-zinc-950 overflow-hidden group" style={{ touchAction: 'manipulation' }}>
@@ -326,6 +359,7 @@ export function ProfileHeader() {
               } else if (gs.yPos <= 0.5) {
                 gs.isJumping = true
                 gs.yVelocity = JUMP_FORCE
+                sfxJump.current?.play()
               }
             }}
           >
@@ -352,12 +386,9 @@ export function ProfileHeader() {
             )}
           </div>
           
-          <div 
-            ref={scoreRef}
-            className="absolute top-4 right-4 sm:top-6 sm:right-8 z-30 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 tracking-widest"
-            style={{ fontFamily: 'var(--font-pixel, monospace)' }}
-          >
-            00000
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-8 z-30 flex gap-3 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 tracking-widest" style={{ fontFamily: 'var(--font-pixel, monospace)' }}>
+            <span ref={hiScoreRef} className="hidden">HI 00000</span>
+            <span ref={scoreRef}>00000</span>
           </div>
 
           {[0, 1, 2].map((i) => (

@@ -37,12 +37,24 @@ export function TechStack() {
             <ul className="flex flex-wrap gap-1.5 px-4">
               {category.items.map((item) => {
                 const Icon = item.icon
+                const badge = (
+                  <span className="flex h-(--badge-height) items-center gap-1.25 rounded-full bg-zinc-50/80 px-2 font-mono text-xs text-foreground inset-ring-1 inset-ring-border dark:bg-zinc-900/80 [&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground/80">
+                    <Icon className="size-3.5" />
+                    {item.name}
+                  </span>
+                )
                 return (
                   <li key={item.name} className="flex">
-                    <span className="flex h-(--badge-height) items-center gap-1.25 rounded-full bg-zinc-50/80 px-2 font-mono text-xs text-foreground inset-ring-1 inset-ring-border dark:bg-zinc-900/80 [&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:text-muted-foreground/80">
-                      <Icon className="size-3.5" />
-                      {item.name}
-                    </span>
+                    {item.url ? (
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-full transition-opacity"
+                      >
+                        {badge}
+                      </a>
+                    ) : badge}
                   </li>
                 )
               })}

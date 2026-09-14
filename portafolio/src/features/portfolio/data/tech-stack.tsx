@@ -76,6 +76,7 @@ export interface TechItem {
   name: string
   icon: React.ComponentType<{ className?: string }>
   level: "high" | "mid" | "low"
+  url?: string
 }
 
 export interface TechCategory {
@@ -91,11 +92,11 @@ export const TECH_STACK: TechCategory[] = [
     title: "Lenguajes de programación",
     desc: "Fundamentos de programación y lenguajes utilizados en desarrollo profesional.",
     items: [
-      { name: "TypeScript", icon: SiTypescript, level: "high" },
-      { name: "JavaScript", icon: SiJavascript, level: "high" },
-      { name: "Python", icon: SiPython, level: "high" },
-      { name: "PHP", icon: SiPhp, level: "high" },
-      { name: "C#", icon: SiSharp, level: "mid" },
+      { name: "TypeScript", icon: SiTypescript, level: "high", url: "https://www.typescriptlang.org/" },
+      { name: "JavaScript", icon: SiJavascript, level: "high", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript" },
+      { name: "Python", icon: SiPython, level: "high", url: "https://www.python.org/" },
+      { name: "PHP", icon: SiPhp, level: "high", url: "https://www.php.net/" },
+      { name: "C#", icon: SiSharp, level: "mid", url: "https://learn.microsoft.com/en-us/dotnet/csharp/" },
     ],
   },
   {
@@ -103,11 +104,11 @@ export const TECH_STACK: TechCategory[] = [
     title: "Interfaces y experiencia de usuario",
     desc: "Maquetación y estilado de interfaces responsivas, accesibles y con buen rendimiento visual.",
     items: [
-      { name: "React", icon: SiReact, level: "high" },
-      { name: "Next.js", icon: SiNextdotjs, level: "high" },
-      { name: "Tailwind CSS", icon: SiTailwindcss, level: "high" },
-      { name: "HTML", icon: SiHtml5, level: "high" },
-      { name: "CSS", icon: SiCss, level: "high" },
+      { name: "React", icon: SiReact, level: "high", url: "https://react.dev/" },
+      { name: "Next.js", icon: SiNextdotjs, level: "high", url: "https://nextjs.org/docs" },
+      { name: "Tailwind CSS", icon: SiTailwindcss, level: "high", url: "https://tailwindcss.com/docs" },
+      { name: "HTML", icon: SiHtml5, level: "high", url: "https://developer.mozilla.org/en-US/docs/Web/HTML" },
+      { name: "CSS", icon: SiCss, level: "high", url: "https://developer.mozilla.org/en-US/docs/Web/CSS" },
     ],
   },
   {
@@ -115,14 +116,14 @@ export const TECH_STACK: TechCategory[] = [
     title: "Servidor, APIs y bases de datos",
     desc: "Desarrollo de sistemas, APIs, modelado relacional y consultas SQL.",
     items: [
-      { name: "Django", icon: SiDjango, level: "high" },
-      { name: "Node.js", icon: SiJavascript, level: "mid" },
-      { name: "MySQL", icon: SiMysql, level: "high" },
-      { name: "PostgreSQL", icon: SiMysql, level: "mid" },
-      { name: "MongoDB", icon: SiMongodb, level: "mid" },
-      { name: "OracleDB", icon: OracleIcon, level: "mid" },
-      { name: "MariaDB", icon: SiMariadb, level: "mid" },
-      { name: "Supabase", icon: SiSupabase, level: "mid" },
+      { name: "Django", icon: SiDjango, level: "high", url: "https://www.djangoproject.com/" },
+      { name: "Node.js", icon: SiJavascript, level: "mid", url: "https://nodejs.org/en/docs" },
+      { name: "MySQL", icon: SiMysql, level: "high", url: "https://dev.mysql.com/doc/" },
+      { name: "PostgreSQL", icon: SiMysql, level: "mid", url: "https://www.postgresql.org/docs/" },
+      { name: "MongoDB", icon: SiMongodb, level: "mid", url: "https://www.mongodb.com/docs/" },
+      { name: "OracleDB", icon: OracleIcon, level: "mid", url: "https://docs.oracle.com/en/database/" },
+      { name: "MariaDB", icon: SiMariadb, level: "mid", url: "https://mariadb.org/documentation/" },
+      { name: "Supabase", icon: SiSupabase, level: "mid", url: "https://supabase.com/docs" },
     ],
   },
   {
@@ -130,9 +131,9 @@ export const TECH_STACK: TechCategory[] = [
     title: "Game dev y prototipos",
     desc: "Creación de mecánicas, físicas y prototipos interactivos en motores profesionales.",
     items: [
-      { name: "Unity", icon: SiUnity, level: "mid" },
-      { name: "Godot", icon: SiGodotengine, level: "mid" },
-      { name: "Pygame", icon: SiPython, level: "mid" },
+      { name: "Unity", icon: SiUnity, level: "mid", url: "https://docs.unity3d.com/" },
+      { name: "Godot", icon: SiGodotengine, level: "mid", url: "https://docs.godotengine.org/" },
+      { name: "Pygame", icon: SiPython, level: "mid", url: "https://www.pygame.org/docs/" },
     ],
   },
   {
@@ -140,12 +141,12 @@ export const TECH_STACK: TechCategory[] = [
     title: "Inteligencia artificial y productividad",
     desc: "Herramientas de IA para desarrollo, asistencia de código y productividad.",
     items: [
-      { name: "Claude", icon: ClaudeIcon, level: "high" },
-      { name: "Gemini", icon: GeminiIcon, level: "high" },
-      { name: "OpenCode", icon: OpenCodeIcon, level: "high" },
-      { name: "Cursor", icon: CursorIcon, level: "mid" },
-      { name: "Google Colab", icon: SiGooglecolab, level: "mid" },
-      { name: "NumPy", icon: SiNumpy, level: "mid" },
+      { name: "Claude", icon: ClaudeIcon, level: "high", url: "https://docs.anthropic.com/" },
+      { name: "Gemini", icon: GeminiIcon, level: "high", url: "https://ai.google.dev/docs" },
+      { name: "OpenCode", icon: OpenCodeIcon, level: "high", url: "https://opencode.ai" },
+      { name: "Cursor", icon: CursorIcon, level: "mid", url: "https://docs.cursor.com/" },
+      { name: "Google Colab", icon: SiGooglecolab, level: "mid", url: "https://colab.research.google.com/" },
+      { name: "NumPy", icon: SiNumpy, level: "mid", url: "https://numpy.org/doc/" },
     ],
   },
   {
@@ -153,9 +154,9 @@ export const TECH_STACK: TechCategory[] = [
     title: "Despliegue y colaboración",
     desc: "Control de versiones, colaboración en equipo y publicación de proyectos en la nube.",
     items: [
-      { name: "Git", icon: SiGit, level: "high" },
-      { name: "GitHub", icon: SiGithub, level: "high" },
-      { name: "Vercel", icon: SiVercel, level: "high" },
+      { name: "Git", icon: SiGit, level: "high", url: "https://git-scm.com/doc" },
+      { name: "GitHub", icon: SiGithub, level: "high", url: "https://github.com/" },
+      { name: "Vercel", icon: SiVercel, level: "high", url: "https://vercel.com/docs" },
     ],
   },
 ]
