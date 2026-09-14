@@ -2,6 +2,7 @@
 
 import { Panel, PanelContent } from "./panel"
 import { SOCIAL_LINKS } from "../data/social-links"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
   github: (
@@ -33,22 +34,30 @@ export function SocialLinks() {
       <h2 className="sr-only">Social links</h2>
 
       <PanelContent>
-        <ul className="flex flex-wrap gap-2">
-          {SOCIAL_LINKS.map((item) => (
-            <li key={item.name}>
-              <a
-                href={item.href}
-                target="_blank"
-                rel="noopener"
-                className="inline-flex size-8 items-center justify-center rounded-lg border border-border text-foreground/80 transition-colors hover:bg-muted hover:text-foreground shadow-none extend-touch-target"
-                title={`${item.title} (${item.handle})`}
-                aria-label={item.title}
-              >
-                {SOCIAL_ICONS[item.name]}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <TooltipProvider>
+          <ul className="flex flex-wrap gap-2">
+            {SOCIAL_LINKS.map((item) => (
+              <li key={item.name}>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener"
+                      className="inline-flex size-8 items-center justify-center rounded-lg border border-border text-foreground/80 transition-colors hover:bg-muted hover:text-foreground shadow-none extend-touch-target"
+                      aria-label={item.title}
+                    >
+                      {SOCIAL_ICONS[item.name]}
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {item.title} ({item.handle})
+                  </TooltipContent>
+                </Tooltip>
+              </li>
+            ))}
+          </ul>
+        </TooltipProvider>
       </PanelContent>
     </Panel>
   )
