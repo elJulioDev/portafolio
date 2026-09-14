@@ -7,14 +7,6 @@ import { SOCIAL_LINKS } from "../data/social-links"
 import { FOOTER_INFO } from "../data/footer"
 import { siteConfig } from "@/config/site"
 
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="m22.991 23-8.533-12.612L22.42 1h-2.77l-6.422 7.575L8.105 1H1.123l8.225 12.158L1 23h2.77l6.81-8.03L16.015 23H23zM7.193 2.769l12.49 18.462h-2.76L4.43 2.769z" />
-    </svg>
-  )
-}
-
 function GitHubIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -180,7 +172,6 @@ export function Footer() {
             rel="noopener"
             aria-label="X Profile"
           >
-            <XIcon className="size-4" />
           </a>
 
           <Separator orientation="vertical" className="data-vertical:h-4 data-vertical:self-center" />
