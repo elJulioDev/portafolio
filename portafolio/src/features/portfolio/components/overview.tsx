@@ -38,6 +38,16 @@ function GraduationCapIcon() {
   )
 }
 
+function DownloadIcon() {
+  return (
+    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" x2="12" y1="15" y2="3" />
+    </svg>
+  )
+}
+
 export function Overview() {
   return (
     <Panel className="screen-line-bottom-none">
@@ -81,6 +91,20 @@ export function Overview() {
           <p>
             <a href={`mailto:${USER.email}`} className="link">
               {USER.email}
+            </a>
+          </p>
+        </div>
+        <div className="flex items-center gap-4 font-mono text-sm">
+          <IconTile>
+            <DownloadIcon />
+          </IconTile>
+          <p>
+            <a
+              href="/CV_ALEXIS_GONZALEZ_PEREZ.pdf"
+              download
+              className="link"
+            >
+              Descargar CV
             </a>
           </p>
         </div>
