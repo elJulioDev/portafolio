@@ -265,7 +265,7 @@ export function ProfileHeader() {
         fetch("/api/scores", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ score: finalScore, playerName: USER.displayName }),
+          body: JSON.stringify({ score: finalScore }),
         }).catch(() => {})
       }
       if (dinoRef.current) {
