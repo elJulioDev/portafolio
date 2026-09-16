@@ -7,7 +7,7 @@ export const siteConfig = {
   title: "elJulioDev — Desarrollador Full Stack",
   description:
     "Portafolio de Alexis González — Desarrollador Full Stack especializado en JavaScript, Python, PHP y Machine Learning. Proyectos, experiencia y certificaciones.",
-  url: "https://eljuliodev.github.io",
+  url: "https://portafolio-eljuliodev.vercel.app",
   author: "Alexis González Pérez",
   username: "elJulioDev",
   email: "alexisdevelopgz@gmail.com",
