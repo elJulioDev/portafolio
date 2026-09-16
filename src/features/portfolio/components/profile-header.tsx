@@ -261,6 +261,13 @@ export function ProfileHeader() {
           hiScoreRef.current.style.display = 'block'
         }
       }
+      if (finalScore > 100) {
+        fetch("/api/scores", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ score: finalScore, playerName: USER.displayName }),
+        }).catch(() => {})
+      }
       if (dinoRef.current) {
         dinoRef.current.style.backgroundPosition = "-61px -49px"
       }
