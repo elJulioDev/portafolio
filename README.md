@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# elJulioDev — Portafolio
 
-## Getting Started
+Portafolio profesional de Alexis Gonzalez, desarrollador full stack. Sitio web personal con secciones de perfil, experiencia laboral, stack tecnologico, proyectos y certificaciones.
 
-First, run the development server:
+**Demo en vivo:** [portafolio-eljuliodev.vercel.app](https://portafolio-eljuliodev.vercel.app)
+
+## Inspiracion
+
+Este proyecto esta basado en el codigo fuente de [chanhdai.com](https://github.com/ncdai/chanhdai.com) de [Quang Anh Dai](https://chanhdai.com). Se adapto y personalizo el diseño, estructura y componentes para el contexto del portfolio de Alexis Gonzalez.
+
+## Stack
+
+- **Framework:** [Next.js 16](https://nextjs.org) (App Router)
+- **UI:** [React 19](https://react.dev) + [TypeScript](https://www.typescriptlang.org)
+- **Estilos:** [Tailwind CSS v4](https://tailwindcss.com) (CSS-first, sin tailwind.config.js)
+- **Componentes:** [shadcn/ui](https://ui.shadcn.com) (estilo base-nova)
+- **Animaciones:** [Motion](https://www.framer.com/motion/) (framer-motion)
+- **Smooth scroll:** [Lenis](https://lenis.darkroom.engineering)
+- **Temas:** [next-themes](https://github.com/pacocoursey/next-themes) (dark/light)
+- **Despliegue:** [Vercel](https://vercel.com)
+
+## Caracteristicas
+
+- Tema oscuro / claro con toggle
+- Juego del dinosaurio de google interactivo en el header
+- Seccion de perfil con avatar y frases animadas
+- Overview con datos de contacto y ubicacion
+- Tech Stack con 20+ tecnologias categorizadas
+- Proyectos con descripciones desplegables e imagenes
+- Experiencia laboral con timeline
+- Educacion y certificaciones (Credly)
+- Formulario de contacto
+- Contribuciones de GitHub (grafico de actividad)
+- SEO optimizado (Open Graph, Twitter Cards, JSON-LD, sitemap, robots.txt)
+- Responsive (mobile-first)
+
+## Requisitos
+
+- [Node.js](https://nodejs.org) >= 18
+- [pnpm](https://pnpm.io) (recomendado) o npm
+
+## Instalacion
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clonar el repositorio
+git clone https://github.com/elJulioDev/portafolio.git
+cd portafolio
+
+# Instalar dependencias
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Desarrollo
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Iniciar servidor de desarrollo
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Comando | Descripcion |
+|---------|-------------|
+| `pnpm dev` | Servidor de desarrollo |
+| `pnpm build` | Build de produccion (genera build info automaticamente) |
+| `pnpm start` | Iniciar servidor de produccion |
+| `pnpm lint` | ESLint (next/core-web-vitals + typescript) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Estructura
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+  app/                    # Next.js App Router
+    layout.tsx            # Layout raiz (metadata, theme, fonts)
+    page.tsx              # Pagina principal (portfolio)
+    globals.css           # Tokens de diseño, temas, utilidades
+    robots.ts             # Reglas para crawlers
+    sitemap.ts            # Sitemap dinamico
+  features/
+    portfolio/            # Modulo principal del portfolio
+      components/         # Componentes de secciones
+      data/               # Datos estaticos (proyectos, tech stack, etc.)
+  components/             # UI compartida (nav, lightbox, theme-toggle, ui/)
+  hooks/                  # Custom hooks
+  registry/               # Componentes locales estilo shadcn
+  config/site.ts          # Metadata del sitio, nav links
+  lib/                    # Utilidades (cn, fonts)
+  types/                  # Tipos compartidos
+  utils/                  # Utilidades extra
+```
 
-## Deploy on Vercel
+## Contenido
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Toda la informacion del portfolio (proyectos, tech stack, experiencia, certificaciones) se define como arrays/objetos TypeScript en `src/features/portfolio/data/`. Para actualizar el contenido, edita estos archivos, no los componentes.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Licencia
+
+[MIT](LICENSE) — Alexis Gonzalez (elJulioDev)
+
+## Creditos
+
+- [chanhdai.com](https://chanhdai.com) — Diseño y arquitectura base
+- [shadcn/ui](https://ui.shadcn.com) — Sistema de componentes
+- [Vercel](https://vercel.com) — Despliegue y hosting
