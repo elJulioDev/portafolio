@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils"
 import { Separator } from "./separator"
 import { SOCIAL_LINKS } from "../data/social-links"
 import { FOOTER_INFO } from "../data/footer"
+import { BUILD_INFO } from "../data/build-info"
+import { PROJECTS } from "../data/projects"
 import { siteConfig } from "@/config/site"
 
 function GitHubIcon({ className }: { className?: string }) {
@@ -93,15 +95,22 @@ export function Footer() {
             </Field>
 
             <Field label="Build">
-              <span className="text-muted-foreground">unavailable</span>
+              <a
+                className="link-underline"
+                href={`${FOOTER_INFO.sourceCodeUrl}/commit/${BUILD_INFO.hash}`}
+                target="_blank"
+                rel="noopener"
+              >
+                {BUILD_INFO.hash}
+              </a>
             </Field>
 
             <Field label="Date">
-              <time dateTime="2026-09-12">2026-09-12</time>
+              <time dateTime={BUILD_INFO.date}>{BUILD_INFO.date}</time>
             </Field>
 
             <Field label="Projects">
-              <span>5</span>
+              <span>{PROJECTS.length}</span>
             </Field>
 
             <Field label="Deployed on">
