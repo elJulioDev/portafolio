@@ -40,6 +40,8 @@ export const MAIN_NAV: NavItem<Route>[] = [
   },
 ]
 
+export const MOBILE_NAV: NavItem<Route>[] = [...MAIN_NAV]
+
 export const GITHUB_USERNAME = "elJulioDev"
 
 export const META_THEME_COLORS = {

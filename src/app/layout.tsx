@@ -6,6 +6,7 @@ import { fontVariables } from "@/lib/fonts"
 import { siteConfig } from "@/config/site"
 import { JsonLd } from "@/features/portfolio/components/json-ld"
 import { SiteHeader } from "@/features/portfolio/components/site-header"
+import { SiteBottomNav } from "@/components/site-bottom-nav"
 import { TopographicBackground } from "@/components/topographic-background"
 import { SmoothScroll } from "@/components/smooth-scroll"
 
@@ -98,7 +99,8 @@ export default function RootLayout({
               <TopographicBackground />
               <JsonLd />
               <SiteHeader />
-              <main className="max-w-screen overflow-x-clip px-2">
+              <SiteBottomNav />
+              <main className="max-w-screen overflow-x-clip px-2 pb-16 sm:pb-0">
                 {children}
               </main>
             </div>

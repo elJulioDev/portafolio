@@ -7,6 +7,7 @@ import { useHotkeys } from "react-hotkeys-hook"
 import { Search } from "lucide-react"
 
 import { MAIN_NAV } from "@/config/site"
+import { cn } from "@/lib/utils"
 import { ElJulioDevMark } from "@/components/eljuliodev-mark"
 import { Button } from "@/components/ui/button"
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
@@ -142,11 +143,20 @@ const PORTFOLIO_LINKS: CommandLinkItem[] = [
   },
 ]
 
-function CommandMenuTrigger({ onClick }: { onClick: () => void }) {
+function CommandMenuTrigger({
+  onClick,
+  className,
+}: {
+  onClick: () => void
+  className?: string
+}) {
   return (
     <Button
       data-slot="command-menu-trigger"
-      className="gap-1.5 border-none px-1.5 text-muted-foreground will-change-[scale] select-none"
+      className={cn(
+        "gap-1.5 border-none px-1.5 text-muted-foreground will-change-[scale] select-none",
+        className
+      )}
       variant="ghost"
       size="sm"
       onClick={onClick}
@@ -217,7 +227,11 @@ function CommandLinkGroup({
   )
 }
 
-export default function CommandMenu() {
+export default function CommandMenu({
+  triggerClassName,
+}: {
+  triggerClassName?: string
+} = {}) {
   const router = useRouter()
   const { setTheme, resolvedTheme } = useTheme()
   const [open, setOpen] = useState(false)
@@ -268,6 +282,7 @@ export default function CommandMenu() {
     <>
       <CommandMenuTrigger
         onClick={() => setOpen(true)}
+        className={triggerClassName}
       />
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandMenuInput />
