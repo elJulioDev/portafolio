@@ -27,8 +27,25 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   authors: [{ name: siteConfig.author }],
   creator: siteConfig.username,
+  keywords: [
+    "desarrollador full stack",
+    "portfolio",
+    "JavaScript",
+    "Python",
+    "PHP",
+    "Machine Learning",
+    "React",
+    "Next.js",
+    "Node.js",
+    "MySQL",
+    "Alexis González",
+    "elJulioDev",
+  ],
   icons: {
     icon: "/logo.svg",
+  },
+  alternates: {
+    canonical: siteConfig.url,
   },
   openGraph: {
     type: "website",
@@ -56,6 +73,9 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  other: {
+    "theme-color": "#09090b",
   },
 }
 
