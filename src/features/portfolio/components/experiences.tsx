@@ -272,7 +272,7 @@ export function Experiences() {
                           </dl>
                         </button>
 
-                        <div className={`overflow-hidden transition-all duration-200 ${isExpanded ? "max-h-96" : "max-h-0"}`}>
+                        <div className={`overflow-hidden transition-all duration-200 ${isExpanded ? "max-h-[1000px]" : "max-h-0"}`}>
                           <Description text={pos.description!} />
                         </div>
 
