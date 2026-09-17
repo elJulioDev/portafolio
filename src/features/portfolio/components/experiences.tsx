@@ -9,6 +9,7 @@ import {
   ChevronsUpDownIcon,
   type ChevronsUpDownIconHandle,
 } from "@/components/animated-icons/chevrons-up-down-icon"
+import { useScrollToAligned } from "@/hooks/use-scroll-to-aligned"
 
 function CodeIcon({ className }: { className?: string }) {
   return (
@@ -134,16 +135,20 @@ export function Experiences() {
   const [open, setOpen] = useState(false)
   const [expandedPositions, setExpandedPositions] = useState<Set<string>>(new Set())
   const chevronRefs = useRef<Map<string, ChevronsUpDownIconHandle>>(new Map())
+  const positionRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const scrollToAligned = useScrollToAligned()
 
   const visibleExperiences = open ? EXPERIENCES : EXPERIENCES.slice(0, MAX)
   const hasMore = EXPERIENCES.length > MAX
 
   const togglePosition = (key: string) => {
     const chevron = chevronRefs.current.get(key)
-    if (expandedPositions.has(key)) {
-      chevron?.stopAnimation()
-    } else {
+    const isExpanding = !expandedPositions.has(key)
+
+    if (isExpanding) {
       chevron?.startAnimation()
+    } else {
+      chevron?.stopAnimation()
     }
 
     setExpandedPositions((prev) => {
@@ -155,6 +160,10 @@ export function Experiences() {
       }
       return next
     })
+
+    if (isExpanding) {
+      scrollToAligned(positionRefs.current.get(key) ?? null)
+    }
   }
 
   return (
@@ -224,7 +233,14 @@ export function Experiences() {
                 const hasDescription = !!pos.description
 
                 return (
-                  <div key={j} className="group/experience-position relative">
+                  <div
+                    key={j}
+                    ref={(el) => {
+                      if (el) positionRefs.current.set(posKey, el)
+                      else positionRefs.current.delete(posKey)
+                    }}
+                    className="group/experience-position relative"
+                  >
                     <div className="pointer-events-none absolute bottom-0 left-3 hidden size-4 bg-background group-last/experience-position:flex">
                       <span className="size-full -translate-y-2.25 rounded-bl-sm border-b border-l" />
                     </div>

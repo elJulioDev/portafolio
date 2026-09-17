@@ -7,6 +7,7 @@ import { IconTile } from "./icon-tile"
 import { Tag } from "./tag"
 import { Separator } from "./separator"
 import { ChevronsUpDownIcon, type ChevronsUpDownIconHandle } from "@/components/animated-icons/chevrons-up-down-icon"
+import { useScrollToAligned } from "@/hooks/use-scroll-to-aligned"
 import { EDUCATION, type Education } from "@/features/portfolio/data/education"
 import {
   Panel,
@@ -20,13 +21,17 @@ const ID = "education"
 export function Education() {
   const [expandedPositions, setExpandedPositions] = useState<Set<string>>(new Set())
   const chevronRefs = useRef<Map<string, ChevronsUpDownIconHandle>>(new Map())
+  const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const scrollToAligned = useScrollToAligned()
 
   const togglePosition = (key: string) => {
     const chevron = chevronRefs.current.get(key)
-    if (expandedPositions.has(key)) {
-      chevron?.stopAnimation()
-    } else {
+    const isExpanding = !expandedPositions.has(key)
+
+    if (isExpanding) {
       chevron?.startAnimation()
+    } else {
+      chevron?.stopAnimation()
     }
 
     setExpandedPositions((prev) => {
@@ -38,6 +43,10 @@ export function Education() {
       }
       return next
     })
+
+    if (isExpanding) {
+      scrollToAligned(itemRefs.current.get(key) ?? null)
+    }
   }
 
   return (
@@ -54,7 +63,14 @@ export function Education() {
         const hasDescription = !!item.description
 
         return (
-          <div key={i} className="group/education screen-line-bottom scroll-mt-14 space-y-4 bg-background p-4">
+          <div
+            key={i}
+            ref={(el) => {
+              if (el) itemRefs.current.set(item.id, el)
+              else itemRefs.current.delete(item.id)
+            }}
+            className="group/education screen-line-bottom scroll-mt-14 space-y-4 bg-background p-4"
+          >
             <div className="relative before:absolute before:left-3 before:h-full before:w-px before:bg-border">
               <div
                 className="pointer-events-none absolute bottom-0 left-3 hidden size-4 bg-background group-last/education:flex"

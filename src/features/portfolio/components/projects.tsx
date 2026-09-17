@@ -13,6 +13,7 @@ import {
   ChevronsUpDownIcon,
   type ChevronsUpDownIconHandle,
 } from "@/components/animated-icons/chevrons-up-down-icon"
+import { useScrollToAligned } from "@/hooks/use-scroll-to-aligned"
 import dynamic from "next/dynamic"
 const Lightbox = dynamic(() => import("@/components/lightbox").then(m => m.Lightbox), {
   ssr: false
@@ -104,14 +105,23 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
   const [open, setOpen] = useState(false)
   const [lightbox, setLightbox] = useState<{ images: string[], index: number } | null>(null)
   const chevronRef = useRef<ChevronsUpDownIconHandle>(null)
+  const itemRef = useRef<HTMLDivElement>(null)
+  const scrollToAligned = useScrollToAligned()
 
   const toggleOpen = () => {
-    if (open) {
-      chevronRef.current?.stopAnimation()
-    } else {
+    const isExpanding = !open
+
+    if (isExpanding) {
       chevronRef.current?.startAnimation()
+    } else {
+      chevronRef.current?.stopAnimation()
     }
+
     setOpen(!open)
+
+    if (isExpanding) {
+      scrollToAligned(itemRef.current)
+    }
   }
 
   // Validación segura: comprobar si existe array y si tiene elementos
@@ -120,7 +130,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
 
   return (
     <>
-      <div className="group/project screen-line-bottom scroll-mt-14 space-y-4 bg-background p-4">
+      <div ref={itemRef} className="group/project screen-line-bottom scroll-mt-14 space-y-4 bg-background p-4">
         <div className="relative before:absolute before:left-3 before:h-full before:w-px before:bg-border">
           
           <div className="pointer-events-none absolute bottom-0 left-3 hidden size-4 bg-background group-last/project:flex" aria-hidden="true">
