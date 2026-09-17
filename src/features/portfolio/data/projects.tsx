@@ -6,12 +6,14 @@ export interface Project {
   techs: string[]
   images?: string[]
   date?: string
+  icon?: string
 }
 
 export const PROJECTS: Project[] = [
   {
     key: "proyecto_bodega",
     title: "Sistema Bodega",
+    icon: "Warehouse",
     date: "abr. 2026",
     desc: `Plataforma web modular orientada a la administración eficiente de inventario, control de stock y seguimiento de solicitudes de materiales organizacionales. Desarrollada en PHP y MySQL con un enfoque estricto en seguridad, escalabilidad y trazabilidad.
 
@@ -43,6 +45,7 @@ export const PROJECTS: Project[] = [
   {
     key: "proyecto_marcaciones",
     title: "Sistema Marcaciones",
+    icon: "Clock",
     date: "abr. 2026",
     desc: `Plataforma web corporativa para la gestión integral de la asistencia laboral municipal. Desarrollada completamente desde cero en PHP y MariaDB sin dependencias de terceros (cero uso de Composer), priorizando la estabilidad y el máximo rendimiento en servidores institucionales.
 
@@ -69,6 +72,7 @@ export const PROJECTS: Project[] = [
   {
     key: "proyecto_survivor",
     title: "ProyectSurvivor",
+    icon: "Gamepad2",
     date: "ene. 2026",
     desc: `Videojuego 2D de supervivencia top-down (estilo Vampire Survivors) desarrollado en Python utilizando la librería Pygame. Construido sobre un motor personalizado enfocado en la optimización extrema de memoria y CPU para soportar hordas masivas de entidades, incluyendo compatibilidad multiplataforma para PC y dispositivos móviles (Android).
 
@@ -96,6 +100,7 @@ export const PROJECTS: Project[] = [
   {
     key: "proyecto_clubhouse",
     title: "ClubHouse Digital",
+    icon: "Dumbbell",
     date: "dic. 2025",
     desc: `Plataforma web integral para la administración y gestión operativa de gimnasios, desarrollada como proyecto de título para Ingeniería en Informática en INACAP. Construida con un enfoque en la automatización del control de acceso y la escalabilidad del negocio.
 
@@ -119,6 +124,7 @@ export const PROJECTS: Project[] = [
   {
     key: "proyecto_nn",
     title: "Neural Network",
+    icon: "Brain",
     date: "dic. 2025",
     desc: `Librería de Deep Learning vectorizada, modular y desarrollada desde cero en Python y NumPy. Diseñada con una API intuitiva estilo Keras, optimizada para producción y orientada a la estabilidad numérica.
 
@@ -142,6 +148,7 @@ export const PROJECTS: Project[] = [
   {
     key: "proyecto_kf",
     title: "Key Forge",
+    icon: "Keyboard",
     desc: `Herramienta de escritorio desarrollada en Python para la gestión y remapeo de teclas en tiempo real. Utiliza una arquitectura modular que separa la lógica de intercepción (Hooks de bajo nivel) de la interfaz gráfica, garantizando un rendimiento óptimo sin input lag.
 
 **Motor de Remapeo Híbrido:**
@@ -170,6 +177,7 @@ export const PROJECTS: Project[] = [
   {
     key: "proyecto_uw",
     title: "Ultimate Warriors",
+    icon: "Swords",
     date: "2018 - 2025",
     desc: `Juego de peleas 2D completo desarrollado enteramente en PowerPoint utilizando VBA. Este proyecto tiene un inmenso valor personal, ya que fue donde aprendí a programar y forjé las bases de la Programación Orientada a Objetos (POO), con un desarrollo técnico y evolutivo continuo que abarcó desde 2018 hasta su finalización en 2025.
 

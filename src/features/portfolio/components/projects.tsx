@@ -1,7 +1,8 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { ImageIcon } from "lucide-react"
+import { ImageIcon, Warehouse, Clock, Gamepad2, Dumbbell, Brain, Keyboard, Swords } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
 import { Panel, PanelHeader, PanelTitle } from "./panel"
 import { CollapsibleList } from "./collapsible-list"
@@ -16,6 +17,16 @@ import dynamic from "next/dynamic"
 const Lightbox = dynamic(() => import("@/components/lightbox").then(m => m.Lightbox), {
   ssr: false
 })
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Warehouse,
+  Clock,
+  Gamepad2,
+  Dumbbell,
+  Brain,
+  Keyboard,
+  Swords,
+}
 
 // Función para parsear texto enriquecido (igual que en experiencias)
 function parseDescription(text: string) {
@@ -105,6 +116,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
 
   // Validación segura: comprobar si existe array y si tiene elementos
   const hasImages = project.images && project.images.length > 0
+  const Icon = project.icon ? ICON_MAP[project.icon] : null
 
   return (
     <>
@@ -124,7 +136,11 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
             >
               <div className="relative z-1 mb-1 flex items-start gap-3 text-base">
                 <IconTile>
-                  <span className="text-xs font-medium">{project.title.charAt(0)}</span>
+                  {Icon ? (
+                    <Icon className="size-4" />
+                  ) : (
+                    <span className="text-xs font-medium">{project.title.charAt(0)}</span>
+                  )}
                 </IconTile>
                 <h3 className="flex-1 font-medium text-balance">{project.title}</h3>
                 
