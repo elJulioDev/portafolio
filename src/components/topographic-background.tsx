@@ -240,6 +240,22 @@ export function TopographicBackground({
     let lastW = 0
     let lastH = 0
     let lastDraw = 0
+    let revealed = false
+    let revealTimeout: NodeJS.Timeout | undefined
+
+    // Revela el canvas con fundido + desenfoque suave tras dibujar el primer frame.
+    function reveal() {
+      if (revealed) return
+      revealed = true
+      requestAnimationFrame(() => {
+        canvas!.style.opacity = "1"
+        canvas!.style.filter = blur > 0 ? `blur(${blur}px)` : "blur(0px)"
+        revealTimeout = setTimeout(() => {
+          canvas!.style.transition = "none"
+          canvas!.style.filter = blur > 0 ? `blur(${blur}px)` : "none"
+        }, 950)
+      })
+    }
 
     function resize() {
       const w = Math.max(1, Math.floor(canvas!.clientWidth * dpr * resolutionScale))
@@ -275,6 +291,7 @@ export function TopographicBackground({
       gl!.uniform1f(uLineWidth, lineWidth)
 
       gl!.drawArrays(gl!.TRIANGLES, 0, 3)
+      reveal()
     }
 
     function render(now: number) {
@@ -301,6 +318,14 @@ export function TopographicBackground({
     window.addEventListener("resize", handleResize)
 
     document.addEventListener("visibilitychange", handleVisibility)
+    if (reduceMotion) {
+      // Sin animación: mostrar el fondo directamente.
+      canvas.style.transition = "none"
+      canvas.style.opacity = "1"
+      canvas.style.filter = blur > 0 ? `blur(${blur}px)` : "none"
+      revealed = true
+    }
+
     resize()
     if (reduceMotion) {
       drawFrame(start)
@@ -311,6 +336,7 @@ export function TopographicBackground({
     return () => {
       cancelAnimationFrame(raf)
       clearTimeout(resizeTimeout)
+      if (revealTimeout) clearTimeout(revealTimeout)
       
       window.removeEventListener("resize", handleResize)
       
@@ -320,14 +346,20 @@ export function TopographicBackground({
       gl.deleteShader(fs)
       gl.deleteBuffer(positionBuffer)
     }
-  }, [lineOpacity, scale, levels, lineWidth])
+  }, [lineOpacity, scale, levels, lineWidth, blur])
 
   return (
     <canvas
       ref={canvasRef}
       aria-hidden
       className={cn("pointer-events-none fixed inset-0 -z-10 h-full w-full scale-110", className)}
-      style={{ contain: "strict", filter: blur > 0 ? `blur(${blur}px)` : undefined }}
+      style={{
+        contain: "strict",
+        // Arranca plano (sin fondo) y el efecto lo revela con fundido + blur.
+        opacity: 0,
+        filter: "blur(12px)",
+        transition: "opacity 900ms ease, filter 900ms ease",
+      }}
     />
   )
 }

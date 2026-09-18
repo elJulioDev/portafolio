@@ -17,8 +17,6 @@ function TooltipProvider({
   )
 }
 
-const createTooltipHandle = TooltipPrimitive.createHandle
-
 function Tooltip<Payload>(props: TooltipPrimitive.Root.Props<Payload>) {
   return <TooltipPrimitive.Root data-slot="tooltip" {...props} />
 }
@@ -74,4 +72,4 @@ function TooltipContent({
   )
 }
 
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, createTooltipHandle }
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger }
