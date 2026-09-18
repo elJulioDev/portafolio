@@ -20,6 +20,86 @@ const SKY_DARK = "#09090b" // zinc-950
 const SKY_TEXT_LIGHT = "#71717a" // zinc-500
 const SKY_TEXT_DARK = "#a1a1aa" // zinc-400
 
+// --- Sprites del dinosaurio ---
+// Dos variantes de la misma hoja: la normal y la de cumpleaños (con gorro de
+// fiesta). La de cumpleaños solo se usa el 8 de septiembre.
+type SpritePos = { x: number; y: number }
+
+interface DinoSheet {
+  src: string
+  width: number
+  height: number
+  idle: SpritePos
+  jump: SpritePos
+  run: [SpritePos, SpritePos]
+  duck: [SpritePos, SpritePos]
+  dead: SpritePos
+}
+
+const DINO_SHEET_NORMAL: DinoSheet = {
+  src: "/images/dino/dinospritesheet.webp",
+  width: 61,
+  height: 49,
+  idle: { x: 0, y: 0 },
+  jump: { x: 0, y: 0 },
+  run: [
+    { x: 122, y: 0 },
+    { x: 0, y: 49 },
+  ],
+  duck: [
+    { x: 61, y: 98 },
+    { x: 122, y: 98 },
+  ],
+  dead: { x: 61, y: 49 },
+}
+
+// Hoja de cumpleaños (183×195, frames de 61×65). El cuerpo queda desplazado
+// hacia abajo respecto a la hoja normal porque el gorro ocupa la parte alta
+// del frame; los pies siguen apoyados al fondo.
+const DINO_SHEET_BIRTHDAY: DinoSheet = {
+  src: "/images/dino/dinospritesheet_bd.webp",
+  width: 61,
+  height: 65,
+  idle: { x: 0, y: 65 },
+  jump: { x: 0, y: 65 },
+  run: [
+    { x: 0, y: 0 },
+    { x: 122, y: 0 },
+  ],
+  duck: [
+    { x: 122, y: 65 },
+    { x: 0, y: 130 },
+  ],
+  dead: { x: 61, y: 0 },
+}
+
+// Hitbox base, definida para un frame de 49px de alto (y=0 = arriba del frame).
+// Para la hoja de cumpleaños se le suma la diferencia de altura (65 - 49 = 16),
+// de modo que la hitbox en coordenadas de mundo es exactamente la misma.
+const DINO_BASE_HEIGHT = 49
+const DINO_BASE_HITBOX = {
+  stand: { x: 20, y: 7, w: 22, h: 35 },
+  duck: { x: 10, y: 24, w: 35, h: 20 },
+}
+
+// Fecha del dino de cumpleaños (mes 1-12 / día).
+const BIRTHDAY_DINO_MONTH = 9
+const BIRTHDAY_DINO_DAY = 8
+// Mientras se prueba la variante se fuerza siempre. Poner en `false` para
+// volver a mostrarla únicamente el 8 de septiembre.
+const FORCE_BIRTHDAY_DINO = false
+
+const isBirthdayDino = () => {
+  if (FORCE_BIRTHDAY_DINO) return true
+  const now = new Date()
+  return (
+    now.getMonth() + 1 === BIRTHDAY_DINO_MONTH &&
+    now.getDate() === BIRTHDAY_DINO_DAY
+  )
+}
+
+const bgPosStyle = (p: SpritePos) => `-${p.x}px -${p.y}px`
+
 // --- Dificultad del juego ---
 // Velocidad tope: evita que la partida se vuelva imposible con el tiempo.
 const START_SPEED = 5.5
@@ -106,9 +186,28 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
   }, [resolvedTheme])
 
   const [showOverlay, setShowOverlay] = useState<'START' | 'PLAYING' | 'GAME_OVER'>('START')
-  
+
+  // Variante del dinosaurio (normal o cumpleaños). Se guarda en un ref y se
+  // resuelve en el cliente para no chocar con la fecha/hora del servidor
+  // durante la hidratación. El JSX pinta siempre la hoja normal (SSR) y el
+  // efecto de abajo la sustituye por la de cumpleaños cuando corresponde.
+  const dinoSheetRef = useRef<DinoSheet>(DINO_SHEET_NORMAL)
+
   const containerRef = useRef<HTMLDivElement>(null)
   const dinoRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const sheet = isBirthdayDino() ? DINO_SHEET_BIRTHDAY : DINO_SHEET_NORMAL
+    dinoSheetRef.current = sheet
+    const el = dinoRef.current
+    if (el) {
+      el.style.width = `${sheet.width}px`
+      el.style.height = `${sheet.height}px`
+      el.style.backgroundImage = `url('${sheet.src}')`
+      el.style.backgroundPosition = bgPosStyle(sheet.idle)
+    }
+  }, [])
+
   const cactusRefs = useRef<(HTMLDivElement | null)[]>([])
   const cloudRefs = useRef<(HTMLDivElement | null)[]>([])
   const hitboxRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -314,6 +413,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
 
   gameLoopRef.current = (time: number) => {
     const state = gameState.current
+    const dinoSheet = dinoSheetRef.current
 
     if (!state.isVisible) {
       // Pausa total: el IntersectionObserver reanuda el loop al volver a ser visible.
@@ -332,7 +432,9 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
 
     // safeDelta asegura que si React causa un micro-lag al re-renderizar el tema,
     // el juego no aplique físicas exageradas en ese frame. (Max ~2 frames)
-    const safeDelta = Math.min(delta, 33)
+    // Se acota a >= 0 porque al reanudar el loop el timestamp de rAF puede ser
+    // anterior a `lastTime` y un delta negativo restaría puntuación/física.
+    const safeDelta = Math.max(0, Math.min(delta, 33))
     const timeScale = safeDelta / 16.66
     
     const containerWidth = state.containerWidth
@@ -399,14 +501,16 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       }
     })
 
-    // Hitbox del dinosaurio — relativo al frame (61×49), y=0 arriba del sprite
+    // Hitbox del dinosaurio — y=0 es la parte superior del frame.
     const dinoX = state.dinoX
-    // frame 61×49: sprite bottom=-6, sprite top=-6+49=43 en world coords
-    // Hitboxes definidas como { x, y, w, h } donde y=0 es arriba del frame (igual que cactus)
-    const dinoSpriteTop = 43 + state.yPos
-    const dinoHB_raw = state.isDucking
-      ? { x: 10, y: 24, w: 35, h: 20 }
-      : { x: 20, y: 7,  w: 22, h: 35 }
+    // El sprite está anclado con `bottom: -6px`, así que su parte superior está
+    // en `-6 + altura del frame`. La hitbox base está definida para un frame de
+    // 49px; en la hoja de cumpleaños (65px) el cuerpo baja 16px, así que se
+    // compensa con `heightDelta` y la hitbox de mundo no cambia.
+    const dinoSpriteTop = -6 + dinoSheet.height + state.yPos
+    const heightDelta = dinoSheet.height - DINO_BASE_HEIGHT
+    const baseHB = state.isDucking ? DINO_BASE_HITBOX.duck : DINO_BASE_HITBOX.stand
+    const dinoHB_raw = { ...baseHB, y: baseHB.y + heightDelta }
     const dinoHB = {
       x: dinoX + dinoHB_raw.x,
       y: dinoSpriteTop - dinoHB_raw.y - dinoHB_raw.h,
@@ -643,7 +747,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
         })
       }
       if (dinoRef.current) {
-        dinoRef.current.style.backgroundPosition = "-61px -49px"
+        dinoRef.current.style.backgroundPosition = bgPosStyle(dinoSheet.dead)
       }
       return
     }
@@ -663,14 +767,17 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
 
     // Animación
     state.frame += 1 * timeScale
-    let bgPos = "0px 0px"
-    
+    // Índice 0/1 seguro: `state.frame` puede ser negativo o NaN en el primer
+    // frame tras reanudar el loop, y `run[NaN]`/`run[-1]` sería `undefined`.
+    const animIdx = Math.floor(state.frame / 8) % 2 === 0 ? 0 : 1
+    let bgPos = bgPosStyle(dinoSheet.idle)
+
     if (state.yPos > 0) {
-      bgPos = "0px 0px"
+      bgPos = bgPosStyle(dinoSheet.jump)
     } else if (state.isDucking) {
-      bgPos = Math.floor(state.frame / 8) % 2 === 0 ? "-61px -98px" : "-122px -98px"
+      bgPos = bgPosStyle(dinoSheet.duck[animIdx])
     } else {
-      bgPos = Math.floor(state.frame / 8) % 2 === 0 ? "-122px 0px" : "0px -49px" 
+      bgPos = bgPosStyle(dinoSheet.run[animIdx])
     }
 
     if (dinoRef.current) {
@@ -682,6 +789,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
   }
 
   startGameRef.current = () => {
+    const dinoSheet = dinoSheetRef.current
     loadResources()
     updateMetrics()
     setShowOverlay('PLAYING')
@@ -726,7 +834,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     }
 
     if (scoreRef.current) scoreRef.current.innerText = '00000'
-    if (dinoRef.current) dinoRef.current.style.backgroundPosition = "0px 0px"
+    if (dinoRef.current) dinoRef.current.style.backgroundPosition = bgPosStyle(dinoSheet.idle)
 
     applyCacti(gameState.current.cacti)
     applyClouds(gameState.current.clouds)
@@ -988,10 +1096,10 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
                 ref={dinoRef}
                 className="absolute bottom-[-6px] left-8 sm:left-16 z-20"
                 style={{
-                  width: "61px",
-                  height: "49px",
-                  backgroundImage: "url('/images/dino/dinospritesheet.webp')",
-                  backgroundPosition: "0px 0px",
+                  width: `${DINO_SHEET_NORMAL.width}px`,
+                  height: `${DINO_SHEET_NORMAL.height}px`,
+                  backgroundImage: `url('${DINO_SHEET_NORMAL.src}')`,
+                  backgroundPosition: bgPosStyle(DINO_SHEET_NORMAL.idle),
                   backgroundRepeat: "no-repeat",
                   imageRendering: "pixelated",
                 }}
