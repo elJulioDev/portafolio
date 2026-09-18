@@ -68,7 +68,10 @@ const PTERO_Y_OFFSET: Record<PteroHeight, number> = {
 }
 
 // Nº máximo de cactus/pterodáctilos visibles a la vez.
-const maxVisibleCacti = (speed: number) => (speed < 6.5 ? 1 : 2)
+// En móvil se limita siempre a 1: la pantalla es estrecha y solo hay salto,
+// así que dos obstáculos juntos serían injustos.
+const maxVisibleCacti = (speed: number, isMobile: boolean) =>
+  isMobile ? 1 : speed < 6.5 ? 1 : 2
 
 const pickCactusSprite = () =>
   CACTUS_SPRITES[Math.floor(Math.random() * CACTUS_SPRITES.length)]
@@ -235,7 +238,9 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     const state = gameState.current
     state.containerWidth = containerRef.current?.offsetWidth || 800
     state.isMobile = window.innerWidth < 640
-    state.groundSpeedMul = state.isMobile ? 0.65 : 1
+    // En móvil el mundo se mueve un poco más lento: pantalla estrecha y solo
+    // hay salto, así que se da más tiempo de reacción.
+    state.groundSpeedMul = state.isMobile ? 0.6 : 1
     state.dinoX = state.isMobile ? 32 : 64
     state.scale = state.isMobile ? 0.65 : 1
     state.viewWidth = state.containerWidth / state.scale
@@ -426,6 +431,9 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
 
     // 1) Mover los cactus/pterodáctilos activos y aparcar los que salen de pantalla.
     //    Los pterodáctilos se mueven un 10% más rápido y se animan.
+    //    En móvil se alarga el recorrido fuera de pantalla antes de reaparecer,
+    //    lo que añade una pausa extra entre obstáculos.
+    const despawnX = state.isMobile ? -200 : -100
     let activeCount = 0
     let rightmost: Cactus | null = null
 
@@ -437,7 +445,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       const speedMul = cactus.type === "ptero" ? 1.1 : 1
       cactus.x -= state.speed * timeScale * speedMul
 
-      if (cactus.x < -100) {
+      if (cactus.x < despawnX) {
         cactus.active = false
         cactus.x = -1000
         cactus.type = "cactus"
@@ -517,8 +525,8 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     }
 
     // 2) Generar el siguiente obstáculo (cactus o pterodáctilo) solo si hay
-    //    cupo en pantalla: al inicio 1, luego 2.
-    const maxVisible = maxVisibleCacti(state.speed)
+    //    cupo en pantalla: al inicio 1, luego 2 (en móvil siempre 1).
+    const maxVisible = maxVisibleCacti(state.speed, state.isMobile)
     let spawnGuard = 0
     while (spawnGuard++ < MAX_CACTI) {
       if (activeCount >= maxVisible) break
@@ -533,6 +541,8 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
         : pickCactusSprite()
 
       // Separación pensada para que quepan ~`maxVisible` obstáculos a la vez.
+      // Con `maxVisible === 1` el obstáculo anterior debe salir de pantalla
+      // (ver `despawnX`) antes de generar el siguiente.
       const base =
         maxVisible <= 1
           ? state.viewWidth + 80
@@ -556,7 +566,11 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       cactus.pad = sprite.pad
 
       if (isPtero) {
-        const height = PTERO_HEIGHTS[Math.floor(Math.random() * PTERO_HEIGHTS.length)]
+        // En móvil no se puede agachar: el pterodáctilo siempre vuela bajo
+        // (saltable), nunca a la altura de la cabeza.
+        const height = state.isMobile
+          ? "ground"
+          : PTERO_HEIGHTS[Math.floor(Math.random() * PTERO_HEIGHTS.length)]
         cactus.type = "ptero"
         cactus.pteroFrame = 0
         cactus.pteroAnimFrame = 0
