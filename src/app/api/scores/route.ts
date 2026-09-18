@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidateTag } from "next/cache"
 import { pool } from "@/lib/db"
 import { getRequestMeta } from "@/lib/request-meta"
 import {
@@ -41,6 +42,9 @@ export async function POST(request: Request) {
       "INSERT INTO dino_scores (score, ip, user_agent) VALUES ($1, $2, $3) RETURNING id, score, created_at",
       [Math.floor(score), meta.source, meta.agent]
     )
+
+    // Invalida la caché del top score para que la próxima página muestre el nuevo valor.
+    revalidateTag("scores", { expire: 0 })
 
     return NextResponse.json(rows[0])
   } catch (error) {

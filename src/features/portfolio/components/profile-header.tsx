@@ -59,7 +59,7 @@ interface Cactus {
   active: boolean
 }
 
-export function ProfileHeader() {
+export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: number }) {
   const { resolvedTheme } = useTheme()
   const themeStateRef = useRef(resolvedTheme)
 
@@ -615,24 +615,15 @@ export function ProfileHeader() {
     }
   }, [])
 
-  // TOP histórico: mayor puntaje guardado en la tabla `dino_scores`.
+  // TOP histórico: mayor puntaje recibido del servidor (ya viene cacheado).
   useEffect(() => {
-    let cancelled = false
-    fetch("/api/scores")
-      .then((res) => (res.ok ? res.json() : []))
-      .then((rows) => {
-        if (cancelled || !Array.isArray(rows) || rows.length === 0) return
-        const best = Number(rows[0]?.score) || 0
-        topScore.current = best
-        if (topScoreRef.current) {
-          topScoreRef.current.textContent = `TOP ${best.toString().padStart(5, '0')}`
-        }
-      })
-      .catch(() => {})
-    return () => {
-      cancelled = true
+    if (initialTopScore > 0) {
+      topScore.current = initialTopScore
+      if (topScoreRef.current) {
+        topScoreRef.current.textContent = `TOP ${initialTopScore.toString().padStart(5, '0')}`
+      }
     }
-  }, [])
+  }, [initialTopScore])
 
   useEffect(() => {
     // Ignora el teclado si el usuario está escribiendo o hay un diálogo abierto
