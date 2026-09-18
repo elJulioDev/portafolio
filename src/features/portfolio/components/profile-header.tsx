@@ -1,10 +1,18 @@
 "use client"
 
 import Image from "next/image"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useTheme } from "next-themes"
 import { FlipSentences } from "./flip-sentences"
 import { USER } from "../data/user"
+
+// Posición inicial de las nubes en CSS (porcentaje del contenedor) para que la
+// escena de inicio se pinte completa desde el primer render, sin esperar al JS.
+const CLOUD_START = [
+  { left: "50%", top: 20 },
+  { left: "90%", top: 35 },
+  { left: "140%", top: 25 },
+] as const
 
 export function ProfileHeader() {
   const { resolvedTheme, systemTheme, setTheme } = useTheme()
@@ -26,6 +34,7 @@ export function ProfileHeader() {
   const hiScoreRef = useRef<HTMLDivElement>(null)
   const reqRef = useRef<number>(0)
   const hiScore = useRef(0)
+  const startedOnce = useRef(false)
 
   const gameLoopRef = useRef<(time: number) => void>(() => {})
   const startGameRef = useRef<() => void>(() => {})
@@ -86,12 +95,90 @@ export function ProfileHeader() {
     nextPointScore: 100,
     scoreFlashUntil: 0,
     scoreFlashValue: 0,
-    isVisible: true
+    isVisible: false,
+    // Métricas cacheadas: se actualizan al iniciar y al redimensionar, evitando
+    // leer offsetWidth/innerWidth dentro del loop (evita forzar layout por frame).
+    containerWidth: 800,
+    isMobile: false,
+    groundSpeedMul: 1,
+    dinoX: 64,
+    // El contenedor de cactus/dino se escala en móvil; `viewWidth` es el ancho
+    // lógico visible (containerWidth / scale) para posicionarlos fuera de pantalla.
+    scale: 1,
+    viewWidth: 800,
   })
 
   const GRAVITY = 0.6
   const JUMP_FORCE = 10
   const FAST_FALL_GRAVITY = 1.2
+
+  // Cachea las métricas del viewport/contenedor fuera del loop de render.
+  const updateMetrics = useCallback(() => {
+    const state = gameState.current
+    state.containerWidth = containerRef.current?.offsetWidth || 800
+    state.isMobile = window.innerWidth < 640
+    state.groundSpeedMul = state.isMobile ? 0.65 : 1
+    state.dinoX = state.isMobile ? 32 : 64
+    state.scale = state.isMobile ? 0.65 : 1
+    state.viewWidth = state.containerWidth / state.scale
+  }, [])
+
+  // Genera la disposición de cactus. `visibleFirst` coloca el primero dentro de
+  // la pantalla (escena de inicio); si no, todos aparecen fuera de pantalla.
+  const spawnCacti = useCallback((visibleFirst: boolean) => {
+    const state = gameState.current
+    const viewWidth = state.containerWidth / state.scale
+    let x = visibleFirst ? viewWidth * 0.72 : viewWidth + 120
+    return [0, 1, 2].map((index) => {
+      const isStartCactus = visibleFirst && index === 0
+      const cactus = {
+        x,
+        // El cactus de inicio usa el sprite base (0,0) para coincidir con su
+        // posicionamiento inicial en CSS y no cambiar de frame al medir.
+        frameX: isStartCactus ? 0 : Math.floor(Math.random() * 5) * 77,
+        frameY: isStartCactus ? 0 : Math.floor(Math.random() * 2) * 52,
+      }
+      x += 320 + Math.random() * 320
+      return cactus
+    })
+  }, [])
+
+  const applyCacti = useCallback(
+    (cacti: { x: number; frameX: number; frameY: number }[]) => {
+      cacti.forEach((cactus, i) => {
+        const el = cactusRefs.current[i]
+        if (el) {
+          el.style.left = "0px"
+          el.style.transform = `translate3d(${cactus.x}px, 0, 0)`
+          el.style.backgroundPosition = `-${cactus.frameX}px -${cactus.frameY}px`
+        }
+      })
+    },
+    []
+  )
+
+  const spawnClouds = useCallback(() => {
+    const w = gameState.current.containerWidth
+    return [
+      { x: w * 0.5, y: 20, speed: 2 },
+      { x: w * 0.9, y: 35, speed: 2.3 },
+      { x: w * 1.4, y: 25, speed: 2.6 },
+    ]
+  }, [])
+
+  const applyClouds = useCallback(
+    (clouds: { x: number; y: number; speed: number }[]) => {
+      clouds.forEach((cloud, i) => {
+        const el = cloudRefs.current[i]
+        if (el) {
+          el.style.left = "0px"
+          el.style.top = `${cloud.y}px`
+          el.style.transform = `translate3d(${cloud.x}px, 0, 0)`
+        }
+      })
+    },
+    []
+  )
 
   gameLoopRef.current = (time: number) => {
     const state = gameState.current
@@ -116,7 +203,7 @@ export function ProfileHeader() {
     const safeDelta = Math.min(delta, 33)
     const timeScale = safeDelta / 16.66
     
-    const containerWidth = containerRef.current?.offsetWidth || 800
+    const containerWidth = state.containerWidth
 
     // Puntuación
     state.score += 0.14 * (state.speed / 5) * timeScale
@@ -155,8 +242,7 @@ export function ProfileHeader() {
 
     // Velocidad y fondo
     state.speed += 0.001 * timeScale
-    const groundSpeedMul = window.innerWidth < 640 ? 0.65 : 1
-    const moveAmount = state.speed * timeScale * groundSpeedMul
+    const moveAmount = state.speed * timeScale * state.groundSpeedMul
 
     // Mantenemos groundX siempre en (-1200, 0] para que nunca crezca sin límite
     state.groundX -= moveAmount
@@ -174,8 +260,7 @@ export function ProfileHeader() {
       if (cloud.x < -120) {
         const maxX = Math.max(...state.clouds.map(c => c.x))
         cloud.x = Math.max(containerWidth, maxX) + 200 + Math.random() * 400
-        const isMobile = window.innerWidth < 640
-        cloud.y = isMobile ? 15 + Math.random() * 25 : 30 + Math.random() * 35
+        cloud.y = state.isMobile ? 15 + Math.random() * 25 : 30 + Math.random() * 35
         cloud.speed = 2 + Math.random() * 0.8
         if (cloudRefs.current[i]) {
           cloudRefs.current[i].style.top = `${cloud.y}px`
@@ -187,7 +272,7 @@ export function ProfileHeader() {
     })
 
     // Hitbox del dinosaurio — relativo al frame (61×49), y=0 arriba del sprite
-    const dinoX = window.innerWidth >= 640 ? 64 : 32
+    const dinoX = state.dinoX
     // frame 61×49: sprite bottom=-6, sprite top=-6+49=43 en world coords
     // Hitboxes definidas como { x, y, w, h } donde y=0 es arriba del frame (igual que cactus)
     const dinoSpriteTop = 43 + state.yPos
@@ -210,7 +295,7 @@ export function ProfileHeader() {
         const maxX = Math.max(...state.cacti.map(c => c.x))
         const gap = 300 + Math.random() * 300 
         
-        cactus.x = Math.max(containerWidth, maxX) + gap
+        cactus.x = Math.max(state.viewWidth, maxX) + gap
         cactus.frameX = Math.floor(Math.random() * 5) * 77
         cactus.frameY = Math.floor(Math.random() * 2) * 52
         
@@ -308,33 +393,26 @@ export function ProfileHeader() {
 
   startGameRef.current = () => {
     loadResources()
+    updateMetrics()
     setShowOverlay('PLAYING')
-    const containerWidth = containerRef.current?.offsetWidth || 800
-    
-    let startX = containerWidth + 100
-    const initialCacti = [0, 1, 2].map(() => {
-      const c = {
-        x: startX,
-        frameX: Math.floor(Math.random() * 5) * 77,
-        frameY: Math.floor(Math.random() * 2) * 52
-      }
-      startX += 300 + Math.random() * 300
-      return c
-    })
+
+    const state = gameState.current
+    const isRestart = startedOnce.current
+    startedOnce.current = true
+
+    // En la primera partida se conserva el cactus que ya estaba en pantalla; en un
+    // reinicio se genera una disposición nueva fuera de pantalla.
+    const cacti = isRestart ? spawnCacti(false) : state.cacti
 
     gameState.current = {
-      ...gameState.current,
+      ...state,
       isPlaying: true,
       isGameOver: false,
       score: 0,
       speed: 5.5,
       groundX: 0,
-      cacti: initialCacti,
-      clouds: [
-        { x: containerWidth * 0.5, y: 20, speed: 2 },
-        { x: containerWidth * 0.9, y: 35, speed: 2.3 },
-        { x: containerWidth * 1.4, y: 25, speed: 2.6 }
-      ],
+      cacti,
+      clouds: spawnClouds(),
       yPos: 0,
       yVelocity: 0,
       isJumping: false,
@@ -349,50 +427,117 @@ export function ProfileHeader() {
 
     if (scoreRef.current) scoreRef.current.innerText = '00000'
     if (dinoRef.current) dinoRef.current.style.backgroundPosition = "0px 0px"
-    
-    gameState.current.cacti.forEach((cactus, i) => {
-      if (cactusRefs.current[i]) {
-        cactusRefs.current[i].style.transform = `translate3d(${cactus.x}px, 0, 0)`
-        cactusRefs.current[i].style.backgroundPosition = `-${cactus.frameX}px -${cactus.frameY}px`
-      }
-    })
 
-    gameState.current.clouds.forEach((cloud, i) => {
-      if (cloudRefs.current[i]) {
-        cloudRefs.current[i].style.transform = `translate3d(${cloud.x}px, 0, 0)`
-        cloudRefs.current[i].style.top = `${cloud.y}px`
-      }
-    })
+    applyCacti(gameState.current.cacti)
+    applyClouds(gameState.current.clouds)
     
     if (reqRef.current) cancelAnimationFrame(reqRef.current)
     reqRef.current = requestAnimationFrame(gameLoopRef.current)
   }
 
+  // Escena de inicio: deja un cactus y las nubes ya visibles para que al pulsar
+  // "jugar" solo comience el movimiento (sin aparecer desde fuera de pantalla).
   useEffect(() => {
-  const observer = new IntersectionObserver(([entry]) => {
+    updateMetrics()
     const state = gameState.current
-    const wasVisible = state.isVisible
-    state.isVisible = entry.isIntersecting
+    state.cacti = spawnCacti(true)
+    applyCacti(state.cacti)
+    state.clouds = spawnClouds()
+    applyClouds(state.clouds)
+  }, [updateMetrics, spawnCacti, applyCacti, spawnClouds, applyClouds])
 
-    if (entry.isIntersecting) {
-      // Evita que el delta de tiempo se dispare al volver a ser visible
-      state.lastTime = performance.now()
-      // Reanuda el loop si la partida seguía en curso y estaba pausada
-      if (!wasVisible && state.isPlaying) {
-        if (reqRef.current) cancelAnimationFrame(reqRef.current)
-        reqRef.current = requestAnimationFrame(gameLoopRef.current)
+  useEffect(() => {
+    // Ignora el teclado si el usuario está escribiendo o hay un diálogo abierto
+    // (p. ej. el menú de búsqueda), o si el foco está en un elemento interactivo.
+    const shouldIgnoreKeyboard = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      if (
+        target?.closest?.(
+          "input, textarea, select, button, a, [contenteditable='true']"
+        )
+      ) {
+        return true
+      }
+      return document.querySelector('[role="dialog"]') !== null
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (shouldIgnoreKeyboard(event)) return
+      const state = gameState.current
+      if (!state.isVisible) return
+
+      if (event.code === "Space" || event.code === "ArrowUp") {
+        event.preventDefault()
+        if (state.isGameOver || !state.isPlaying) {
+          if (!event.repeat) startGameRef.current()
+          return
+        }
+        if (state.yPos <= 0.5 && !state.isJumping) {
+          state.isJumping = true
+          state.yVelocity = JUMP_FORCE
+          sfxJump.current?.play()
+        }
+      } else if (event.code === "ArrowDown") {
+        if (state.isPlaying && !state.isGameOver) {
+          event.preventDefault()
+          state.isDucking = true
+        }
       }
     }
-  }, { threshold: 0 })
 
-  if (containerRef.current) {
-    observer.observe(containerRef.current)
-  }
-  return () => {
-    observer.disconnect()
-    if (reqRef.current) cancelAnimationFrame(reqRef.current)
-  }
-}, [])
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.code === "ArrowDown") gameState.current.isDucking = false
+    }
+
+    // Los listeners se enganchan solo mientras el juego está a la vista para no
+    // consumir recursos cuando el usuario está en otra parte de la página.
+    let keyboardBound = false
+    const bindKeyboard = () => {
+      if (keyboardBound) return
+      keyboardBound = true
+      window.addEventListener("keydown", onKeyDown)
+      window.addEventListener("keyup", onKeyUp)
+      window.addEventListener("resize", updateMetrics)
+    }
+    const unbindKeyboard = () => {
+      if (!keyboardBound) return
+      keyboardBound = false
+      window.removeEventListener("keydown", onKeyDown)
+      window.removeEventListener("keyup", onKeyUp)
+      window.removeEventListener("resize", updateMetrics)
+      gameState.current.isDucking = false
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      const state = gameState.current
+      if (entry.isIntersecting) {
+        if (!state.isVisible) {
+          state.isVisible = true
+          // Evita que el delta de tiempo se dispare al volver a ser visible
+          state.lastTime = performance.now()
+          updateMetrics()
+          bindKeyboard()
+          // Reanuda el loop si la partida seguía en curso y estaba pausada
+          if (state.isPlaying) {
+            if (reqRef.current) cancelAnimationFrame(reqRef.current)
+            reqRef.current = requestAnimationFrame(gameLoopRef.current)
+          }
+        }
+      } else if (state.isVisible) {
+        state.isVisible = false
+        unbindKeyboard()
+      }
+    }, { threshold: 0 })
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current)
+    }
+    return () => {
+      observer.disconnect()
+      unbindKeyboard()
+      if (reqRef.current) cancelAnimationFrame(reqRef.current)
+    }
+  }, [updateMetrics])
 
   return (
     <>
@@ -417,8 +562,7 @@ export function ProfileHeader() {
             {showOverlay === 'START' && (
               <div className="bg-background/80 px-3 py-1.5 rounded-lg backdrop-blur-sm pointer-events-none animate-pulse">
                 <span className="text-[10px] sm:text-xs font-medium tracking-widest text-foreground" style={{ fontFamily: 'var(--font-pixel, monospace)' }}>
-                  <span className="sm:hidden">CLICK PARA JUGAR</span>
-                  <span className="hidden sm:inline">JUGAR (ESPACIO/CLICK)</span>
+                  CLICK PARA JUGAR
                 </span>
               </div>
             )}
@@ -447,15 +591,15 @@ export function ProfileHeader() {
             <div
               key={`cloud-${i}`}
               ref={(el) => { if (el) cloudRefs.current[i] = el }}
-              className="absolute left-0 z-0 dark:invert opacity-60 max-sm:w-10 max-sm:h-7 sm:w-24 sm:h-8"
+              className="absolute z-0 dark:invert opacity-60 max-sm:w-10 max-sm:h-7 sm:w-24 sm:h-8"
               style={{
                 backgroundImage: "url('/images/dino/cloud.webp')",
                 backgroundRepeat: "no-repeat",
                 backgroundSize: "contain",
                 imageRendering: "pixelated",
-                transform: "translateX(1500px)",
-                display: showOverlay === 'START' ? 'none' : 'block',
-                willChange: "transform"
+                // Posición inicial en CSS para pintar la escena completa de una.
+                left: CLOUD_START[i].left,
+                top: `${CLOUD_START[i].top}px`,
               }}
             />
           ))}
@@ -473,22 +617,29 @@ export function ProfileHeader() {
             />
 
             <div className="sm:scale-100 max-sm:scale-[0.65] max-sm:origin-bottom-left">
+              {/* El cactus 0 se posiciona con CSS (`left`) para que la escena se pinte
+                  completa de una sola vez. En móvil 110.77% = 72% / 0.65 compensa el
+                  `scale-[0.65]` del contenedor. */}
               {[0, 1, 2].map((i) => (
                 <div 
                   key={i}
                   ref={(el) => {
                     if (el) cactusRefs.current[i] = el
                   }}
-                  className="absolute bottom-[-8px] left-0 z-10"
+                  className={
+                    i === 0
+                      ? "absolute bottom-[-8px] left-[72%] z-10 max-sm:left-[110.77%]"
+                      : "absolute bottom-[-8px] left-0 z-10"
+                  }
                   style={{
                     width: "77px", 
                     height: "52px", 
                     backgroundImage: "url('/images/dino/cactusspritesheet.webp')",
                     backgroundRepeat: "no-repeat",
                     imageRendering: "pixelated",
-                    transform: "translateX(1500px)",
-                    display: showOverlay === 'START' ? 'none' : 'block',
-                    willChange: "transform"
+                    // El cactus de inicio se posiciona con `left` (CSS) para que
+                    // aparezca junto al dino y el suelo desde el primer pintado.
+                    transform: i === 0 ? undefined : "translateX(1500px)",
                   }}
                 />
               ))}
@@ -503,7 +654,6 @@ export function ProfileHeader() {
                   backgroundPosition: "0px 0px",
                   backgroundRepeat: "no-repeat",
                   imageRendering: "pixelated",
-                  willChange: "transform"
                 }}
               />
             </div>
