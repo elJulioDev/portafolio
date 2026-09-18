@@ -132,6 +132,11 @@ const MAX_SPEED = 13
 // Pool de cactus: cada elemento es UN sprite de la sheet.
 const MAX_CACTI = 9
 
+// Ancho del tile del suelo (ground.webp = 1200px). El suelo se desplaza con
+// `transform` (compositor) en vez de `background-position` (repaint) y se
+// extiende un tile extra para que nunca se vea un hueco al desplazarse.
+const GROUND_TILE = 1200
+
 // Los 10 sprites de la sheet (77×52, 2 filas). `width`/`pad` describen la parte
 // opaca de cada uno y deben coincidir con sus hitboxes de CACTUS_HITBOXES.
 const CACTUS_SPRITES: { frameX: number; frameY: number; width: number; pad: number }[] = [
@@ -376,6 +381,14 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     state.viewWidth = state.containerWidth / state.scale
     // Puntero táctil = sin teclado para agacharse.
     state.noDuck = window.matchMedia("(hover: none) and (pointer: coarse)").matches
+
+    // El suelo se anima con `transform`, así que debe sobresalir un tile completo
+    // por la derecha para que nunca se vea un hueco (en lógico: viewWidth + 1200).
+    const groundEl = groundRef.current
+    if (groundEl) {
+      groundEl.style.width = `${state.viewWidth + GROUND_TILE}px`
+      groundEl.style.willChange = "transform"
+    }
   }, [])
 
   // Deja el pool de cactus listo. En la escena de inicio el primero queda
@@ -406,6 +419,9 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       cacti.forEach((cactus, i) => {
         const el = cactusRefs.current[i]
         if (el) {
+          // Los cactus aparcados se ocultan: así el compositor no reserva/renderiza
+          // capas que están fuera de pantalla (en móvil se nota).
+          el.style.visibility = cactus.active ? "visible" : "hidden"
           el.style.left = "0px"
           el.style.transform = `translate3d(${cactus.x}px, 0, 0)`
           el.style.backgroundPosition = `-${cactus.frameX}px -${cactus.frameY}px`
@@ -515,17 +531,20 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
 
     // Mantenemos groundX siempre en (-1200, 0] para que nunca crezca sin límite
     state.groundX -= moveAmount
-    if (state.groundX <= -1200) {
-      state.groundX += 1200
+    if (state.groundX <= -GROUND_TILE) {
+      state.groundX += GROUND_TILE
     }
 
     // Suelo infinito: `background-repeat: repeat-x` sobre un elemento que cubre
-    // el ancho visible (y se escala igual que cactus/dino). El patrón se desplaza
-    // con `background-position-x`, que empalma sin huecos al ser un solo elemento.
+    // el ancho visible + un tile extra, desplazado con `transform` (capa GPU).
+    // Antes se movía con `background-position-x`, lo que forzaba un repaint del
+    // ancho completo en cada frame (carísimo en móvil, sobre todo con `invert`).
+    // El patrón empalma sin huecos porque se mantiene en (-1200, 0] y sobra un
+    // tile por la derecha.
     const groundX = Math.round(state.groundX)
     if (groundRef.current && groundX !== state.lastGroundX) {
       state.lastGroundX = groundX
-      groundRef.current.style.backgroundPositionX = `${groundX}px`
+      groundRef.current.style.transform = `translate3d(${groundX}px, 0, 0)`
     }
 
     // Nubes — se mueven más lento que el suelo
@@ -590,6 +609,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
         cactus.type = "cactus"
         const parkEl = cactusRefs.current[i]
         if (parkEl) {
+          parkEl.style.visibility = "hidden"
           parkEl.style.transform = "translate3d(-1000px, 0, 0)"
           parkEl.style.bottom = "-8px"
         }
@@ -710,6 +730,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
 
       const spawnEl = cactusRefs.current[parkIndex]
       if (spawnEl) {
+        spawnEl.style.visibility = "visible"
         spawnEl.style.backgroundPosition = `-${sprite.frameX}px -${sprite.frameY}px`
         spawnEl.style.transform = `translate3d(${x}px, 0, 0)`
         if (isPtero) {
@@ -1129,6 +1150,10 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
                   backgroundPosition: "0px top",
                   imageRendering: "pixelated",
                   transition: "filter 700ms var(--expo-out)",
+                  // El ancho real lo fija `updateMetrics` (viewWidth + tile); la
+                  // clase `w-full`/`w-[153.85%]` solo evita huecos antes del JS.
+                  willChange: "transform",
+                  backfaceVisibility: "hidden",
                 }}
               />
 
