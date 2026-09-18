@@ -42,12 +42,41 @@ const CACTUS_SPRITES: { frameX: number; frameY: number; width: number; pad: numb
   { frameX: 308, frameY: 52, width: 17, pad: 30 }, // pequeño
 ]
 
-// Nº máximo de cactus visibles a la vez: 1 al inicio (el siguiente aparece
-// recién cuando el anterior salió de pantalla) y 2 cuando sube la velocidad.
+// --- Pterodáctilo ---
+// 2 frames de animación en la tercera fila de la misma spritesheet (y=104).
+const PTERO_SPRITES = [
+  { frameX: 0, frameY: 104, width: 77, pad: 0 },
+  { frameX: 77, frameY: 104, width: 77, pad: 0 },
+]
+
+// Hitboxes relativas al frame (77×52).
+const PTERO_HITBOXES = [
+  { x: 18, y: 15, w: 40, h: 23 },
+  { x: 20, y: 16, w: 40, h: 23 },
+]
+
+// Dos alturas posibles del pterodáctilo:
+// "ground" = bajo, a la altura del cuerpo del dino → se salta.
+// "high"   = a la altura de la cabeza → obliga a agacharse.
+const PTERO_HEIGHTS = ["ground", "high"] as const
+type PteroHeight = (typeof PTERO_HEIGHTS)[number]
+
+// Offset vertical (px) que se suma a `bottom` del sprite según la altura.
+const PTERO_Y_OFFSET: Record<PteroHeight, number> = {
+  ground: 0,
+  high: 30,
+}
+
+// Nº máximo de cactus/pterodáctilos visibles a la vez.
 const maxVisibleCacti = (speed: number) => (speed < 6.5 ? 1 : 2)
 
 const pickCactusSprite = () =>
   CACTUS_SPRITES[Math.floor(Math.random() * CACTUS_SPRITES.length)]
+
+// Probabilidad de que aparezca un pterodáctilo en vez de un cactus.
+const PTERO_SPAWN_CHANCE = 0.15
+// Puntuación mínima para que empiecen a aparecer pterodáctilos.
+const PTERO_MIN_SCORE = 200
 
 interface Cactus {
   x: number
@@ -55,8 +84,13 @@ interface Cactus {
   frameY: number
   width: number
   pad: number
-  // Activo = está en juego (recorriendo la pantalla); si no, está aparcado.
   active: boolean
+  // Tipo: "cactus" por defecto, "ptero" si es un pterodáctilo.
+  type: "cactus" | "ptero"
+  // Campos exclusivos del pterodáctilo (ignorados si type === "cactus").
+  pteroFrame: number    // 0 o 1 (alterna para animación de vuelo)
+  pteroAnimFrame: number
+  pteroHeight: PteroHeight
 }
 
 export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: number }) {
@@ -74,6 +108,9 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
   const dinoRef = useRef<HTMLDivElement>(null)
   const cactusRefs = useRef<(HTMLDivElement | null)[]>([])
   const cloudRefs = useRef<(HTMLDivElement | null)[]>([])
+  const hitboxRefs = useRef<(HTMLDivElement | null)[]>([])
+  const dinoHitboxRef = useRef<HTMLDivElement>(null)
+  const showHitboxes = useRef(false)
   const groundRef = useRef<HTMLDivElement>(null)
   const scoreRef = useRef<HTMLDivElement>(null)
   const topScoreRef = useRef<HTMLSpanElement>(null)
@@ -155,6 +192,10 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       width: 25,
       pad: 26,
       active: false,
+      type: "cactus",
+      pteroFrame: 0,
+      pteroAnimFrame: 0,
+      pteroHeight: "ground",
     })),
     clouds: [
       { x: 600, y: 20, speed: 2 },
@@ -215,6 +256,10 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
         width: 25,
         pad: 26,
         active: visible,
+        type: "cactus",
+        pteroFrame: 0,
+        pteroAnimFrame: 0,
+        pteroHeight: "ground",
       }
     })
   }, [])
@@ -227,6 +272,12 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
           el.style.left = "0px"
           el.style.transform = `translate3d(${cactus.x}px, 0, 0)`
           el.style.backgroundPosition = `-${cactus.frameX}px -${cactus.frameY}px`
+          // Pterodáctilo: offset vertical según su altura de vuelo.
+          if (cactus.type === "ptero") {
+            el.style.bottom = `${-8 + PTERO_Y_OFFSET[cactus.pteroHeight]}px`
+          } else {
+            el.style.bottom = "-8px"
+          }
         }
       })
     },
@@ -359,7 +410,22 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     }
     let hit = false
 
-    // 1) Mover los cactus activos y aparcar los que salen de pantalla.
+    // Debug: actualizar overlay de hitbox del dino.
+    if (dinoHitboxRef.current) {
+      if (showHitboxes.current) {
+        dinoHitboxRef.current.style.display = "block"
+        dinoHitboxRef.current.style.left = "0px"
+        dinoHitboxRef.current.style.transform = `translate3d(${dinoHB.x}px, 0, 0)`
+        dinoHitboxRef.current.style.bottom = `${dinoHB.y}px`
+        dinoHitboxRef.current.style.width = `${dinoHB.w}px`
+        dinoHitboxRef.current.style.height = `${dinoHB.h}px`
+      } else {
+        dinoHitboxRef.current.style.display = "none"
+      }
+    }
+
+    // 1) Mover los cactus/pterodáctilos activos y aparcar los que salen de pantalla.
+    //    Los pterodáctilos se mueven un 10% más rápido y se animan.
     let activeCount = 0
     let rightmost: Cactus | null = null
 
@@ -367,13 +433,19 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       const cactus = state.cacti[i]
       if (!cactus.active) continue
 
-      cactus.x -= state.speed * timeScale
+      // Velocidad: pterodáctilo se mueve más rápido que el suelo.
+      const speedMul = cactus.type === "ptero" ? 1.1 : 1
+      cactus.x -= state.speed * timeScale * speedMul
 
       if (cactus.x < -100) {
         cactus.active = false
         cactus.x = -1000
+        cactus.type = "cactus"
         const parkEl = cactusRefs.current[i]
-        if (parkEl) parkEl.style.transform = "translate3d(-1000px, 0, 0)"
+        if (parkEl) {
+          parkEl.style.transform = "translate3d(-1000px, 0, 0)"
+          parkEl.style.bottom = "-8px"
+        }
         continue
       }
 
@@ -383,40 +455,84 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       const el = cactusRefs.current[i]
       if (el) el.style.transform = `translate3d(${cactus.x}px, 0, 0)`
 
-      // Cactus hitbox — relativo al frame (77×52), y=0 arriba del sprite
-      // Sprite bottom=-8, sprite top=-8+52=44 en world coords
-      const frameIdx =
-        Math.floor(cactus.frameX / 77) + Math.floor(cactus.frameY / 52) * 5
-      const hb = CACTUS_HITBOXES[frameIdx]
-      const cactusSpriteTop = 44
-      const cactusHB = {
+      // Animación del pterodáctilo: alterna frame 0 y 1 cada ~12 frames.
+      if (cactus.type === "ptero") {
+        cactus.pteroAnimFrame += 1 * timeScale
+        if (cactus.pteroAnimFrame >= 12) {
+          cactus.pteroAnimFrame = 0
+          cactus.pteroFrame = cactus.pteroFrame === 0 ? 1 : 0
+          const sprite = PTERO_SPRITES[cactus.pteroFrame]
+          if (el) el.style.backgroundPosition = `-${sprite.frameX}px -${sprite.frameY}px`
+        }
+      }
+
+      // Hitbox — relativo al frame (77×52), y=0 arriba del sprite.
+      // El sprite y la hitbox se mueven juntos: el mismo offset vertical se
+      // aplica al CSS `bottom` del sprite y al cálculo de la hitbox.
+      let hb: { x: number; y: number; w: number; h: number }
+      let spriteBottom: number
+
+      if (cactus.type === "ptero") {
+        hb = PTERO_HITBOXES[cactus.pteroFrame]
+        spriteBottom = -8 + PTERO_Y_OFFSET[cactus.pteroHeight]
+      } else {
+        const frameIdx =
+          Math.floor(cactus.frameX / 77) + Math.floor(cactus.frameY / 52) * 5
+        hb = CACTUS_HITBOXES[frameIdx]
+        spriteBottom = -8
+      }
+
+      const spriteTop = spriteBottom + 52
+      const obstacleHB = {
         x: cactus.x + hb.x,
-        y: cactusSpriteTop - hb.y - hb.h,
+        y: spriteTop - hb.y - hb.h,
         w: hb.w,
         h: hb.h,
       }
 
       // AABB — ambos en world coords (y crece hacia arriba)
       if (
-        dinoHB.x < cactusHB.x + cactusHB.w &&
-        dinoHB.x + dinoHB.w > cactusHB.x &&
-        dinoHB.y < cactusHB.y + cactusHB.h &&
-        dinoHB.y + dinoHB.h > cactusHB.y
+        dinoHB.x < obstacleHB.x + obstacleHB.w &&
+        dinoHB.x + dinoHB.w > obstacleHB.x &&
+        dinoHB.y < obstacleHB.y + obstacleHB.h &&
+        dinoHB.y + obstacleHB.h > obstacleHB.y
       ) {
         hit = true
       }
+
+      // Debug: actualizar overlay de hitbox del obstáculo.
+      const hitboxEl = hitboxRefs.current[i]
+      if (hitboxEl) {
+        if (showHitboxes.current) {
+          hitboxEl.style.display = "block"
+          hitboxEl.style.left = "0px"
+          hitboxEl.style.transform = `translate3d(${obstacleHB.x}px, 0, 0)`
+          hitboxEl.style.bottom = `${obstacleHB.y}px`
+          hitboxEl.style.width = `${obstacleHB.w}px`
+          hitboxEl.style.height = `${obstacleHB.h}px`
+        } else {
+          hitboxEl.style.display = "none"
+        }
+      }
     }
 
-    // 2) Generar el siguiente cactus (sprite al azar de la sheet) solo si hay
-    //    cupo en pantalla: al inicio 1 (el siguiente aparece cuando el anterior
-    //    ya salió), luego 2.
+    // 2) Generar el siguiente obstáculo (cactus o pterodáctilo) solo si hay
+    //    cupo en pantalla: al inicio 1, luego 2.
     const maxVisible = maxVisibleCacti(state.speed)
     let spawnGuard = 0
     while (spawnGuard++ < MAX_CACTI) {
       if (activeCount >= maxVisible) break
 
-      const sprite = pickCactusSprite()
-      // Separación pensada para que quepan ~`maxVisible` cactus a la vez.
+      // Decidir si es cactus o pterodáctilo.
+      const isPtero =
+        state.score >= PTERO_MIN_SCORE &&
+        Math.random() < PTERO_SPAWN_CHANCE
+
+      const sprite = isPtero
+        ? PTERO_SPRITES[0]
+        : pickCactusSprite()
+
+      // Separación pensada para que quepan ~`maxVisible` obstáculos a la vez.
       const base =
         maxVisible <= 1
           ? state.viewWidth + 80
@@ -425,7 +541,6 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
 
       if (rightmost) {
         const prevRight = rightmost.x + rightmost.pad + rightmost.width
-        // El anterior todavía no dejó hueco suficiente en pantalla.
         if (prevRight + gap > state.viewWidth + sprite.width) break
       }
 
@@ -433,20 +548,39 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       if (parkIndex === -1) break
 
       const cactus = state.cacti[parkIndex]
-      // Aparece justo fuera del borde derecho.
       const x = state.viewWidth + sprite.width - sprite.pad
 
       cactus.active = true
       cactus.x = x
-      cactus.frameX = sprite.frameX
-      cactus.frameY = sprite.frameY
       cactus.width = sprite.width
       cactus.pad = sprite.pad
+
+      if (isPtero) {
+        const height = PTERO_HEIGHTS[Math.floor(Math.random() * PTERO_HEIGHTS.length)]
+        cactus.type = "ptero"
+        cactus.pteroFrame = 0
+        cactus.pteroAnimFrame = 0
+        cactus.pteroHeight = height
+        cactus.frameX = sprite.frameX
+        cactus.frameY = sprite.frameY
+      } else {
+        cactus.type = "cactus"
+        cactus.frameX = sprite.frameX
+        cactus.frameY = sprite.frameY
+        cactus.pteroFrame = 0
+        cactus.pteroAnimFrame = 0
+        cactus.pteroHeight = "ground"
+      }
 
       const spawnEl = cactusRefs.current[parkIndex]
       if (spawnEl) {
         spawnEl.style.backgroundPosition = `-${sprite.frameX}px -${sprite.frameY}px`
         spawnEl.style.transform = `translate3d(${x}px, 0, 0)`
+        if (isPtero) {
+          spawnEl.style.bottom = `${-8 + PTERO_Y_OFFSET[cactus.pteroHeight]}px`
+        } else {
+          spawnEl.style.bottom = "-8px"
+        }
       }
 
       rightmost = cactus
