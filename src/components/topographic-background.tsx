@@ -192,7 +192,7 @@ export function TopographicBackground({
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const gl = canvas.getContext("webgl", { alpha: false, antialias: false })
+    const gl = canvas.getContext("webgl", { alpha: false, antialias: false, powerPreference: "low-power" })
     if (!gl) return
 
     gl.getExtension("OES_standard_derivatives")
@@ -227,23 +227,31 @@ export function TopographicBackground({
     const uLineWidth = gl.getUniformLocation(program, "u_lineWidth")
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    const isMobile = window.innerWidth < 768
     const dpr = Math.min(window.devicePixelRatio || 1, 1)
+    // Renderizamos el fondo a resolución reducida: el patrón es de baja frecuencia
+    // y solo tiene líneas sutiles, así que el ahorro de GPU es enorme sin cambio perceptible.
+    const resolutionScale = window.innerWidth < 768 ? 0.55 : 0.75
     const start = performance.now()
+    // El ruido se desplaza muy lento: redibujar a ~30 fps es visualmente idéntico
+    // y reduce a la mitad el trabajo de GPU por segundo.
+    const frameInterval = 1000 / 30
     let raf = 0
     let visible = true
     let lastW = 0
     let lastH = 0
+    let lastDraw = 0
 
     function resize() {
-      const w = Math.floor(canvas!.clientWidth * dpr)
-      const h = Math.floor(canvas!.clientHeight * dpr)
+      const w = Math.max(1, Math.floor(canvas!.clientWidth * dpr * resolutionScale))
+      const h = Math.max(1, Math.floor(canvas!.clientHeight * dpr * resolutionScale))
       if (lastW !== w || lastH !== h) {
         lastW = w
         lastH = h
         canvas!.width = w
         canvas!.height = h
         gl!.viewport(0, 0, w, h)
+        // Al redimensionar el canvas se limpia: con reduce-motion no hay loop que lo repinte.
+        if (reduceMotion) drawFrame(performance.now())
       }
     }
 
@@ -253,10 +261,7 @@ export function TopographicBackground({
       resizeTimeout = setTimeout(resize, 150)
     }
 
-    function render(now: number) {
-      if (!visible) return
-      raf = requestAnimationFrame(render)
-
+    function drawFrame(now: number) {
       const t = reduceMotion ? 0 : (now - start) / 1000
       const { bg, fg } = colorsRef.current
 
@@ -272,19 +277,36 @@ export function TopographicBackground({
       gl!.drawArrays(gl!.TRIANGLES, 0, 3)
     }
 
+    function render(now: number) {
+      if (!visible) return
+      raf = requestAnimationFrame(render)
+
+      if (now - lastDraw < frameInterval) return
+      lastDraw = now
+      drawFrame(now)
+    }
+
     function handleVisibility() {
       visible = document.visibilityState === "visible"
       if (visible) {
         resize()
-        raf = requestAnimationFrame(render)
+        if (reduceMotion) {
+          drawFrame(performance.now())
+        } else {
+          raf = requestAnimationFrame(render)
+        }
       }
     }
 
-    window.addEventListener("resize", handleResize) 
-    
+    window.addEventListener("resize", handleResize)
+
     document.addEventListener("visibilitychange", handleVisibility)
     resize()
-    raf = requestAnimationFrame(render)
+    if (reduceMotion) {
+      drawFrame(start)
+    } else {
+      raf = requestAnimationFrame(render)
+    }
 
     return () => {
       cancelAnimationFrame(raf)

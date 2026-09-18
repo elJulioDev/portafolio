@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { memo, useMemo, useRef, useState } from "react"
 
 import { Panel, PanelHeader, PanelTitle } from "./panel"
 import { Tag } from "./tag"
@@ -102,8 +102,8 @@ function parseDescription(text: string) {
   return parts
 }
 
-function Description({ text }: { text: string }) {
-  const parts = parseDescription(text)
+const Description = memo(function Description({ text }: { text: string }) {
+  const parts = useMemo(() => parseDescription(text), [text])
 
   return (
     <div className="pl-9 text-sm text-muted-foreground space-y-2 pt-2">
@@ -127,7 +127,7 @@ function Description({ text }: { text: string }) {
       })}
     </div>
   )
-}
+})
 
 const MAX = 3
 

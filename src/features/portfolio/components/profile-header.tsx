@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTheme } from "next-themes"
 import { FlipSentences } from "./flip-sentences"
 import { USER } from "../data/user"
@@ -97,8 +97,7 @@ export function ProfileHeader() {
     const state = gameState.current
 
     if (!state.isVisible) {
-      // Solo solicita el siguiente frame sin calcular nada
-      reqRef.current = requestAnimationFrame(gameLoopRef.current)
+      // Pausa total: el IntersectionObserver reanuda el loop al volver a ser visible.
       return
     }
 
@@ -371,17 +370,28 @@ export function ProfileHeader() {
 
   useEffect(() => {
   const observer = new IntersectionObserver(([entry]) => {
-    gameState.current.isVisible = entry.isIntersecting
+    const state = gameState.current
+    const wasVisible = state.isVisible
+    state.isVisible = entry.isIntersecting
+
     if (entry.isIntersecting) {
-      // Evita que el delta de tiempo se dispare al volver a la pestaña
-      gameState.current.lastTime = performance.now()
+      // Evita que el delta de tiempo se dispare al volver a ser visible
+      state.lastTime = performance.now()
+      // Reanuda el loop si la partida seguía en curso y estaba pausada
+      if (!wasVisible && state.isPlaying) {
+        if (reqRef.current) cancelAnimationFrame(reqRef.current)
+        reqRef.current = requestAnimationFrame(gameLoopRef.current)
+      }
     }
   }, { threshold: 0 })
 
   if (containerRef.current) {
     observer.observe(containerRef.current)
   }
-  return () => observer.disconnect()
+  return () => {
+    observer.disconnect()
+    if (reqRef.current) cancelAnimationFrame(reqRef.current)
+  }
 }, [])
 
   return (

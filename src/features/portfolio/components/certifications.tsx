@@ -1,5 +1,7 @@
 "use client"
 
+import { memo } from "react"
+
 import { Panel, PanelHeader, PanelTitle } from "./panel"
 import { CollapsibleList } from "./collapsible-list"
 import { IconTile } from "./icon-tile"
@@ -13,7 +15,7 @@ function ArrowUpRightIcon() {
   )
 }
 
-function CertificationItem({ certification }: { certification: typeof CERTIFICATIONS[number] }) {
+const CertificationItem = memo(function CertificationItem({ certification }: { certification: typeof CERTIFICATIONS[number] }) {
   return (
     <div className="group bg-background">
       <div className="relative flex items-center pr-2 hover:bg-accent-muted transition-colors">
@@ -56,7 +58,7 @@ function CertificationItem({ certification }: { certification: typeof CERTIFICAT
       </div>
     </div>
   )
-}
+})
 
 export function Certifications() {
   return (

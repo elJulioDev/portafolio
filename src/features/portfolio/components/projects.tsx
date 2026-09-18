@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { memo, useMemo, useRef, useState } from "react"
 import { ImageIcon, Warehouse, Clock, Gamepad2, Dumbbell, Brain, Keyboard, Swords } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -75,8 +75,8 @@ function parseDescription(text: string) {
 }
 
 // Componente visual de la descripción
-function Description({ text }: { text: string }) {
-  const parts = parseDescription(text)
+const Description = memo(function Description({ text }: { text: string }) {
+  const parts = useMemo(() => parseDescription(text), [text])
   return (
     <div className="pl-9 text-sm text-muted-foreground space-y-2 pt-2">
       {parts.map((part, i) => {
@@ -99,9 +99,9 @@ function Description({ text }: { text: string }) {
       })}
     </div>
   )
-}
+})
 
-function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
+const ProjectItem = memo(function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
   const [open, setOpen] = useState(false)
   const [lightbox, setLightbox] = useState<{ images: string[], index: number } | null>(null)
   const chevronRef = useRef<ChevronsUpDownIconHandle>(null)
@@ -227,7 +227,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[number] }) {
       )}
     </>
   )
-}
+})
 
 export function Projects() {
   return (

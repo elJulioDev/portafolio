@@ -48,34 +48,6 @@ function PanelTitle({
   )
 }
 
-function PanelTitleSup({ className, ...props }: React.ComponentProps<"sup">) {
-  return (
-    <sup
-      className={cn(
-        "top-[-0.75em] ml-1 text-sm font-medium tracking-normal text-muted-foreground",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-function PanelDescription({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="panel-description"
-      className={cn(
-        "py-4 text-base text-balance text-muted-foreground",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
 function PanelContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div data-slot="panel-body" className={cn("p-4 bg-background", className)} {...props} />
@@ -85,8 +57,6 @@ function PanelContent({ className, ...props }: React.ComponentProps<"div">) {
 export {
   Panel,
   PanelContent,
-  PanelDescription,
   PanelHeader,
   PanelTitle,
-  PanelTitleSup,
 }
