@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://eljuliodev.github.io/portafolio/sitemap.xml

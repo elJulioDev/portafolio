@@ -14,7 +14,8 @@ export const siteConfig = {
   github: "https://github.com/elJulioDev",
   linkedin: "https://www.linkedin.com/in/alexis-gonz%C3%A1lez-p%C3%A9rez/",
   location: "Coltauco, Región de O'Higgins, Chile",
-  ogImage: "/og.png",
+  // La versión (?v=) fuerza a los crawlers a refrescar la imagen cacheada.
+  ogImage: "/og.png?v=2",
 }
 
 export const MAIN_NAV: NavItem<Route>[] = [
