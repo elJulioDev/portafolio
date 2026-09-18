@@ -82,6 +82,31 @@ const DINO_BASE_HITBOX = {
   duck: { x: 10, y: 24, w: 35, h: 20 },
 }
 
+// Hitboxes de los 10 sprites de cactus, relativas al frame (77×52).
+type Hitbox = { x: number; y: number; w: number; h: number }
+const CACTUS_HITBOXES: Hitbox[] = [
+  { x: 24, y: 1, w: 31, h: 51 },
+  { x: 25, y: 0, w: 27, h: 52 },
+  { x: 26, y: -1, w: 25, h: 52 },
+  { x: 0, y: 1, w: 78, h: 52 },
+  { x: 29, y: 13, w: 19, h: 39 },
+  { x: 28, y: 14, w: 21, h: 38 },
+  { x: 30, y: 15, w: 17, h: 36 },
+  { x: 30, y: 15, w: 18, h: 38 },
+  { x: 30, y: 15, w: 18, h: 36 },
+  { x: 30, y: 15, w: 18, h: 36 },
+]
+
+// Sprites que conviene decodificar antes de jugar para evitar tirones en el
+// primer frame (sobre todo en gama baja).
+const DINO_IMAGE_URLS = [
+  "/images/dino/dinospritesheet.webp",
+  "/images/dino/dinospritesheet_bd.webp",
+  "/images/dino/cactusspritesheet.webp",
+  "/images/dino/cloud.webp",
+  "/images/dino/ground.webp",
+]
+
 // Fecha del dino de cumpleaños (mes 1-12 / día).
 const BIRTHDAY_DINO_MONTH = 9
 const BIRTHDAY_DINO_DAY = 8
@@ -210,9 +235,6 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
 
   const cactusRefs = useRef<(HTMLDivElement | null)[]>([])
   const cloudRefs = useRef<(HTMLDivElement | null)[]>([])
-  const hitboxRefs = useRef<(HTMLDivElement | null)[]>([])
-  const dinoHitboxRef = useRef<HTMLDivElement>(null)
-  const showHitboxes = useRef(false)
   const groundRef = useRef<HTMLDivElement>(null)
   const scoreRef = useRef<HTMLDivElement>(null)
   const topScoreRef = useRef<HTMLSpanElement>(null)
@@ -256,20 +278,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
   const sfxPoint = useRef<HTMLAudioElement | null>(null)
   const resourcesLoaded = useRef(false)
 
-  const CACTUS_HITBOXES: { x: number, y: number, w: number, h: number }[] = [
-    { x: 24, y: 1, w: 31, h: 51 },
-    { x: 25, y: 0, w: 27, h: 52 },
-    { x: 26, y: -1, w: 25, h: 52 },
-    { x: 0, y: 1, w: 78, h: 52 },
-    { x: 29, y: 13, w: 19, h: 39 },
-    { x: 28, y: 14, w: 21, h: 38 },
-    { x: 30, y: 15, w: 17, h: 36 },
-    { x: 30, y: 15, w: 18, h: 38 },
-    { x: 30, y: 15, w: 18, h: 36 },
-    { x: 30, y: 15, w: 18, h: 36 },
-  ]
-
-  const loadResources = () => {
+  const loadResources = useCallback(() => {
     if (resourcesLoaded.current) return
     resourcesLoaded.current = true
 
@@ -279,7 +288,17 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     sfxJump.current.preload = "auto"
     sfxDie.current.preload = "auto"
     sfxPoint.current.preload = "auto"
-  }
+
+    // Decodifica los sprites por adelantado. Sin esto, el primer frame de
+    // partida puede dar un tirón mientras el navegador decodifica las imágenes.
+    for (const url of DINO_IMAGE_URLS) {
+      const img = new window.Image()
+      img.src = url
+      img.decode?.().catch(() => {
+        // Si `decode` no está disponible o falla, no es crítico.
+      })
+    }
+  }, [])
 
   const gameState = useRef({
     isPlaying: false,
@@ -320,11 +339,22 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     containerWidth: 800,
     isMobile: false,
     groundSpeedMul: 1,
+    // En táctil no se puede agachar (no hay teclado): los pterodáctilos vuelan
+    // siempre bajo para que la partida sea justa. Se detecta por tipo de puntero.
+    noDuck: false,
     dinoX: 64,
     // El contenedor de cactus/dino se escala en móvil; `viewWidth` es el ancho
     // lógico visible (containerWidth / scale) para posicionarlos fuera de pantalla.
     scale: 1,
     viewWidth: 800,
+    // --- Cachés para evitar escrituras/lecturas redundantes en el loop ---
+    // Último entero de puntuación pintado (evita formatear cada frame).
+    displayedScore: 0,
+    // Último `background-position` y `translateY` del dino escritos.
+    lastDinoBg: "",
+    lastDinoY: Number.NaN,
+    // Última X del suelo pintada (redondeada), para no reescribirla de más.
+    lastGroundX: Number.NaN,
   })
 
   const GRAVITY = 0.6
@@ -337,12 +367,15 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     const state = gameState.current
     state.containerWidth = containerRef.current?.offsetWidth || 800
     state.isMobile = window.innerWidth < 640
-    // En móvil el mundo se mueve un poco más lento: pantalla estrecha y solo
-    // hay salto, así que se da más tiempo de reacción.
-    state.groundSpeedMul = state.isMobile ? 0.6 : 1
+    // En móvil el mundo se mueve un poco más lento (pantalla estrecha y solo hay
+    // salto). La reducción es mínima: el `scale` de 0.65 ya reduce la velocidad
+    // visual, así que 0.9 evita que la partida se sienta lenta frente a PC.
+    state.groundSpeedMul = state.isMobile ? 0.9 : 1
     state.dinoX = state.isMobile ? 32 : 64
     state.scale = state.isMobile ? 0.65 : 1
     state.viewWidth = state.containerWidth / state.scale
+    // Puntero táctil = sin teclado para agacharse.
+    state.noDuck = window.matchMedia("(hover: none) and (pointer: coarse)").matches
   }, [])
 
   // Deja el pool de cactus listo. En la escena de inicio el primero queda
@@ -441,16 +474,22 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
 
     // Puntuación
     state.score += 0.14 * (state.speed / 5) * timeScale
-    const currentScore = Math.floor(state.score).toString().padStart(5, '0')
-    if (scoreRef.current) {
+    const scoreEl = scoreRef.current
+    if (scoreEl) {
       if (state.scoreFlashUntil > time) {
-        const blink = Math.floor(time / 100) % 2 === 0
-        scoreRef.current.style.opacity = blink ? '1' : '0.2'
-        scoreRef.current.innerText = state.scoreFlashValue.toString().padStart(5, '0')
+        // Parpadeo del hito: escribe solo cuando cambia el estado de parpadeo.
+        const opacity = Math.floor(time / 100) % 2 === 0 ? "1" : "0.2"
+        if (scoreEl.style.opacity !== opacity) scoreEl.style.opacity = opacity
+        const flashText = state.scoreFlashValue.toString().padStart(5, "0")
+        if (scoreEl.textContent !== flashText) scoreEl.textContent = flashText
       } else {
-        scoreRef.current.style.opacity = '1'
-        if (scoreRef.current.innerText !== currentScore) {
-          scoreRef.current.innerText = currentScore
+        if (scoreEl.style.opacity !== "1") scoreEl.style.opacity = "1"
+        // Solo formatea/actualiza cuando cambia el entero. Antes se leía
+        // `innerText` cada frame, lo que fuerza layout (reflow) en cada tick.
+        const scoreInt = Math.floor(state.score)
+        if (scoreInt !== state.displayedScore) {
+          state.displayedScore = scoreInt
+          scoreEl.textContent = scoreInt.toString().padStart(5, "0")
         }
       }
     }
@@ -480,26 +519,34 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       state.groundX += 1200
     }
 
-    if (groundRef.current) {
-      groundRef.current.style.backgroundPositionX = `${Math.round(state.groundX)}px`
+    // Suelo infinito: `background-repeat: repeat-x` sobre un elemento que cubre
+    // el ancho visible (y se escala igual que cactus/dino). El patrón se desplaza
+    // con `background-position-x`, que empalma sin huecos al ser un solo elemento.
+    const groundX = Math.round(state.groundX)
+    if (groundRef.current && groundX !== state.lastGroundX) {
+      state.lastGroundX = groundX
+      groundRef.current.style.backgroundPositionX = `${groundX}px`
     }
 
     // Nubes — se mueven más lento que el suelo
-    state.clouds.forEach((cloud, i) => {
+    const clouds = state.clouds
+    for (let i = 0; i < clouds.length; i++) {
+      const cloud = clouds[i]
       cloud.x -= cloud.speed * timeScale
       if (cloud.x < -120) {
-        const maxX = Math.max(...state.clouds.map(c => c.x))
+        let maxX = -Infinity
+        for (let j = 0; j < clouds.length; j++) {
+          if (clouds[j].x > maxX) maxX = clouds[j].x
+        }
         cloud.x = Math.max(containerWidth, maxX) + 200 + Math.random() * 400
         cloud.y = state.isMobile ? 15 + Math.random() * 25 : 30 + Math.random() * 35
         cloud.speed = 2 + Math.random() * 0.8
-        if (cloudRefs.current[i]) {
-          cloudRefs.current[i].style.top = `${cloud.y}px`
-        }
+        const cloudEl = cloudRefs.current[i]
+        if (cloudEl) cloudEl.style.top = `${cloud.y}px`
       }
-      if (cloudRefs.current[i]) {
-        cloudRefs.current[i].style.transform = `translate3d(${cloud.x}px, 0, 0)`
-      }
-    })
+      const cloudEl = cloudRefs.current[i]
+      if (cloudEl) cloudEl.style.transform = `translate3d(${cloud.x}px, 0, 0)`
+    }
 
     // Hitbox del dinosaurio — y=0 es la parte superior del frame.
     const dinoX = state.dinoX
@@ -510,28 +557,14 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     const dinoSpriteTop = -6 + dinoSheet.height + state.yPos
     const heightDelta = dinoSheet.height - DINO_BASE_HEIGHT
     const baseHB = state.isDucking ? DINO_BASE_HITBOX.duck : DINO_BASE_HITBOX.stand
-    const dinoHB_raw = { ...baseHB, y: baseHB.y + heightDelta }
-    const dinoHB = {
-      x: dinoX + dinoHB_raw.x,
-      y: dinoSpriteTop - dinoHB_raw.y - dinoHB_raw.h,
-      w: dinoHB_raw.w,
-      h: dinoHB_raw.h,
-    }
+    // Números en crudo (sin crear objetos) para no generar basura cada frame.
+    const dinoHBx = dinoX + baseHB.x
+    const dinoHBw = baseHB.w
+    const dinoHBh = baseHB.h
+    const dinoHBy = dinoSpriteTop - (baseHB.y + heightDelta) - dinoHBh
+    const dinoHBr = dinoHBx + dinoHBw
+    const dinoHBt = dinoHBy + dinoHBh
     let hit = false
-
-    // Debug: actualizar overlay de hitbox del dino.
-    if (dinoHitboxRef.current) {
-      if (showHitboxes.current) {
-        dinoHitboxRef.current.style.display = "block"
-        dinoHitboxRef.current.style.left = "0px"
-        dinoHitboxRef.current.style.transform = `translate3d(${dinoHB.x}px, 0, 0)`
-        dinoHitboxRef.current.style.bottom = `${dinoHB.y}px`
-        dinoHitboxRef.current.style.width = `${dinoHB.w}px`
-        dinoHitboxRef.current.style.height = `${dinoHB.h}px`
-      } else {
-        dinoHitboxRef.current.style.display = "none"
-      }
-    }
 
     // 1) Mover los cactus/pterodáctilos activos y aparcar los que salen de pantalla.
     //    Los pterodáctilos se mueven un 10% más rápido y se animan.
@@ -545,9 +578,11 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       const cactus = state.cacti[i]
       if (!cactus.active) continue
 
-      // Velocidad: pterodáctilo se mueve más rápido que el suelo.
+      // Velocidad: el obstáculo se mueve con el mundo, así que comparte el mismo
+      // multiplicador que el suelo (antes no lo aplicaba y en móvil se veía más
+      // rápido que el suelo). El pterodáctilo va un 10% más rápido.
       const speedMul = cactus.type === "ptero" ? 1.1 : 1
-      cactus.x -= state.speed * timeScale * speedMul
+      cactus.x -= state.speed * timeScale * speedMul * state.groundSpeedMul
 
       if (cactus.x < despawnX) {
         cactus.active = false
@@ -595,36 +630,19 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       }
 
       const spriteTop = spriteBottom + 52
-      const obstacleHB = {
-        x: cactus.x + hb.x,
-        y: spriteTop - hb.y - hb.h,
-        w: hb.w,
-        h: hb.h,
-      }
+      const obsX = cactus.x + hb.x
+      const obsW = hb.w
+      const obsH = hb.h
+      const obsY = spriteTop - hb.y - obsH
 
       // AABB — ambos en world coords (y crece hacia arriba)
       if (
-        dinoHB.x < obstacleHB.x + obstacleHB.w &&
-        dinoHB.x + dinoHB.w > obstacleHB.x &&
-        dinoHB.y < obstacleHB.y + obstacleHB.h &&
-        dinoHB.y + obstacleHB.h > obstacleHB.y
+        dinoHBx < obsX + obsW &&
+        dinoHBr > obsX &&
+        dinoHBy < obsY + obsH &&
+        dinoHBt > obsY
       ) {
         hit = true
-      }
-
-      // Debug: actualizar overlay de hitbox del obstáculo.
-      const hitboxEl = hitboxRefs.current[i]
-      if (hitboxEl) {
-        if (showHitboxes.current) {
-          hitboxEl.style.display = "block"
-          hitboxEl.style.left = "0px"
-          hitboxEl.style.transform = `translate3d(${obstacleHB.x}px, 0, 0)`
-          hitboxEl.style.bottom = `${obstacleHB.y}px`
-          hitboxEl.style.width = `${obstacleHB.w}px`
-          hitboxEl.style.height = `${obstacleHB.h}px`
-        } else {
-          hitboxEl.style.display = "none"
-        }
       }
     }
 
@@ -670,9 +688,9 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       cactus.pad = sprite.pad
 
       if (isPtero) {
-        // En móvil no se puede agachar: el pterodáctilo siempre vuela bajo
+        // Sin agacharse disponible (táctil), el pterodáctilo siempre vuela bajo
         // (saltable), nunca a la altura de la cabeza.
-        const height = state.isMobile
+        const height = state.noDuck
           ? "ground"
           : PTERO_HEIGHTS[Math.floor(Math.random() * PTERO_HEIGHTS.length)]
         cactus.type = "ptero"
@@ -747,7 +765,9 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
         })
       }
       if (dinoRef.current) {
-        dinoRef.current.style.backgroundPosition = bgPosStyle(dinoSheet.dead)
+        const deadBg = bgPosStyle(dinoSheet.dead)
+        state.lastDinoBg = deadBg
+        dinoRef.current.style.backgroundPosition = deadBg
       }
       return
     }
@@ -780,9 +800,20 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       bgPos = bgPosStyle(dinoSheet.run[animIdx])
     }
 
-    if (dinoRef.current) {
-      dinoRef.current.style.transform = `translate3d(0, -${state.yPos}px, 0)`
-      dinoRef.current.style.backgroundPosition = bgPos
+    const dinoEl = dinoRef.current
+    if (dinoEl) {
+      // `background-position` solo cambia cada 8 frames o al cambiar de estado;
+      // se escribe únicamente cuando cambia.
+      if (state.lastDinoBg !== bgPos) {
+        state.lastDinoBg = bgPos
+        dinoEl.style.backgroundPosition = bgPos
+      }
+      // `translateY` solo varía mientras el dino está en el aire.
+      const dinoY = -state.yPos
+      if (state.lastDinoY !== dinoY) {
+        state.lastDinoY = dinoY
+        dinoEl.style.transform = `translate3d(0, ${dinoY}px, 0)`
+      }
     }
 
     reqRef.current = requestAnimationFrame(gameLoopRef.current)
@@ -830,11 +861,26 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       nextThemeScore: 700,
       nextPointScore: 100,
       scoreFlashUntil: 0,
-      scoreFlashValue: 0
+      scoreFlashValue: 0,
+      // Reinicia las cachés de pintado para forzar una primera escritura.
+      displayedScore: 0,
+      lastDinoBg: "",
+      lastDinoY: Number.NaN,
+      lastGroundX: Number.NaN,
     }
 
-    if (scoreRef.current) scoreRef.current.innerText = '00000'
-    if (dinoRef.current) dinoRef.current.style.backgroundPosition = bgPosStyle(dinoSheet.idle)
+    const scoreEl = scoreRef.current
+    if (scoreEl) {
+      scoreEl.textContent = "00000"
+      scoreEl.style.opacity = "1"
+    }
+    if (dinoRef.current) {
+      const idleBg = bgPosStyle(dinoSheet.idle)
+      gameState.current.lastDinoBg = idleBg
+      dinoRef.current.style.backgroundPosition = idleBg
+      // El suelo vuelve a 0 para que el siguiente frame lo repinte.
+      gameState.current.lastGroundX = Number.NaN
+    }
 
     applyCacti(gameState.current.cacti)
     applyClouds(gameState.current.clouds)
@@ -853,6 +899,12 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     state.clouds = spawnClouds()
     applyClouds(state.clouds)
   }, [updateMetrics, resetCacti, applyCacti, spawnClouds, applyClouds])
+
+  // Precarga audio + decodifica sprites al montar el banner, para evitar tirones
+  // de descarga/decodificación en la primera partida (clave en gama baja).
+  useEffect(() => {
+    loadResources()
+  }, [loadResources])
 
   // HI local: mejor puntaje guardado en este navegador.
   useEffect(() => {
@@ -927,19 +979,36 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     // Los listeners se enganchan solo mientras el juego está a la vista para no
     // consumir recursos cuando el usuario está en otra parte de la página.
     let keyboardBound = false
+
+    // En móvil el `resize` se dispara muchísimo (mostrar/ocultar la barra de
+    // direcciones). Se agrupa en un frame para no recalcular métricas ni forzar
+    // layout en cada evento.
+    let resizeRaf = 0
+    const onResize = () => {
+      if (resizeRaf) return
+      resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0
+        updateMetrics()
+      })
+    }
+
     const bindKeyboard = () => {
       if (keyboardBound) return
       keyboardBound = true
       window.addEventListener("keydown", onKeyDown)
       window.addEventListener("keyup", onKeyUp)
-      window.addEventListener("resize", updateMetrics)
+      window.addEventListener("resize", onResize)
     }
     const unbindKeyboard = () => {
       if (!keyboardBound) return
       keyboardBound = false
       window.removeEventListener("keydown", onKeyDown)
       window.removeEventListener("keyup", onKeyUp)
-      window.removeEventListener("resize", updateMetrics)
+      window.removeEventListener("resize", onResize)
+      if (resizeRaf) {
+        cancelAnimationFrame(resizeRaf)
+        resizeRaf = 0
+      }
       gameState.current.isDucking = false
     }
 
@@ -995,7 +1064,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
             }}
           >
             {showOverlay === 'START' && (
-              <div className="bg-background/80 px-3 py-1.5 rounded-lg backdrop-blur-sm pointer-events-none animate-pulse">
+              <div className="bg-background/90 px-3 py-1.5 rounded-lg pointer-events-none animate-pulse">
                 <span className="text-[10px] sm:text-xs font-medium tracking-widest text-foreground" style={{ fontFamily: 'var(--font-pixel, monospace)' }}>
                   CLICK PARA JUGAR
                 </span>
@@ -1003,12 +1072,12 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
             )}
             {showOverlay === 'GAME_OVER' && (
               <div className="flex flex-col items-center gap-2 pointer-events-none">
-                <div className="bg-background/80 px-3 py-1.5 rounded-lg backdrop-blur-sm">
+                <div className="bg-background/90 px-3 py-1.5 rounded-lg">
                   <span className="text-[10px] sm:text-xs font-medium tracking-widest text-foreground" style={{ fontFamily: 'var(--font-pixel, monospace)' }}>
                     GAME OVER
                   </span>
                 </div>
-                <div className="bg-background/80 px-3 py-1.5 rounded-lg backdrop-blur-sm animate-pulse">
+                <div className="bg-background/90 px-3 py-1.5 rounded-lg animate-pulse">
                   <span className="text-[9px] sm:text-[10px] font-medium tracking-widest text-muted-foreground" style={{ fontFamily: 'var(--font-pixel, monospace)' }}>
                     CLICK PARA REINICIAR
                   </span>
@@ -1046,19 +1115,23 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
           ))}
 
           <div className="absolute bottom-16 sm:bottom-24 left-0 w-full h-0">
-            <div
-              ref={groundRef}
-              className="absolute top-[-10px] left-0 w-full h-[22px] z-0 dark:invert opacity-80"
-              style={{
-                backgroundImage: "url('/images/dino/ground.webp')",
-                backgroundRepeat: "repeat-x",
-                backgroundPosition: "0px top",
-                imageRendering: "pixelated",
-                transition: "filter 700ms var(--expo-out)",
-              }}
-            />
-
             <div className="sm:scale-100 max-sm:scale-[0.65] max-sm:origin-bottom-left">
+              {/* El suelo va dentro del mismo contenedor escalado que cactus/dino
+                  para que en móvil escale igual (mismo tamaño y misma velocidad
+                  aparente). El ancho `153.85%` compensa el `scale-[0.65]` en móvil
+                  (= 1 / 0.65) para cubrir todo el ancho tras escalar. */}
+              <div
+                ref={groundRef}
+                className="absolute top-[-10px] left-0 h-[22px] z-0 w-full max-sm:w-[153.85%] dark:invert opacity-80"
+                style={{
+                  backgroundImage: "url('/images/dino/ground.webp')",
+                  backgroundRepeat: "repeat-x",
+                  backgroundPosition: "0px top",
+                  imageRendering: "pixelated",
+                  transition: "filter 700ms var(--expo-out)",
+                }}
+              />
+
               {/* El cactus 0 se posiciona con CSS (`left`) para que la escena se pinte
                   completa de una sola vez. En móvil 110.77% = 72% / 0.65 compensa el
                   `scale-[0.65]` del contenedor. */}
