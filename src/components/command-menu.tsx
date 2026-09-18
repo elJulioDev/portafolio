@@ -8,6 +8,7 @@ import { Search } from "lucide-react"
 
 import { MAIN_NAV } from "@/config/site"
 import { cn } from "@/lib/utils"
+import { useScrollToHash } from "@/hooks/use-scroll-to-hash"
 import { ElJulioDevMark } from "@/components/eljuliodev-mark"
 import { Button } from "@/components/ui/button"
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
@@ -236,6 +237,7 @@ export default function CommandMenu({
   const { setTheme, resolvedTheme } = useTheme()
   const [open, setOpen] = useState(false)
   const [selectedCommandKind, setSelectedCommandKind] = useState<CommandKind | null>(null)
+  const scrollToHash = useScrollToHash()
 
   useHotkeys(
     "mod+k, slash",
@@ -249,21 +251,13 @@ export default function CommandMenu({
   const handleOpenLink = useCallback(
     (href: string) => {
       setOpen(false)
-      
-      // Manejador para desplazamiento suave por hash
-      if (href.includes("#")) {
-        const hash = href.substring(href.indexOf("#"))
-        const element = document.querySelector(hash)
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth" })
-          window.history.pushState(null, "", href)
-          return
-        }
-      }
-      
+
+      // Navegación por ancla controlada por Lenis (cancela la animación en curso)
+      if (scrollToHash(href)) return
+
       router.push(href)
     },
-    [router]
+    [router, scrollToHash]
   )
 
   const createThemeHandler = useCallback(

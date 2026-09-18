@@ -5,6 +5,7 @@ import type { Route } from "next"
 import Link from "next/link"
 import type { NavItem } from "@/types/nav"
 import { cn } from "@/lib/utils"
+import { useScrollToHash } from "@/hooks/use-scroll-to-hash"
 
 export function Nav({
   items,
@@ -42,19 +43,11 @@ export function NavItem({
   onClick,
   ...props
 }: React.ComponentProps<typeof Link>) {
+  const scrollToHash = useScrollToHash()
+
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    const strHref = href.toString()
-    const hashIndex = strHref.indexOf("#")
-    
-    // Smooth scroll automático si navegamos por un ID de la página actual
-    if (hashIndex !== -1) {
-      const hash = strHref.substring(hashIndex)
-      const element = document.querySelector(hash)
-      if (element) {
-        e.preventDefault()
-        element.scrollIntoView({ behavior: "smooth" })
-        window.history.pushState(null, "", strHref)
-      }
+    if (scrollToHash(href.toString())) {
+      e.preventDefault()
     }
     if (onClick) onClick(e)
   }

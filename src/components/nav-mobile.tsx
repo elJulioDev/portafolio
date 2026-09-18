@@ -6,6 +6,7 @@ import Link from "next/link"
 
 import type { NavItem } from "@/types/nav"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { useScrollToHash } from "@/hooks/use-scroll-to-hash"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -54,6 +55,7 @@ export function NavMobile({ items }: { items: NavItem<Route>[] }) {
   const [open, setOpen] = useState(false)
 
   const isDesktop = useMediaQuery("(min-width: 40rem)") // sm breakpoint
+  const scrollToHash = useScrollToHash()
 
   const handleOpenChange = useCallback((open: boolean) => {
     setOpen(open)
@@ -79,7 +81,10 @@ export function NavMobile({ items }: { items: NavItem<Route>[] }) {
               key={link.href}
               href={link.href}
               className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-base"
-              onClick={() => handleOpenChange(false)}
+              onClick={(e) => {
+                if (scrollToHash(String(link.href))) e.preventDefault()
+                handleOpenChange(false)
+              }}
             >
               {NAV_ICONS[link.href] ?? null}
               {link.title}
