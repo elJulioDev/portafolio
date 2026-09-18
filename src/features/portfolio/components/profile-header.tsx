@@ -1195,10 +1195,18 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
         </div>
 
         <div className="relative z-20 flex flex-col min-w-0 bg-background">
-          <div className="flex items-center h-7 sm:h-9 pl-3 sm:pl-4 overflow-hidden">
+          <div className="flex items-center h-7 sm:h-9 pl-3 sm:pl-4 overflow-hidden gap-1.5">
             <h1 className="truncate text-lg sm:text-2xl font-medium tracking-tight leading-none">
               {USER.displayName}
             </h1>
+            {/* Bandera de Chile */}
+            <span
+              className="shrink-0 text-sm sm:text-base leading-none"
+              role="img"
+              aria-label="Bandera de Chile"
+            >
+              🇨🇱
+            </span>
           </div>
           <FlipSentences
             className="flex items-center h-7 sm:h-9 border-t border-line pl-3 sm:pl-4 font-mono text-xs sm:text-sm text-muted-foreground"
