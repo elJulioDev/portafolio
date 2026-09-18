@@ -17,6 +17,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  createTooltipHandle,
 } from "@/components/ui/tooltip"
 
 interface Activity {
@@ -28,6 +29,11 @@ interface Activity {
 export function GitHubContributions() {
   const [contributions, setContributions] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
+  // Un único handle comparte una sola instancia de Tooltip entre los ~365 días,
+  // en lugar de montar un Tooltip.Root (con su store) por cada bloque.
+  const [tooltipHandle] = useState(() =>
+    createTooltipHandle<{ count: number; date: string }>()
+  )
 
   useEffect(() => {
     const controller = new AbortController()
@@ -41,8 +47,8 @@ export function GitHubContributions() {
         )
         const data = await res.json()
         setContributions(data.contributions || [])
-      } catch (error: any) {
-        if (error.name !== 'AbortError') {
+      } catch (error) {
+        if (!(error instanceof Error) || error.name !== "AbortError") {
           setContributions([])
         }
       } finally {
@@ -63,8 +69,6 @@ export function GitHubContributions() {
       })),
     [contributions]
   )
-
-  const totalCount = contributions.reduce((sum, c) => sum + c.count, 0)
 
   const firstDate = contributions[0]?.date || ""
   const lastDate = contributions.at(-1)?.date || ""
@@ -110,24 +114,29 @@ export function GitHubContributions() {
               title="GitHub Contributions"
             >
               {({ activity, dayIndex, weekIndex }) => (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <g data-slot="tooltip-trigger" />
-                    }
-                  >
-                    <ContributionGraphBlock
-                      activity={activity}
-                      dayIndex={dayIndex}
-                      weekIndex={weekIndex}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {activity.count} contribuciones, {formatTooltipDate(activity.date)}
-                  </TooltipContent>
-                </Tooltip>
+                <TooltipTrigger
+                  handle={tooltipHandle}
+                  payload={{ count: activity.count, date: activity.date }}
+                  render={<g data-slot="tooltip-trigger" />}
+                >
+                  <ContributionGraphBlock
+                    activity={activity}
+                    dayIndex={dayIndex}
+                    weekIndex={weekIndex}
+                  />
+                </TooltipTrigger>
               )}
             </ContributionGraphCalendar>
+
+            <Tooltip handle={tooltipHandle}>
+              {({ payload }) => (
+                <TooltipContent>
+                  {payload
+                    ? `${payload.count} contribuciones, ${formatTooltipDate(payload.date)}`
+                    : null}
+                </TooltipContent>
+              )}
+            </Tooltip>
           </TooltipProvider>
 
           <ContributionGraphFooter className="px-4 text-sm sm:gap-x-4">
