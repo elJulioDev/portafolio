@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit manually
 export const BUILD_INFO = {
-  hash: "ce2be59",
+  hash: "e6878ba",
   date: "2026-09-18",
 }
