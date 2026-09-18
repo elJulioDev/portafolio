@@ -1,7 +1,7 @@
 "use client"
 
 import { memo, useMemo, useRef, useState } from "react"
-import { ImageIcon, Warehouse, Clock, Gamepad2, Dumbbell, Brain, Keyboard, Swords } from "lucide-react"
+import { ImageIcon, Warehouse, Clock, Gamepad2, Dumbbell, Brain, Keyboard, Swords, Landmark } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 import { Panel, PanelHeader, PanelTitle } from "./panel"
@@ -19,6 +19,23 @@ const Lightbox = dynamic(() => import("@/components/lightbox").then(m => m.Light
   ssr: false
 })
 
+const MONTHS: Record<string, number> = {
+  ene: 0, feb: 1, mar: 2, abr: 3, may: 4, jun: 5,
+  jul: 6, ago: 7, sep: 8, oct: 9, nov: 10, dic: 11,
+}
+
+function parseDateToTimestamp(date?: string): number {
+  if (!date) return 0
+  // Handle ranges like "2018 - 2025" → use end year
+  const rangeMatch = date.match(/\d{4}\s*-\s*(\d{4})/)
+  const yearStr = rangeMatch ? rangeMatch[1] : date.match(/\d{4}/)?.[0]
+  if (!yearStr) return 0
+  const year = parseInt(yearStr, 10)
+  const monthMatch = date.match(/(ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)/)
+  const month = monthMatch ? MONTHS[monthMatch[1]] : 0
+  return new Date(year, month).getTime()
+}
+
 const ICON_MAP: Record<string, LucideIcon> = {
   Warehouse,
   Clock,
@@ -27,6 +44,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Brain,
   Keyboard,
   Swords,
+  Landmark,
 }
 
 // Función para parsear texto enriquecido (igual que en experiencias)
@@ -230,6 +248,11 @@ const ProjectItem = memo(function ProjectItem({ project }: { project: typeof PRO
 })
 
 export function Projects() {
+  const sorted = useMemo(
+    () => [...PROJECTS].sort((a, b) => parseDateToTimestamp(b.date) - parseDateToTimestamp(a.date)),
+    []
+  )
+
   return (
     <Panel id="projects">
       <PanelHeader>
@@ -242,7 +265,7 @@ export function Projects() {
       </PanelHeader>
 
       <CollapsibleList
-        items={PROJECTS}
+        items={sorted}
         max={4}
         renderItem={(project) => <ProjectItem project={project} />}
       />

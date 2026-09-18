@@ -49,7 +49,7 @@ function CollapsibleList<T>({
             onClick={toggleExpand}
             className="inline-flex items-center gap-1.5 rounded-[min(var(--radius-lg),10px)] bg-secondary px-2.5 py-1.5 text-sm text-secondary-foreground shadow-[inset_0_0_1px] shadow-foreground/20 transition-colors hover:bg-secondary/80"
           >
-            <span>{expanded ? "Show less" : `Show all (${items.length})`}</span>
+            <span>{expanded ? "Mostrar menos" : `Mostrar todo (${items.length})`}</span>
             <div className="shrink-0 text-muted-foreground [&_svg]:h-lh [&_svg]:w-4">
               <ChevronsUpDownIcon ref={chevronRef} duration={0.15} />
             </div>

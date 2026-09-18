@@ -172,7 +172,7 @@ export const PROJECTS: Project[] = [
       "/images/proyectos/proyecto_kf_2.webp",
       "/images/proyectos/proyecto_kf_3.webp",
     ],
-    date: "nov. 2026",
+    date: "nov. 2025",
   },
   {
     key: "proyecto_uw",
@@ -196,5 +196,29 @@ export const PROJECTS: Project[] = [
 - Desarrollo de un bot de Inteligencia Artificial externo en Python que funciona en paralelo, reaccionando al entorno del juego en tiempo real a través del intercambio estructurado y ultrarrápido de archivos JSON con el motor de VBA.`,
     url: "https://github.com/elJulioDev/Ultimate-Warriors",
     techs: ["VBA", "PowerPoint", "Python", "POO", "JSON", "Game Dev"],
+  },
+  {
+    key: "proyecto_core_banking",
+    title: "Transacciones Financieras (Core Banking API)",
+    icon: "Landmark",
+    date: "sep. 2026",
+    desc: `Motor backend de transacciones financieras desarrollado en Java y Spring Boot, diseñado para garantizar propiedades ACID y resolver condiciones de carrera (race conditions) en entornos concurrentes.
+
+**Arquitectura y Concurrencia:**
+- Implementación central de **Pessimistic Locking** a nivel de base de datos (PostgreSQL) para evitar lecturas sucias, pérdida o duplicación de fondos.
+- Prevención algorítmica de **Deadlocks** mediante el bloqueo secuencial de cuentas en orden fijo (menor ID primero).
+- Capa de recuperación automática y resiliente utilizando \`@Retryable\` para manejar fallos de bloqueo optimista (\`@Version\`).
+
+**Seguridad y Rendimiento:**
+- Autenticación *Stateless* mediante Spring Security y **JSON Web Tokens (JWT)** con control de acceso basado en roles (RBAC).
+- Prevención de abusos con **Rate Limiting** en memoria integrado mediante Bucket4j, limitando dinámicamente endpoints de escritura y lectura por IP.
+- Trazabilidad y observabilidad completas con Spring Boot Actuator, métricas de Micrometer y propagación de trazas listas para Zipkin.
+
+**Testing y Documentación:**
+- Suite de pruebas de concurrencia extremas simulando decenas de hilos compitiendo por saldos simultáneamente, validando la integridad absoluta del *Ledger*.
+- Migraciones de esquema versionadas y seguras gestionadas con **Flyway**.
+- API completamente documentada e interactiva gracias a SpringDoc OpenAPI (Swagger UI).`,
+    url: "https://github.com/elJulioDev/Transacciones-Financieras",
+    techs: ["Java", "Spring Boot", "PostgreSQL", "Docker", "JWT", "Flyway"],
   },
 ]
