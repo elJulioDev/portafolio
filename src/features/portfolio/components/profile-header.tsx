@@ -83,6 +83,8 @@ export function ProfileHeader() {
   // Mejor puntaje local (por navegador), independiente del TOP global.
   const hiScore = useRef(0)
   const startedOnce = useRef(false)
+  // Token de la partida en curso (lo emite el servidor al iniciar).
+  const sessionRef = useRef<Promise<string | null> | null>(null)
   // Cielo local del banner: null = seguir el tema de la web (sin override).
   const skyDarkRef = useRef<boolean | null>(null)
 
@@ -482,11 +484,15 @@ export function ProfileHeader() {
         }
       }
       if (finalScore > 100) {
-        fetch("/api/scores", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ score: finalScore }),
-        }).catch(() => {})
+        const session = sessionRef.current ?? Promise.resolve(null)
+        session.then((token) => {
+          if (!token) return
+          fetch("/api/scores", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ score: finalScore, token }),
+          }).catch(() => {})
+        })
       }
       if (dinoRef.current) {
         dinoRef.current.style.backgroundPosition = "-61px -49px"
@@ -533,6 +539,14 @@ export function ProfileHeader() {
     setShowOverlay('PLAYING')
     // Cada partida arranca con el cielo del tema por defecto de la web.
     applySky(null)
+
+    // Solicita al servidor el token de esta partida (para validar al morir).
+    sessionRef.current = fetch("/api/scores/session", { method: "POST" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) =>
+        typeof data?.token === "string" ? (data.token as string) : null
+      )
+      .catch(() => null)
 
     const state = gameState.current
     const isRestart = startedOnce.current

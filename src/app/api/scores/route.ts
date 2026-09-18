@@ -1,15 +1,38 @@
 import { NextResponse } from "next/server"
 import { pool } from "@/lib/db"
 import { getRequestMeta } from "@/lib/request-meta"
+import {
+  MAX_SESSION_AGE_MS,
+  isPlausibleScore,
+  readSessionToken,
+} from "@/lib/score-guard"
 
 const MIN_SCORE = 100
 
 export async function POST(request: Request) {
   try {
-    const { score } = await request.json()
+    const body = await request.json().catch(() => null)
+    const score = body?.score
+    const token = body?.token
 
-    if (typeof score !== "number" || score <= MIN_SCORE) {
-      return NextResponse.json({ error: "Score must be > 100" }, { status: 400 })
+    // Validaciones silenciosas: si algo no cuadra, no se guarda nada.
+    if (
+      typeof score !== "number" ||
+      !Number.isFinite(score) ||
+      score <= MIN_SCORE
+    ) {
+      return NextResponse.json({ ok: true })
+    }
+
+    const session = readSessionToken(token)
+    if (!session) return NextResponse.json({ ok: true })
+
+    const elapsedMs = Date.now() - session.iat
+    if (elapsedMs <= 0 || elapsedMs > MAX_SESSION_AGE_MS) {
+      return NextResponse.json({ ok: true })
+    }
+    if (!isPlausibleScore(Math.floor(score), elapsedMs / 1000)) {
+      return NextResponse.json({ ok: true })
     }
 
     const meta = getRequestMeta(request.headers)
