@@ -14,14 +14,59 @@ const CLOUD_START = [
   { left: "140%", top: 25 },
 ] as const
 
-export function ProfileHeader() {
-  const { resolvedTheme, systemTheme, setTheme } = useTheme()
-  const themeStateRef = useRef({ resolvedTheme, systemTheme })
+// --- Cielo local del banner ---
+const SKY_LIGHT = "#fafafa" // zinc-50
+const SKY_DARK = "#09090b" // zinc-950
+const SKY_TEXT_LIGHT = "#71717a" // zinc-500
+const SKY_TEXT_DARK = "#a1a1aa" // zinc-400
 
-  // Mantenemos sincronizado el estado del tema sin re-crear el game loop
+// --- Dificultad del juego ---
+// Velocidad tope: evita que la partida se vuelva imposible con el tiempo.
+const START_SPEED = 5.5
+const MAX_SPEED = 13
+// Pool de cactus: cada elemento es UN sprite de la sheet.
+const MAX_CACTI = 9
+
+// Los 10 sprites de la sheet (77×52, 2 filas). `width`/`pad` describen la parte
+// opaca de cada uno y deben coincidir con sus hitboxes de CACTUS_HITBOXES.
+const CACTUS_SPRITES: { frameX: number; frameY: number; width: number; pad: number }[] = [
+  { frameX: 0, frameY: 0, width: 25, pad: 26 }, // grande
+  { frameX: 77, frameY: 0, width: 24, pad: 26 }, // grande
+  { frameX: 154, frameY: 0, width: 25, pad: 26 }, // grande
+  { frameX: 231, frameY: 0, width: 75, pad: 1 }, // el más ancho (frame 4)
+  { frameX: 308, frameY: 0, width: 17, pad: 30 }, // pequeño
+  { frameX: 0, frameY: 52, width: 17, pad: 30 }, // pequeño
+  { frameX: 77, frameY: 52, width: 17, pad: 30 }, // pequeño
+  { frameX: 154, frameY: 52, width: 17, pad: 30 }, // pequeño
+  { frameX: 231, frameY: 52, width: 17, pad: 30 }, // pequeño
+  { frameX: 308, frameY: 52, width: 17, pad: 30 }, // pequeño
+]
+
+// Nº máximo de cactus visibles a la vez: 1 al inicio (el siguiente aparece
+// recién cuando el anterior salió de pantalla) y 2 cuando sube la velocidad.
+const maxVisibleCacti = (speed: number) => (speed < 6.5 ? 1 : 2)
+
+const pickCactusSprite = () =>
+  CACTUS_SPRITES[Math.floor(Math.random() * CACTUS_SPRITES.length)]
+
+interface Cactus {
+  x: number
+  frameX: number
+  frameY: number
+  width: number
+  pad: number
+  // Activo = está en juego (recorriendo la pantalla); si no, está aparcado.
+  active: boolean
+}
+
+export function ProfileHeader() {
+  const { resolvedTheme } = useTheme()
+  const themeStateRef = useRef(resolvedTheme)
+
+  // Mantenemos sincronizado el tema de la web sin re-crear el game loop.
   useEffect(() => {
-    themeStateRef.current = { resolvedTheme, systemTheme }
-  }, [resolvedTheme, systemTheme])
+    themeStateRef.current = resolvedTheme
+  }, [resolvedTheme])
 
   const [showOverlay, setShowOverlay] = useState<'START' | 'PLAYING' | 'GAME_OVER'>('START')
   
@@ -31,13 +76,39 @@ export function ProfileHeader() {
   const cloudRefs = useRef<(HTMLDivElement | null)[]>([])
   const groundRef = useRef<HTMLDivElement>(null)
   const scoreRef = useRef<HTMLDivElement>(null)
-  const hiScoreRef = useRef<HTMLDivElement>(null)
+  const topScoreRef = useRef<HTMLSpanElement>(null)
+  const hiScoreRef = useRef<HTMLSpanElement>(null)
   const reqRef = useRef<number>(0)
+  const topScore = useRef(0)
+  // Mejor puntaje local (por navegador), independiente del TOP global.
   const hiScore = useRef(0)
   const startedOnce = useRef(false)
+  // Cielo local del banner: null = seguir el tema de la web (sin override).
+  const skyDarkRef = useRef<boolean | null>(null)
 
   const gameLoopRef = useRef<(time: number) => void>(() => {})
   const startGameRef = useRef<() => void>(() => {})
+
+  // Aplica el color de cielo al banner sin re-renderizar. Con `null` se quitan
+  // los overrides y el banner vuelve al color del tema por defecto de la web.
+  const applySky = useCallback((dark: boolean | null) => {
+    skyDarkRef.current = dark
+    const container = containerRef.current
+    if (container) {
+      container.style.backgroundColor =
+        dark === null ? "" : dark ? SKY_DARK : SKY_LIGHT
+    }
+    const filter = dark === null ? "" : dark ? "invert(1)" : "none"
+    cloudRefs.current.forEach((el) => {
+      if (el) el.style.filter = filter
+    })
+    if (groundRef.current) groundRef.current.style.filter = filter
+    const textColor =
+      dark === null ? "" : dark ? SKY_TEXT_DARK : SKY_TEXT_LIGHT
+    if (scoreRef.current) scoreRef.current.style.color = textColor
+    if (topScoreRef.current) topScoreRef.current.style.color = textColor
+    if (hiScoreRef.current) hiScoreRef.current.style.color = textColor
+  }, [])
 
   const sfxJump = useRef<HTMLAudioElement | null>(null)
   const sfxDie = useRef<HTMLAudioElement | null>(null)
@@ -73,13 +144,16 @@ export function ProfileHeader() {
     isPlaying: false,
     isGameOver: false,
     score: 0,
-    speed: 5.5,
+    speed: START_SPEED,
     groundX: 0,
-    cacti: [
-      { x: 1000, frameX: 0, frameY: 0 },
-      { x: 1500, frameX: 0, frameY: 0 },
-      { x: 2000, frameX: 0, frameY: 0 }
-    ],
+    cacti: Array.from({ length: MAX_CACTI }, (): Cactus => ({
+      x: -1000,
+      frameX: 0,
+      frameY: 0,
+      width: 25,
+      pad: 26,
+      active: false,
+    })),
     clouds: [
       { x: 600, y: 20, speed: 2 },
       { x: 1100, y: 35, speed: 2.3 },
@@ -110,7 +184,8 @@ export function ProfileHeader() {
 
   const GRAVITY = 0.6
   const JUMP_FORCE = 10
-  const FAST_FALL_GRAVITY = 1.2
+  // Caída rápida al mantener "abajo" en el aire: mucho más brusca que la normal.
+  const FAST_FALL_GRAVITY = 4
 
   // Cachea las métricas del viewport/contenedor fuera del loop de render.
   const updateMetrics = useCallback(() => {
@@ -123,28 +198,27 @@ export function ProfileHeader() {
     state.viewWidth = state.containerWidth / state.scale
   }, [])
 
-  // Genera la disposición de cactus. `visibleFirst` coloca el primero dentro de
-  // la pantalla (escena de inicio); si no, todos aparecen fuera de pantalla.
-  const spawnCacti = useCallback((visibleFirst: boolean) => {
+  // Deja el pool de cactus listo. En la escena de inicio el primero queda
+  // visible (decorativo); el resto se va generando según el cupo en pantalla.
+  const resetCacti = useCallback((visibleFirst: boolean) => {
     const state = gameState.current
     const viewWidth = state.containerWidth / state.scale
-    let x = visibleFirst ? viewWidth * 0.72 : viewWidth + 120
-    return [0, 1, 2].map((index) => {
-      const isStartCactus = visibleFirst && index === 0
-      const cactus = {
-        x,
-        // El cactus de inicio usa el sprite base (0,0) para coincidir con su
-        // posicionamiento inicial en CSS y no cambiar de frame al medir.
-        frameX: isStartCactus ? 0 : Math.floor(Math.random() * 5) * 77,
-        frameY: isStartCactus ? 0 : Math.floor(Math.random() * 2) * 52,
+
+    return Array.from({ length: MAX_CACTI }, (_, i): Cactus => {
+      const visible = visibleFirst && i === 0
+      return {
+        x: visible ? viewWidth * 0.72 : -1000,
+        frameX: 0,
+        frameY: 0,
+        width: 25,
+        pad: 26,
+        active: visible,
       }
-      x += 320 + Math.random() * 320
-      return cactus
     })
   }, [])
 
   const applyCacti = useCallback(
-    (cacti: { x: number; frameX: number; frameY: number }[]) => {
+    (cacti: Cactus[]) => {
       cacti.forEach((cactus, i) => {
         const el = cactusRefs.current[i]
         if (el) {
@@ -229,19 +303,15 @@ export function ProfileHeader() {
       state.nextPointScore += 100
     }
 
-    // CAMBIO DE TEMA — instantáneo (igual que la tecla D)
+    // CAMBIO DE CIELO — solo el fondo del banner (día/noche), no el tema web.
     if (state.score >= state.nextThemeScore) {
-      const { resolvedTheme, systemTheme } = themeStateRef.current
-      const nextTheme = resolvedTheme === "dark" ? "light" : "dark"
-      const targetTheme = nextTheme === systemTheme ? "system" : nextTheme
-      
-      setTheme(targetTheme)
-
+      const siteDark = themeStateRef.current === "dark"
+      applySky(!(skyDarkRef.current ?? siteDark))
       state.nextThemeScore += 700
     }
 
-    // Velocidad y fondo
-    state.speed += 0.001 * timeScale
+    // Velocidad y fondo — con tope para que no se vuelva imposible.
+    state.speed = Math.min(MAX_SPEED, state.speed + 0.001 * timeScale)
     const moveAmount = state.speed * timeScale * state.groundSpeedMul
 
     // Mantenemos groundX siempre en (-1200, 0] para que nunca crezca sin límite
@@ -287,30 +357,34 @@ export function ProfileHeader() {
     }
     let hit = false
 
-    // Lógica del "Pool" de Cactus
-    state.cacti.forEach((cactus, i) => {
+    // 1) Mover los cactus activos y aparcar los que salen de pantalla.
+    let activeCount = 0
+    let rightmost: Cactus | null = null
+
+    for (let i = 0; i < state.cacti.length; i++) {
+      const cactus = state.cacti[i]
+      if (!cactus.active) continue
+
       cactus.x -= state.speed * timeScale
 
       if (cactus.x < -100) {
-        const maxX = Math.max(...state.cacti.map(c => c.x))
-        const gap = 300 + Math.random() * 300 
-        
-        cactus.x = Math.max(state.viewWidth, maxX) + gap
-        cactus.frameX = Math.floor(Math.random() * 5) * 77
-        cactus.frameY = Math.floor(Math.random() * 2) * 52
-        
-        if (cactusRefs.current[i]) {
-          cactusRefs.current[i].style.backgroundPosition = `-${cactus.frameX}px -${cactus.frameY}px`
-        }
+        cactus.active = false
+        cactus.x = -1000
+        const parkEl = cactusRefs.current[i]
+        if (parkEl) parkEl.style.transform = "translate3d(-1000px, 0, 0)"
+        continue
       }
 
-      if (cactusRefs.current[i]) {
-        cactusRefs.current[i].style.transform = `translate3d(${cactus.x}px, 0, 0)`
-      }
+      activeCount++
+      if (!rightmost || cactus.x > rightmost.x) rightmost = cactus
+
+      const el = cactusRefs.current[i]
+      if (el) el.style.transform = `translate3d(${cactus.x}px, 0, 0)`
 
       // Cactus hitbox — relativo al frame (77×52), y=0 arriba del sprite
       // Sprite bottom=-8, sprite top=-8+52=44 en world coords
-      const frameIdx = Math.floor(cactus.frameX / 77) + Math.floor(cactus.frameY / 52) * 5
+      const frameIdx =
+        Math.floor(cactus.frameX / 77) + Math.floor(cactus.frameY / 52) * 5
       const hb = CACTUS_HITBOXES[frameIdx]
       const cactusSpriteTop = 44
       const cactusHB = {
@@ -329,20 +403,82 @@ export function ProfileHeader() {
       ) {
         hit = true
       }
-    })
+    }
+
+    // 2) Generar el siguiente cactus (sprite al azar de la sheet) solo si hay
+    //    cupo en pantalla: al inicio 1 (el siguiente aparece cuando el anterior
+    //    ya salió), luego 2.
+    const maxVisible = maxVisibleCacti(state.speed)
+    let spawnGuard = 0
+    while (spawnGuard++ < MAX_CACTI) {
+      if (activeCount >= maxVisible) break
+
+      const sprite = pickCactusSprite()
+      // Separación pensada para que quepan ~`maxVisible` cactus a la vez.
+      const base =
+        maxVisible <= 1
+          ? state.viewWidth + 80
+          : state.viewWidth / maxVisible - sprite.width
+      const gap = Math.round(base * 1.1 * (1 + Math.random() * 0.15))
+
+      if (rightmost) {
+        const prevRight = rightmost.x + rightmost.pad + rightmost.width
+        // El anterior todavía no dejó hueco suficiente en pantalla.
+        if (prevRight + gap > state.viewWidth + sprite.width) break
+      }
+
+      const parkIndex = state.cacti.findIndex((c) => !c.active)
+      if (parkIndex === -1) break
+
+      const cactus = state.cacti[parkIndex]
+      // Aparece justo fuera del borde derecho.
+      const x = state.viewWidth + sprite.width - sprite.pad
+
+      cactus.active = true
+      cactus.x = x
+      cactus.frameX = sprite.frameX
+      cactus.frameY = sprite.frameY
+      cactus.width = sprite.width
+      cactus.pad = sprite.pad
+
+      const spawnEl = cactusRefs.current[parkIndex]
+      if (spawnEl) {
+        spawnEl.style.backgroundPosition = `-${sprite.frameX}px -${sprite.frameY}px`
+        spawnEl.style.transform = `translate3d(${x}px, 0, 0)`
+      }
+
+      rightmost = cactus
+      activeCount++
+    }
 
     if (hit) {
       state.isPlaying = false
       state.isGameOver = true
       if (reqRef.current) cancelAnimationFrame(reqRef.current)
       setShowOverlay('GAME_OVER')
+      // Al morir, el cielo vuelve al color del tema por defecto de la web.
+      applySky(null)
       sfxDie.current?.play()
       const finalScore = Math.floor(state.score)
+      // Actualiza el TOP mostrado si superamos el máximo de la BD (el POST lo
+      // persiste igualmente; esto evita esperar a un refetch).
+      if (finalScore > topScore.current) {
+        topScore.current = finalScore
+        if (topScoreRef.current) {
+          topScoreRef.current.textContent = `TOP ${finalScore.toString().padStart(5, '0')}`
+        }
+      }
+      // Mejor puntaje local (HI) de este navegador.
       if (finalScore > hiScore.current) {
         hiScore.current = finalScore
         if (hiScoreRef.current) {
           hiScoreRef.current.textContent = `HI ${finalScore.toString().padStart(5, '0')}`
-          hiScoreRef.current.style.display = 'block'
+          hiScoreRef.current.style.display = "inline"
+        }
+        try {
+          localStorage.setItem("dino_hi_score", String(finalScore))
+        } catch {
+          // localStorage puede no estar disponible; no es crítico.
         }
       }
       if (finalScore > 100) {
@@ -395,21 +531,23 @@ export function ProfileHeader() {
     loadResources()
     updateMetrics()
     setShowOverlay('PLAYING')
+    // Cada partida arranca con el cielo del tema por defecto de la web.
+    applySky(null)
 
     const state = gameState.current
     const isRestart = startedOnce.current
     startedOnce.current = true
 
-    // En la primera partida se conserva el cactus que ya estaba en pantalla; en un
-    // reinicio se genera una disposición nueva fuera de pantalla.
-    const cacti = isRestart ? spawnCacti(false) : state.cacti
+    // En la primera partida se conserva el patrón que ya estaba en pantalla; en
+    // un reinicio se genera uno nuevo fuera de pantalla.
+    const cacti = isRestart ? resetCacti(false) : state.cacti
 
     gameState.current = {
       ...state,
       isPlaying: true,
       isGameOver: false,
       score: 0,
-      speed: 5.5,
+      speed: START_SPEED,
       groundX: 0,
       cacti,
       clouds: spawnClouds(),
@@ -440,11 +578,47 @@ export function ProfileHeader() {
   useEffect(() => {
     updateMetrics()
     const state = gameState.current
-    state.cacti = spawnCacti(true)
+    state.cacti = resetCacti(true)
     applyCacti(state.cacti)
     state.clouds = spawnClouds()
     applyClouds(state.clouds)
-  }, [updateMetrics, spawnCacti, applyCacti, spawnClouds, applyClouds])
+  }, [updateMetrics, resetCacti, applyCacti, spawnClouds, applyClouds])
+
+  // HI local: mejor puntaje guardado en este navegador.
+  useEffect(() => {
+    let stored = 0
+    try {
+      stored = Number(localStorage.getItem("dino_hi_score")) || 0
+    } catch {
+      stored = 0
+    }
+    if (stored > 0) {
+      hiScore.current = stored
+      if (hiScoreRef.current) {
+        hiScoreRef.current.textContent = `HI ${stored.toString().padStart(5, '0')}`
+        hiScoreRef.current.style.display = "inline"
+      }
+    }
+  }, [])
+
+  // TOP histórico: mayor puntaje guardado en la tabla `dino_scores`.
+  useEffect(() => {
+    let cancelled = false
+    fetch("/api/scores")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((rows) => {
+        if (cancelled || !Array.isArray(rows) || rows.length === 0) return
+        const best = Number(rows[0]?.score) || 0
+        topScore.current = best
+        if (topScoreRef.current) {
+          topScoreRef.current.textContent = `TOP ${best.toString().padStart(5, '0')}`
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     // Ignora el teclado si el usuario está escribiendo o hay un diálogo abierto
@@ -543,7 +717,7 @@ export function ProfileHeader() {
     <>
       <div id="inicio" className="screen-line-bottom grid grid-cols-[auto_1fr] overflow-y-clip border-x screen-line-bottom-border after:z-1">
         
-        <div ref={containerRef} className="relative col-span-2 w-full aspect-[2/1] sm:aspect-[3/1] sm:max-h-[280px] border-b border-line bg-zinc-50 dark:bg-zinc-950 overflow-hidden group" style={{ touchAction: 'manipulation', contain: 'content' }}>
+        <div ref={containerRef} className="relative col-span-2 w-full aspect-[2/1] sm:aspect-[3/1] sm:max-h-[280px] border-b border-line bg-zinc-50 dark:bg-zinc-950 overflow-hidden group" style={{ touchAction: 'manipulation', contain: 'content', transition: "background-color 700ms var(--expo-out)" }}>
           
           <div 
             className="absolute inset-0 z-50 cursor-pointer select-none flex flex-col items-center justify-center"
@@ -582,7 +756,12 @@ export function ProfileHeader() {
             )}
           </div>
           
-          <div className="absolute top-4 right-4 sm:top-6 sm:right-8 z-30 flex gap-3 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 tracking-widest" style={{ fontFamily: 'var(--font-pixel, monospace)' }}>
+          {/* TOP histórico (mayor puntaje en la base de datos), abajo a la derecha */}
+          <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-8 z-30 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 tracking-widest transition-colors duration-700" style={{ fontFamily: 'var(--font-pixel, monospace)' }}>
+            <span ref={topScoreRef}>TOP 00000</span>
+          </div>
+
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-8 z-30 flex gap-3 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 tracking-widest transition-colors duration-700" style={{ fontFamily: 'var(--font-pixel, monospace)' }}>
             <span ref={hiScoreRef} className="hidden">HI 00000</span>
             <span ref={scoreRef}>00000</span>
           </div>
@@ -597,6 +776,7 @@ export function ProfileHeader() {
                 backgroundRepeat: "no-repeat",
                 backgroundSize: "contain",
                 imageRendering: "pixelated",
+                transition: "filter 700ms var(--expo-out)",
                 // Posición inicial en CSS para pintar la escena completa de una.
                 left: CLOUD_START[i].left,
                 top: `${CLOUD_START[i].top}px`,
@@ -613,6 +793,7 @@ export function ProfileHeader() {
                 backgroundRepeat: "repeat-x",
                 backgroundPosition: "0px top",
                 imageRendering: "pixelated",
+                transition: "filter 700ms var(--expo-out)",
               }}
             />
 
@@ -620,7 +801,7 @@ export function ProfileHeader() {
               {/* El cactus 0 se posiciona con CSS (`left`) para que la escena se pinte
                   completa de una sola vez. En móvil 110.77% = 72% / 0.65 compensa el
                   `scale-[0.65]` del contenedor. */}
-              {[0, 1, 2].map((i) => (
+              {Array.from({ length: MAX_CACTI }, (_, i) => (
                 <div 
                   key={i}
                   ref={(el) => {
@@ -639,7 +820,13 @@ export function ProfileHeader() {
                     imageRendering: "pixelated",
                     // El cactus de inicio se posiciona con `left` (CSS) para que
                     // aparezca junto al dino y el suelo desde el primer pintado.
-                    transform: i === 0 ? undefined : "translateX(1500px)",
+                    // Los del pool extendido arrancan aún más lejos.
+                    transform:
+                      i === 0
+                        ? undefined
+                        : i < 3
+                          ? "translateX(1500px)"
+                          : "translateX(4000px)",
                   }}
                 />
               ))}

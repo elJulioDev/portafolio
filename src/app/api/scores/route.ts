@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { pool } from "@/lib/db"
+import { getRequestMeta } from "@/lib/request-meta"
 
 const MIN_SCORE = 100
 
@@ -11,14 +12,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Score must be > 100" }, { status: 400 })
     }
 
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-      || request.headers.get("x-real-ip")
-      || "unknown"
-    const userAgent = request.headers.get("user-agent") || "unknown"
+    const meta = getRequestMeta(request.headers)
 
     const { rows } = await pool.query(
       "INSERT INTO dino_scores (score, ip, user_agent) VALUES ($1, $2, $3) RETURNING id, score, created_at",
-      [Math.floor(score), ip, userAgent]
+      [Math.floor(score), meta.source, meta.agent]
     )
 
     return NextResponse.json(rows[0])
@@ -31,7 +29,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const { rows } = await pool.query(
-      "SELECT id, score, ip, user_agent, created_at FROM dino_scores ORDER BY score DESC LIMIT 10"
+      "SELECT id, score, created_at FROM dino_scores ORDER BY score DESC LIMIT 10"
     )
     return NextResponse.json(rows)
   } catch (error) {
