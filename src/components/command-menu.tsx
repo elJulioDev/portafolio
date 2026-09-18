@@ -230,8 +230,10 @@ function CommandLinkGroup({
 
 export default function CommandMenu({
   triggerClassName,
+  registerHotkey = true,
 }: {
   triggerClassName?: string
+  registerHotkey?: boolean
 } = {}) {
   const router = useRouter()
   const { setTheme, resolvedTheme } = useTheme()
@@ -245,7 +247,7 @@ export default function CommandMenu({
       e.preventDefault()
       setOpen((open) => !open)
     },
-    { enabled: true }
+    { enabled: registerHotkey }
   )
 
   const handleOpenLink = useCallback(

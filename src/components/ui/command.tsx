@@ -50,7 +50,7 @@ function CommandDialog({
 
       <DialogContent
         data-slot="command-dialog-content"
-        className="rounded-2xl bg-surface p-0 outline-none max-sm:top-16 max-sm:translate-y-0 sm:max-w-lg"
+        className="rounded-2xl bg-surface p-0 outline-none max-sm:top-16 max-sm:translate-y-0 sm:max-w-lg max-h-[calc(100dvh-2rem)]"
         showCloseButton={false}
         showOverlay={false}
       >
@@ -103,6 +103,7 @@ function CommandList({
         "no-scrollbar max-h-80 scroll-py-2 overflow-x-hidden overflow-y-auto outline-none",
         className
       )}
+      onWheel={(e) => e.stopPropagation()}
       {...props}
     />
   )
