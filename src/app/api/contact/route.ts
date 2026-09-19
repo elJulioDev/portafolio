@@ -3,9 +3,6 @@ import { NextResponse } from "next/server"
 import { getMatcher, isProfane, isProfaneInAnyToken } from "@/lib/profanity-filter"
 import { getRequestMeta } from "@/lib/request-meta"
 
-const ENDPOINT =
-  process.env.FORMSPREE_ENDPOINT ?? "https://formspree.io/f/xbglleba"
-
 // ponytail: límite en memoria por instancia (Vercel es efímero y multi-instancia).
 // Suficiente para frenar floods simples; subir a Upstash/Redis si abusan de verdad.
 const WINDOW_MS = 10 * 60 * 1000
@@ -24,6 +21,8 @@ function isRateLimited(ip: string): boolean {
   return false
 }
 
+// Valida el mensaje contra la lista de palabras de la BD. El envío real a
+// Web3Forms lo hace el cliente: su plan gratuito no admite envíos desde servidor.
 export async function POST(request: Request) {
   const data = await request.formData().catch(() => null)
   if (!data) {
@@ -31,8 +30,8 @@ export async function POST(request: Request) {
   }
 
   // Honeypot: un humano no lo ve ni lo rellena.
-  if (String(data.get("website") ?? "").trim()) {
-    return NextResponse.json({ ok: true }) // fingimos éxito ante el bot
+  if (String(data.get("botcheck") ?? "").trim()) {
+    return NextResponse.json({ ok: false, error: "invalid" }, { status: 400 })
   }
 
   const nombre = String(data.get("nombre") ?? "").trim()
@@ -62,19 +61,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "rate" }, { status: 429 })
   }
 
-  data.delete("website")
-  data.set("_subject", `[Portafolio] Mensaje de ${nombre}`)
-
-  try {
-    const res = await fetch(ENDPOINT, {
-      method: "POST",
-      body: data,
-      headers: { Accept: "application/json" },
-    })
-    if (!res.ok) throw new Error(`Formspree ${res.status}`)
-    return NextResponse.json({ ok: true })
-  } catch (error) {
-    console.error("Error sending contact message:", error)
-    return NextResponse.json({ ok: false, error: "send" }, { status: 502 })
-  }
+  return NextResponse.json({ ok: true })
 }
