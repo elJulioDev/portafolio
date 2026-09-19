@@ -4,42 +4,50 @@ import { useState, type FormEvent } from "react"
 
 import { Panel, PanelContent, PanelHeader, PanelTitle } from "./panel"
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/xbglleba"
+const CONTACT_ENDPOINT = "/api/contact"
 
 export function ContactForm() {
-  const [status, setStatus] = useState<"idle" | "sending" | "ok" | "error">(
-    "idle"
-  )
+  const [status, setStatus] = useState<
+    "idle" | "sending" | "ok" | "blocked" | "error"
+  >("idle")
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const form = e.currentTarget
     const data = new FormData(form)
 
-    // Basic validation
-    const nombre = (data.get("nombre") as string || "").trim()
-    const email = (data.get("email") as string || "").trim()
-    const mensaje = (data.get("mensaje") as string || "").trim()
+    const nombre = ((data.get("nombre") as string) || "").trim()
+    const email = ((data.get("email") as string) || "").trim()
+    const mensaje = ((data.get("mensaje") as string) || "").trim()
 
-    if (nombre.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || mensaje.length < 5) {
+    if (
+      nombre.length < 2 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+      mensaje.length < 5
+    ) {
       return
     }
 
     setStatus("sending")
 
     try {
-      // Asunto personalizado para poder responder directamente
-      data.set("_subject", `[Portafolio] Mensaje de ${nombre}`)
-
-      const res = await fetch(FORMSPREE_ENDPOINT, {
+      const res = await fetch(CONTACT_ENDPOINT, {
         method: "POST",
         body: data,
         headers: { Accept: "application/json" },
       })
+      const result = (await res.json().catch(() => ({}))) as {
+        ok?: boolean
+        error?: string
+      }
 
-      if (!res.ok) throw new Error("Formspree error")
-      setStatus("ok")
-      form.reset()
+      if (result.ok) {
+        setStatus("ok")
+        form.reset()
+        return
+      }
+
+      setStatus(result.error === "vulgar" ? "blocked" : "error")
     } catch {
       setStatus("error")
     }
@@ -58,6 +66,16 @@ export function ContactForm() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Honeypot: invisible para humanos, los bots lo rellenan. */}
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            className="hidden"
+          />
+
           <div className="space-y-1.5">
             <label htmlFor="nombre" className="text-sm font-medium">
               Nombre
@@ -113,6 +131,13 @@ export function ContactForm() {
           {status === "ok" && (
             <p className="text-center text-sm text-green-600 dark:text-green-400">
               ¡Gracias por tu mensaje! Te responderé pronto.
+            </p>
+          )}
+
+          {status === "blocked" && (
+            <p className="text-center text-sm text-red-600 dark:text-red-400">
+              Tu mensaje contiene lenguaje inapropiado. Reescríbelo de forma
+              respetuosa, por favor.
             </p>
           )}
 
