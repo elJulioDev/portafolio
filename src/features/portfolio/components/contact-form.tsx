@@ -4,8 +4,7 @@ import { useState, type FormEvent } from "react"
 
 import { Panel, PanelContent, PanelHeader, PanelTitle } from "./panel"
 
-const VALIDATE_ENDPOINT = "/api/contact"
-const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit"
+const CONTACT_ENDPOINT = "/api/contact"
 
 export function ContactForm() {
   const [status, setStatus] = useState<
@@ -29,55 +28,26 @@ export function ContactForm() {
       return
     }
 
-    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY
-    if (!accessKey) {
-      setStatus("error")
-      return
-    }
-
     setStatus("sending")
 
     try {
-      // 1. El servidor valida contra la lista de palabras de la BD.
-      const check = await fetch(VALIDATE_ENDPOINT, {
+      const res = await fetch(CONTACT_ENDPOINT, {
         method: "POST",
         body: data,
         headers: { Accept: "application/json" },
       })
-      const valid = (await check.json().catch(() => ({}))) as {
+      const result = (await res.json().catch(() => ({}))) as {
         ok?: boolean
         error?: string
       }
 
-      if (!valid.ok) {
-        setStatus(valid.error === "vulgar" ? "blocked" : "error")
+      if (result.ok) {
+        setStatus("ok")
+        form.reset()
         return
       }
 
-      // 2. Envío real desde el navegador (Web3Forms no permite servidor en free).
-      const payload = new FormData(form)
-      payload.set("access_key", accessKey)
-      payload.set("subject", `[Portafolio] Mensaje de ${nombre}`)
-      payload.set("from_name", nombre)
-      payload.set("name", nombre)
-      payload.set("message", mensaje)
-      payload.set("replyto", email)
-      payload.delete("nombre")
-      payload.delete("mensaje")
-
-      const res = await fetch(WEB3FORMS_ENDPOINT, {
-        method: "POST",
-        body: payload,
-        headers: { Accept: "application/json" },
-      })
-      const result = (await res.json().catch(() => ({}))) as {
-        success?: boolean
-      }
-
-      if (!res.ok || result.success === false) throw new Error("Web3Forms")
-
-      setStatus("ok")
-      form.reset()
+      setStatus(result.error === "vulgar" ? "blocked" : "error")
     } catch {
       setStatus("error")
     }
@@ -96,7 +66,7 @@ export function ContactForm() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Honeypot: invisible para humanos; lo usan nuestro servidor y Web3Forms. */}
+          {/* Honeypot: invisible para humanos, los bots lo rellenan. */}
           <input
             type="text"
             name="botcheck"
