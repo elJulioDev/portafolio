@@ -10,7 +10,7 @@ export const siteConfig = {
   url: "https://portafolio-eljuliodev.vercel.app",
   author: "Alexis González Pérez",
   username: "elJulioDev",
-  email: "alexisdevelopgz@gmail.com",
+  email: "alexis.gonzalez.perez66@gmail.com",
   github: "https://github.com/elJulioDev",
   linkedin: "https://www.linkedin.com/in/alexis-gonz%C3%A1lez-p%C3%A9rez/",
   location: "Coltauco, Región de O'Higgins, Chile",

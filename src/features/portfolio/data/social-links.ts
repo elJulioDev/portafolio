@@ -20,7 +20,7 @@ export const SOCIAL_LINKS = [
   {
     name: "email",
     title: "Email",
-    handle: "alexisdevelopgz@gmail.com",
-    href: "mailto:alexisdevelopgz@gmail.com",
+    handle: "alexis.gonzalez.perez66@gmail.com",
+    href: "mailto:alexis.gonzalez.perez66@gmail.com",
   },
 ]

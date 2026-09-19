@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react"
 
 import { Panel, PanelContent, PanelHeader, PanelTitle } from "./panel"
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/mvkpzjyd"
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xbglleba"
 
 export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "ok" | "error">(
@@ -28,6 +28,9 @@ export function ContactForm() {
     setStatus("sending")
 
     try {
+      // Asunto personalizado para poder responder directamente
+      data.set("_subject", `[Portafolio] Mensaje de ${nombre}`)
+
       const res = await fetch(FORMSPREE_ENDPOINT, {
         method: "POST",
         body: data,
