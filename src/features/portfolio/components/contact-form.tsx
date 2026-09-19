@@ -136,8 +136,8 @@ export function ContactForm() {
 
           {status === "blocked" && (
             <p className="text-center text-sm text-red-600 dark:text-red-400">
-              Tu mensaje contiene lenguaje inapropiado. Reescríbelo de forma
-              respetuosa, por favor.
+              Tu nombre, correo o mensaje contiene lenguaje inapropiado.
+              Reescríbelo de forma respetuosa, por favor.
             </p>
           )}
 

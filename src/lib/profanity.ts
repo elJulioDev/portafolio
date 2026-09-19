@@ -95,3 +95,16 @@ export function buildMatcher(terms: Term[]): RegExpMatcher {
 export function isProfane(matcher: RegExpMatcher, text: string): boolean {
   return matcher.hasMatch(text)
 }
+
+// Para campos como correo o nombre, donde las palabras pueden venir pegadas
+// ("el.pene.grande@x.com"). Revisa el texto completo y cada token por separado,
+// evitando falsos positivos dentro de palabras legítimas ("penelope@x.com").
+export function isProfaneInAnyToken(
+  matcher: RegExpMatcher,
+  text: string
+): boolean {
+  if (isProfane(matcher, text)) return true
+  return text
+    .split(/[^A-Za-z]+/) // separadores y dígitos también dividen tokens (puta96)
+    .some((token) => token.length > 1 && isProfane(matcher, token))
+}

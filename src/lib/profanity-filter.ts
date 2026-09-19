@@ -1,9 +1,9 @@
 import type { RegExpMatcher } from "obscenity"
 
 import { pool } from "./db"
-import { buildMatcher, isProfane, type Term } from "./profanity"
+import { buildMatcher, isProfane, isProfaneInAnyToken, type Term } from "./profanity"
 
-export { isProfane }
+export { isProfane, isProfaneInAnyToken }
 
 // ponytail: caché en memoria por instancia con TTL; cambios en la BD tardan
 // hasta TTL en verse. Subir a cache compartida (Redis) si hace falta.

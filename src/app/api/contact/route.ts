@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { getMatcher, isProfane } from "@/lib/profanity-filter"
+import { getMatcher, isProfane, isProfaneInAnyToken } from "@/lib/profanity-filter"
 import { getRequestMeta } from "@/lib/request-meta"
 
 const ENDPOINT =
@@ -49,7 +49,11 @@ export async function POST(request: Request) {
   }
 
   const matcher = await getMatcher()
-  if (isProfane(matcher, mensaje) || isProfane(matcher, nombre)) {
+  if (
+    isProfane(matcher, mensaje) ||
+    isProfaneInAnyToken(matcher, nombre) ||
+    isProfaneInAnyToken(matcher, email)
+  ) {
     return NextResponse.json({ ok: false, error: "vulgar" }, { status: 422 })
   }
 

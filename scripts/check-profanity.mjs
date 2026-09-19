@@ -1,6 +1,11 @@
 import assert from "node:assert"
 
-import { buildMatcher, fold, isProfane } from "../src/lib/profanity.ts"
+import {
+  buildMatcher,
+  fold,
+  isProfane,
+  isProfaneInAnyToken,
+} from "../src/lib/profanity.ts"
 
 // Términos de prueba (los reales viven en la BD, no en el código).
 const matcher = buildMatcher([
@@ -40,5 +45,14 @@ assert.equal(isProfane(matcher, "el año pasado"), false)
 assert.equal(fold("Maricón"), "maricon")
 assert.equal(fold("coño"), "coño") // la ñ se conserva
 assert.equal(fold("putaaaa"), "puta")
+
+// Correo / nombre: palabras pegadas por separadores.
+assert.equal(isProfaneInAnyToken(matcher, "el.pene.grande@gmail.com"), true)
+assert.equal(isProfaneInAnyToken(matcher, "puta@gmail.com"), true)
+assert.equal(isProfaneInAnyToken(matcher, "puta96@hotmail.com"), true)
+assert.equal(isProfaneInAnyToken(matcher, "Juan Pene"), true)
+assert.equal(isProfaneInAnyToken(matcher, "penelope@gmail.com"), false)
+assert.equal(isProfaneInAnyToken(matcher, "maria.concepcion@gmail.com"), false)
+assert.equal(isProfaneInAnyToken(matcher, "juan.perez@gmail.com"), false)
 
 console.log("profanity: ok", `(${blocked.length} casos bloqueados probados)`)
