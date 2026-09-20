@@ -125,6 +125,15 @@ const isBirthdayDino = () => {
 
 const bgPosStyle = (p: SpritePos) => `-${p.x}px -${p.y}px`
 
+// Redondea una coordenada lógica a un píxel FÍSICO. En móvil la escena va
+// escalada 0.65, así que un píxel lógico no coincide con un píxel de pantalla:
+// redondear a píxel lógico dejaba las capas compuestas en coordenadas
+// fraccionarias y el navegador las remuestreaba en cada frame. Eso duplicaba la
+// línea fina del suelo y hacía que los sprites "temblaran" (se veía como lag).
+// En escritorio `scale` es 1 y el DPR entero, por eso ahí no pasaba.
+const snapDevice = (value: number, deviceScale: number) =>
+  Math.round(value * deviceScale) / deviceScale
+
 // --- Dificultad del juego ---
 // Velocidad tope: evita que la partida se vuelva imposible con el tiempo.
 const START_SPEED = 5.5
@@ -352,6 +361,9 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     // lógico visible (containerWidth / scale) para posicionarlos fuera de pantalla.
     scale: 1,
     viewWidth: 800,
+    // Factor lógico→píxel físico (`scale` × devicePixelRatio). Se cachea para
+    // redondear las posiciones de dibujo al píxel real (ver `snapDevice`).
+    deviceScale: 1,
     // --- Cachés para evitar escrituras/lecturas redundantes en el loop ---
     // Último entero de puntuación pintado (evita formatear cada frame).
     displayedScore: 0,
@@ -379,6 +391,10 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
     state.dinoX = state.isMobile ? 32 : 64
     state.scale = state.isMobile ? 0.65 : 1
     state.viewWidth = state.containerWidth / state.scale
+    // `scale` puede ser 0.65 y el DPR fraccionario (2.625 en muchos móviles),
+    // así que el factor lógico→físico casi nunca es entero: ese es justo el
+    // caso que obliga a redondear al píxel físico.
+    state.deviceScale = state.scale * (window.devicePixelRatio || 1)
     // Puntero táctil = sin teclado para agacharse.
     state.noDuck = window.matchMedia("(hover: none) and (pointer: coarse)").matches
 
@@ -423,7 +439,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
           // capas que están fuera de pantalla (en móvil se nota).
           el.style.visibility = cactus.active ? "visible" : "hidden"
           el.style.left = "0px"
-          el.style.transform = `translate3d(${cactus.x}px, 0, 0)`
+          el.style.transform = `translate3d(${snapDevice(cactus.x, gameState.current.deviceScale)}px, 0, 0)`
           el.style.backgroundPosition = `-${cactus.frameX}px -${cactus.frameY}px`
           // Pterodáctilo: offset vertical según su altura de vuelo.
           if (cactus.type === "ptero") {
@@ -452,8 +468,8 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
         const el = cloudRefs.current[i]
         if (el) {
           el.style.left = "0px"
-          el.style.top = `${cloud.y}px`
-          el.style.transform = `translate3d(${cloud.x}px, 0, 0)`
+          el.style.top = `${snapDevice(cloud.y, gameState.current.deviceScale)}px`
+          el.style.transform = `translate3d(${snapDevice(cloud.x, gameState.current.deviceScale)}px, 0, 0)`
         }
       })
     },
@@ -537,11 +553,12 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
 
     // Suelo infinito: `background-repeat: repeat-x` sobre un elemento que cubre
     // el ancho visible + un tile extra, desplazado con `transform` (capa GPU).
-    // Antes se movía con `background-position-x`, lo que forzaba un repaint del
-    // ancho completo en cada frame (carísimo en móvil, sobre todo con `invert`).
     // El patrón empalma sin huecos porque se mantiene en (-1200, 0] y sobra un
     // tile por la derecha.
-    const groundX = Math.round(state.groundX)
+    // La X se redondea al PÍXEL FÍSICO (no al lógico): así la capa compuesta
+    // nunca queda a medio píxel y la línea no se ve duplicada/temblorosa en
+    // móvil, donde `scale` (0.65) hace que 1px lógico no sea 1px de pantalla.
+    const groundX = snapDevice(state.groundX, state.deviceScale)
     if (groundRef.current && groundX !== state.lastGroundX) {
       state.lastGroundX = groundX
       groundRef.current.style.transform = `translate3d(${groundX}px, 0, 0)`
@@ -561,10 +578,10 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
         cloud.y = state.isMobile ? 15 + Math.random() * 25 : 30 + Math.random() * 35
         cloud.speed = 2 + Math.random() * 0.8
         const cloudEl = cloudRefs.current[i]
-        if (cloudEl) cloudEl.style.top = `${cloud.y}px`
+        if (cloudEl) cloudEl.style.top = `${snapDevice(cloud.y, state.deviceScale)}px`
       }
       const cloudEl = cloudRefs.current[i]
-      if (cloudEl) cloudEl.style.transform = `translate3d(${cloud.x}px, 0, 0)`
+      if (cloudEl) cloudEl.style.transform = `translate3d(${snapDevice(cloud.x, state.deviceScale)}px, 0, 0)`
     }
 
     // Hitbox del dinosaurio — y=0 es la parte superior del frame.
@@ -620,7 +637,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       if (!rightmost || cactus.x > rightmost.x) rightmost = cactus
 
       const el = cactusRefs.current[i]
-      if (el) el.style.transform = `translate3d(${cactus.x}px, 0, 0)`
+      if (el) el.style.transform = `translate3d(${snapDevice(cactus.x, state.deviceScale)}px, 0, 0)`
 
       // Animación del pterodáctilo: alterna frame 0 y 1 cada ~12 frames.
       if (cactus.type === "ptero") {
@@ -732,7 +749,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
       if (spawnEl) {
         spawnEl.style.visibility = "visible"
         spawnEl.style.backgroundPosition = `-${sprite.frameX}px -${sprite.frameY}px`
-        spawnEl.style.transform = `translate3d(${x}px, 0, 0)`
+        spawnEl.style.transform = `translate3d(${snapDevice(x, state.deviceScale)}px, 0, 0)`
         if (isPtero) {
           spawnEl.style.bottom = `${-8 + PTERO_Y_OFFSET[cactus.pteroHeight]}px`
         } else {
@@ -830,7 +847,7 @@ export function ProfileHeader({ topScore: initialTopScore = 0 }: { topScore?: nu
         dinoEl.style.backgroundPosition = bgPos
       }
       // `translateY` solo varía mientras el dino está en el aire.
-      const dinoY = -state.yPos
+      const dinoY = snapDevice(-state.yPos, state.deviceScale)
       if (state.lastDinoY !== dinoY) {
         state.lastDinoY = dinoY
         dinoEl.style.transform = `translate3d(0, ${dinoY}px, 0)`
